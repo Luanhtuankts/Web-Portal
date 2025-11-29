@@ -1,0 +1,49 @@
+Logs
+
+logs
+.log
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+Node modules
+
+Thư mục chứa tất cả thư viện (quá nặng, không được đẩy lên Git)
+
+node_modules
+
+Thư mục chứa output khi chạy lệnh 'npm run build'
+
+dist
+dist-ssr
+
+Các file tạm cục bộ (local) của môi trường phát triển
+
+*.local
+.env.local
+
+Editor directories and files
+
+File cấu hình của VS Code, không nên chia sẻ
+
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.sw?
+
+Environment variables
+
+File chứa các Key nhạy cảm (như SUPABASE_ANON_KEY)
+
+CHỈ được thiết lập trên Netlify, không được chia sẻ lên GitHub
+
+.env
+.env.*
+!.env.example

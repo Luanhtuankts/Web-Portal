@@ -1,0 +1,16 @@
+# File này giúp Netlify hiểu đây là ứng dụng 1 trang (SPA)
+# Tránh lỗi 404 khi F5 lại trang
+[build]
+  # Lệnh build theo chuẩn Vite/React
+  command = "npm run build"
+  # Thư mục chứa output sau khi build
+  publish = "dist"
+
+# Cấu hình Redirects (quan trọng để xử lý SPA)
+[[redirects]]
+  # Chuyển hướng mọi đường dẫn không tồn tại (/*)
+  from = "/*"
+  # Về file index.html để React Router xử lý
+  to = "/index.html"
+  # Trả về status 200 (Thành công)
+  status = 200
