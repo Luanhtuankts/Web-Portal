@@ -8,7 +8,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // --- CẤU HÌNH LIÊN HỆ & FILE ---
 // Bạn thay link Zalo/Facebook của bạn vào đây để khách liên hệ nạp tiền
-const CONTACT_LINK = "https://zalo.me/09xxxxxxx"; 
+const CONTACT_LINK = "https://zalo.me/0965585879"; 
 // Tên file plugin bạn sẽ để trong thư mục public (Ví dụ: OpenSKP_v1.0.2.rbz)
 const PLUGIN_FILENAME = "OpenSKP_Extension.rbz"; 
 
@@ -132,8 +132,8 @@ export default function App() {
                  <Box className="text-white w-8 h-8" />
                </div>
             </div>
-            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">OpenSKP Portal</h1>
-            <p className="text-slate-500">Đăng nhập để quản lý License AI</p>
+            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">OpenSKP</h1>
+            <p className="text-slate-500">Open Sketchup with AI</p>
           </div>
           
           <div className="space-y-4">
