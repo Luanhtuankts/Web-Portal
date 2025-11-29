@@ -128,11 +128,9 @@ export default function App() {
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-xl animate-fade-in">
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
-               <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-                 <Box className="text-white w-8 h-8" />
-               </div>
+              <img src="/openskp-logo.png" alt="OpenSKP Logo" className="w-10 h-10" />
             </div>
-            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">OpenSKP</h1>
+            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">OpenSkp</h1>
             <p className="text-slate-500">Open Sketchup with AI</p>
           </div>
           
@@ -161,7 +159,7 @@ export default function App() {
                 />
                 </div>
                 <button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20 disabled:opacity-70">
-                {loading ? <Loader2 className="animate-spin" /> : <><Mail className="w-4 h-4"/> Gửi Magic Link</>}
+                {loading ? <Loader2 className="animate-spin" /> : <><Mail className="w-4 h-4"/> Gửi Link đăng nhập</>}
                 </button>
             </form>
           </div>
@@ -177,9 +175,7 @@ export default function App() {
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                <Box className="w-5 h-5 text-white"/>
-            </div>
+            <img src="/openskp-logo.png" alt="OpenSKP Logo" className="w-6 h-6" />
             <span className="font-bold text-xl text-slate-800 tracking-tight">OpenSKP</span>
           </div>
           <div className="flex items-center gap-4">
