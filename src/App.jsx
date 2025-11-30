@@ -124,13 +124,13 @@ export default function App() {
   // --- MÀN HÌNH ĐĂNG NHẬP ---
   if (!session) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 text-slate-900 font-sans">
+      <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 text-slate-900 font-serif font-sans">
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-xl animate-fade-in">
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
-              <img src="/openskp-logo.png" alt="OpenSKP Logo" className="w-10 h-10" />
+              <img src="/openskp-logo.png" alt="OpenSKP Logo" className="w-16 h-16" />
             </div>
-            <h1 className="text-3xl font-extrabold text-slate-900 mb-2">OpenSkp</h1>
+            <h1 className="text-3xl font-serif text-slate-900 mb-2">OpenSkp</h1>
             <p className="text-slate-500">Open Sketchup with AI</p>
           </div>
           
@@ -139,7 +139,7 @@ export default function App() {
             <button 
                 onClick={handleLoginGoogle}
                 disabled={loading}
-                className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 transition shadow-sm"
+                className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 transition shadow-sm font-Arial"
             >
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
                 Đăng nhập bằng Google
@@ -170,13 +170,13 @@ export default function App() {
 
   // --- DASHBOARD ---
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-serif">
       {/* Navbar */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-          <div className="flex items-center gap-2.5">
-            <img src="/openskp-logo.png" alt="OpenSKP Logo" className="w-6 h-6" />
-            <span className="font-bold text-xl text-slate-800 tracking-tight">OpenSKP</span>
+          <div className="flex items-center gap-1.5">
+            <img src="/openskp-logo.png" alt="OpenSKP Logo" className="w-12 h-12" />
+            <span className="font-serif text-2xl text-slate-800 tracking-tight mt-3">OpenSkp</span>
           </div>
           <div className="flex items-center gap-4">
              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full border border-slate-200">
@@ -192,8 +192,8 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 py-10 animate-fade-in">
         <div className="mb-10 text-center sm:text-left">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">Xin chào, Kiến trúc sư! 👋</h1>
-          <p className="text-slate-500 max-w-2xl text-lg">Quản lý tài nguyên và kích hoạt sức mạnh AI cho thiết kế của bạn.</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">Xin chào, Kiến trúc sư!</h1>
+          <p className="text-slate-500 max-w-2xl text-lg">Bạn là nhà thiết kế - hãy để OpenSkp AI dựng hình cho bạn.</p>
         </div>
 
         {loading && !profile ? (
@@ -207,8 +207,8 @@ export default function App() {
               <div className="flex items-center gap-4 mb-4 relative z-10">
                 <div className="p-3 bg-blue-50 rounded-xl text-blue-600 ring-1 ring-blue-100"><CreditCard className="w-6 h-6" /></div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Số dư Credits</h3>
-                  <div className="text-4xl font-black text-slate-800 mt-1">{profile?.credits || 0}</div>
+                  <h3 className="text-xs font-sans font-bold text-slate-600 uppercase tracking-wider">Số dư Credits</h3>
+                  <div className="text-4xl font-sans font-bold text-slate-600 mt-1">{profile?.credits || 0}</div>
                 </div>
               </div>
               <div className="mt-8 relative z-10">
@@ -226,8 +226,8 @@ export default function App() {
                    <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Trạng thái</h3>
-                  <div className={`text-xl font-bold ${profile?.is_active ? 'text-green-600' : 'text-red-600'}`}>
+                  <h3 className="text-xs font-sans font-bold text-slate-600 uppercase tracking-wider">Trạng thái</h3>
+                  <div className={`text-xl font-sans font-bold ${profile?.is_active ? 'text-green-600' : 'text-red-600'}`}>
                     {profile?.is_active ? 'Đang Hoạt Động' : 'Đã Bị Khóa'}
                   </div>
                 </div>
@@ -245,10 +245,10 @@ export default function App() {
             {/* Card 3: Download (Tải thật) */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 text-white border border-slate-700 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
                <div>
-                 <h3 className="text-lg font-bold mb-2 flex items-center gap-2 text-white"><Download className="w-5 h-5 text-blue-400"/> Tải Plugin</h3>
+                 <h3 className="text-lg font-sans  mb-2 flex items-center gap-2 text-white"><Download className="w-5 h-5 text-blue-400"/> Tải Plugin</h3>
                  <p className="text-slate-300 text-sm leading-relaxed">Phiên bản <strong>v1.0.2</strong> ổn định.<br/>Bấm bên dưới để tải file cài đặt.</p>
                </div>
-               <button onClick={handleDownload} className="w-full py-3 mt-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-lg">
+               <button onClick={handleDownload} className="w-full py-3 mt-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg">
                   <Download className="w-4 h-4" /> Tải xuống .RBZ
                 </button>
             </div>
@@ -258,23 +258,24 @@ export default function App() {
                 <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition">
                     <div className="flex items-center gap-2 mb-4">
                         <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">License Key Của Bạn</h3>
+                        <h3 className="text-sm font-sans text-slate-500 uppercase tracking-widest">License Key Của Bạn</h3>
                     </div>
                     
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-5 font-mono text-xl md:text-2xl text-slate-700 tracking-widest shadow-inner break-all">
                             {profile?.license_key || "ĐANG TẢI DỮ LIỆU..."}
                         </div>
-                        <button onClick={copyToClipboard} className="bg-slate-900 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-bold min-w-[180px] transition-colors duration-300 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-95 transform">
+                        <button onClick={copyToClipboard} className="bg-slate-900 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-sans min-w-[180px] transition-colors duration-300 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-95 transform">
                             {copySuccess ? <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5"/> Đã Copy</span> : <><Copy className="w-5 h-5"/> Copy Key</>}
                         </button>
                     </div>
 
                     <div className="mt-6 flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-sm text-blue-800">
-                        <Box className="w-5 h-5 shrink-0 mt-0.5 text-blue-600"/>
+                        <Box className="w-8 h-8 shrink-0 mt-0.5 text-blue-600"/>
                         <p>
-                            <strong>Hướng dẫn:</strong> Mở SketchUp &rarr; Extensions &gt; OpenSKP &gt; License Key &rarr; Dán Key để kích hoạt.
+                            <strong>Hướng dẫn cài đặt:</strong> Tải Plugin &rarr; Giải nén &rarr; Copy 2 file trong thư mục &rarr; C:\Users\Tên_người_dùng\AppData\Roaming\SketchUp\SketchUp 2023\SketchUp\Plugins <br/><strong>Đăng ký license:</strong> Mở SketchUp &rarr; View &rarr; Toolbars &rarr; Tick OpenSkp &rarr; Khởi động plugin &rarr; Dán Key để kích hoạt.
                         </p>
+                        
                     </div>
                 </div>
             </div>

@@ -7,7 +7,23 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: [
+          'Arial', 
+          'Helvetica', 
+          'sans-serif'
+        ],
+        serif: [
+          'Georgia',
+          'Cambria',
+          'Times New Roman',
+          'Times',
+          'serif',
+        ],
+        mono: [
+          'Consolas', 
+          'monaco', 
+          'monospace'
+        ],
       },
     },
   },
