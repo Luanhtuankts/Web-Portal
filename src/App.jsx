@@ -10,7 +10,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 // Bạn thay link Zalo/Facebook của bạn vào đây để khách liên hệ nạp tiền
 const CONTACT_LINK = "https://zalo.me/0965585879"; 
 // Tên file plugin bạn sẽ để trong thư mục public (Ví dụ: OpenSKP_v1.0.2.rbz)
-const PLUGIN_FILENAME = "OpenSKP_Extension.rbz"; 
+const PLUGIN_FILENAME = "OpenSkp 1.0.2.rar"; 
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("⛔ LỖI: Chưa cấu hình biến môi trường Supabase.");
@@ -105,21 +105,33 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // 6. Xử lý Nạp tiền (Thủ công)
+  // 6. Xử lý Nạp tiền (Thủ công) - ĐÃ DÙNG ALERT()
   const handleTopup = () => {
-    // Mở link Zalo/Facebook để chat với Admin
-    window.open(CONTACT_LINK, '_blank');
+    alert("Plugin chưa nhận thanh toán vui lòng đăng ký email khác để trải nghiệm");
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); };
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     if (profile?.license_key) {
-      navigator.clipboard.writeText(profile.license_key);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
+      try {
+        await navigator.clipboard.writeText(profile.license_key);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (err) {
+        // Fallback cho môi trường không hỗ trợ navigator.clipboard
+        const textField = document.createElement('textarea');
+        textField.innerText = profile.license_key;
+        document.body.appendChild(textField);
+        textField.select();
+        document.execCommand('copy');
+        textField.remove();
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      }
     }
   };
+
 
   // --- MÀN HÌNH ĐĂNG NHẬP ---
   if (!session) {
@@ -139,7 +151,7 @@ export default function App() {
             <button 
                 onClick={handleLoginGoogle}
                 disabled={loading}
-                className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 transition shadow-sm font-Arial"
+                className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-sans py-3.5 rounded-xl flex items-center justify-center gap-3 transition shadow-sm font-Arial"
             >
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
                 Đăng nhập bằng Google
@@ -158,7 +170,7 @@ export default function App() {
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none transition" 
                 />
                 </div>
-                <button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20 disabled:opacity-70">
+                <button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-sans py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20 disabled:opacity-70">
                 {loading ? <Loader2 className="animate-spin" /> : <><Mail className="w-4 h-4"/> Gửi Link đăng nhập</>}
                 </button>
             </form>
@@ -193,7 +205,7 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 py-10 animate-fade-in">
         <div className="mb-10 text-center sm:text-left">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">Xin chào, Kiến trúc sư!</h1>
-          <p className="text-slate-500 max-w-2xl text-lg">Bạn là nhà thiết kế - hãy để OpenSkp AI dựng hình cho bạn.</p>
+          <p className="text-slate-500 max-w-2xl text-lg">Bạn là nhà thiết kế - hãy để AI dựng hình cho bạn.</p>
         </div>
 
         {loading && !profile ? (
@@ -234,7 +246,7 @@ export default function App() {
               </div>
               <div className="pt-6 border-t border-slate-100">
                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-400 uppercase">Thiết bị</span>
+                    <span className="text-xs font-sans font-bold text-slate-600 uppercase">Thiết bị</span>
                     <span className={`px-2.5 py-1 rounded-md text-xs font-mono font-medium ${profile?.hardware_id ? 'bg-slate-100 text-slate-600' : 'bg-orange-50 text-orange-600'}`}>
                         {profile?.hardware_id || 'Chưa kích hoạt'}
                     </span>
@@ -243,13 +255,13 @@ export default function App() {
             </div>
             
             {/* Card 3: Download (Tải thật) */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 text-white border border-slate-700 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
+            <div className="bg-gradient-to-br from-slate-600 to-slate-400 text-white border rounded-2xl p-6 flex flex-col justify-between shadow-lg">
                <div>
                  <h3 className="text-lg font-sans  mb-2 flex items-center gap-2 text-white"><Download className="w-5 h-5 text-blue-400"/> Tải Plugin</h3>
-                 <p className="text-slate-300 text-sm leading-relaxed">Phiên bản <strong>v1.0.2</strong> ổn định.<br/>Bấm bên dưới để tải file cài đặt.</p>
+                 <p className="text-slate-100 text-sm leading-relaxed">Phiên bản <strong>v1.0.2</strong> ổn định.<br/>Bấm bên dưới để tải file cài đặt.</p>
                </div>
                <button onClick={handleDownload} className="w-full py-3 mt-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg">
-                  <Download className="w-4 h-4" /> Tải xuống .RBZ
+                  <Download className="w-4 h-4" /> Tải xuống 
                 </button>
             </div>
 
@@ -265,7 +277,7 @@ export default function App() {
                         <div className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-5 font-mono text-xl md:text-2xl text-slate-700 tracking-widest shadow-inner break-all">
                             {profile?.license_key || "ĐANG TẢI DỮ LIỆU..."}
                         </div>
-                        <button onClick={copyToClipboard} className="bg-slate-900 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-sans min-w-[180px] transition-colors duration-300 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-95 transform">
+                        <button onClick={copyToClipboard} className="bg-slate-400 hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-sans min-w-[180px] transition-colors duration-300 flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 active:scale-95 transform">
                             {copySuccess ? <span className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5"/> Đã Copy</span> : <><Copy className="w-5 h-5"/> Copy Key</>}
                         </button>
                     </div>
@@ -273,7 +285,7 @@ export default function App() {
                     <div className="mt-6 flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-sm text-blue-800">
                         <Box className="w-8 h-8 shrink-0 mt-0.5 text-blue-600"/>
                         <p>
-                            <strong>Hướng dẫn cài đặt:</strong> Tải Plugin &rarr; Giải nén &rarr; Copy 2 file trong thư mục &rarr; C:\Users\Tên_người_dùng\AppData\Roaming\SketchUp\SketchUp 2023\SketchUp\Plugins <br/><strong>Đăng ký license:</strong> Mở SketchUp &rarr; View &rarr; Toolbars &rarr; Tick OpenSkp &rarr; Khởi động plugin &rarr; Dán Key để kích hoạt.
+                            <strong>Hướng dẫn cài đặt:</strong> Tải Plugin &rarr; Giải nén &rarr; Copy 2 file vào thư mục &rarr; C:\Users\Tên_người_dùng\AppData\Roaming\SketchUp\SketchUp 2023\SketchUp\Plugins <br/><strong>Đăng ký license:</strong> Mở SketchUp &rarr; View &rarr; Toolbars &rarr; Tick OpenSkp &rarr; Khởi động plugin &rarr; Dán Key và sử dụng.
                         </p>
                         
                     </div>
