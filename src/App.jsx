@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, Mail } from 'lucide-react';
+import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, Mail, X } from 'lucide-react';
 
 // --- CẤU HÌNH SUPABASE ---
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // --- CẤU HÌNH LIÊN HỆ & FILE ---
-// Bạn thay link Zalo/Facebook của bạn vào đây để khách liên hệ nạp tiền
 const CONTACT_LINK = "https://zalo.me/0965585879"; 
-// Tên file plugin bạn sẽ để trong thư mục public (Ví dụ: OpenSKP_v1.0.2.rbz)
 const PLUGIN_FILENAME = "OpenSkp 1.0.2.rar"; 
+
+// --- CẤU HÌNH NGÂN HÀNG (VIETQR) ---
+const BANK_ID = "MB"; // Điền mã ngân hàng của bạn: MB, VCB, TCB, VPB, ACB...
+const BANK_ACCOUNT = "0965585879"; // Số tài khoản ngân hàng của bạn
+const ACCOUNT_NAME = "OPEN SKP"; // Tên chủ tài khoản (hiển thị khi quét)
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("⛔ LỖI: Chưa cấu hình biến môi trường Supabase.");
@@ -26,17 +29,22 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  
+  // State quản lý Modal thanh toán
+  const [showPayment, setShowPayment] = useState(false);
 
-  // 1. Kiểm tra session
+  // 1. Kiểm tra session & Realtime Subscription
   useEffect(() => {
     if (!supabaseUrl) { setLoading(false); return; }
 
+    // Lấy session hiện tại
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchProfile(session.user.id);
       else setLoading(false);
     });
 
+    // Lắng nghe thay đổi Auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) fetchProfile(session.user.id);
@@ -45,6 +53,35 @@ export default function App() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // 1.1. Lắng nghe thay đổi Credits (Realtime)
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    // Đăng ký kênh lắng nghe thay đổi trên bảng 'users' đúng row của user này
+    const channel = supabase
+      .channel('realtime-credits')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${session.user.id}` },
+        (payload) => {
+          // Khi database thay đổi (Casso bắn webhook), cập nhật ngay state profile
+          console.log("🔔 Nhận tín hiệu thay đổi data:", payload.new);
+          setProfile(payload.new);
+          // Nếu đang mở bảng thanh toán thì đóng lại và thông báo
+          if (showPayment) {
+             setShowPayment(false);
+             alert(`✅ Đã nhận được tiền! Số dư mới: ${payload.new.credits} credits.`);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session, showPayment]);
+
 
   // 2. Lấy Profile
   const fetchProfile = async (userId) => {
@@ -65,7 +102,7 @@ export default function App() {
     }
   };
 
-  // 3. Đăng nhập Email (Magic Link)
+  // 3. Đăng nhập Email
   const handleLoginEmail = async (email) => {
     if (!supabaseUrl) return alert("Lỗi cấu hình!");
     setLoading(true);
@@ -78,15 +115,13 @@ export default function App() {
     setLoading(false);
   };
 
-  // 4. Đăng nhập Google (MỚI)
+  // 4. Đăng nhập Google
   const handleLoginGoogle = async () => {
     if (!supabaseUrl) return alert("Lỗi cấu hình!");
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin // Quay lại trang này sau khi Google xác nhận
-      }
+      options: { redirectTo: window.location.origin }
     });
     if (error) {
         alert("Lỗi đăng nhập Google: " + error.message);
@@ -96,7 +131,6 @@ export default function App() {
 
   // 5. Xử lý tải Plugin
   const handleDownload = () => {
-    // Tạo link tải file từ thư mục public
     const link = document.createElement('a');
     link.href = `/${PLUGIN_FILENAME}`; 
     link.download = PLUGIN_FILENAME;
@@ -105,9 +139,19 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // 6. Xử lý Nạp tiền (Thủ công) - ĐÃ DÙNG ALERT()
+  // 6. Xử lý Nạp tiền: MỞ MODAL
   const handleTopup = () => {
-    alert("Plugin chưa nhận thanh toán vui lòng đăng ký email khác để trải nghiệm");
+    setShowPayment(true);
+  };
+
+  // 7. Tạo Link QR VietQR
+  const getVietQRUrl = () => {
+    if (!profile) return "";
+    const AMOUNT = "50000";
+    // Cú pháp quan trọng: OSKP <USER_ID>
+    const DESCRIPTION = `OSKP ${profile.id}`; 
+    
+    return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${AMOUNT}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); };
@@ -119,7 +163,6 @@ export default function App() {
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       } catch (err) {
-        // Fallback cho môi trường không hỗ trợ navigator.clipboard
         const textField = document.createElement('textarea');
         textField.innerText = profile.license_key;
         document.body.appendChild(textField);
@@ -147,7 +190,6 @@ export default function App() {
           </div>
           
           <div className="space-y-4">
-            {/* Nút Google Login */}
             <button 
                 onClick={handleLoginGoogle}
                 disabled={loading}
@@ -182,7 +224,62 @@ export default function App() {
 
   // --- DASHBOARD ---
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-serif">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-serif relative">
+      
+      {/* === MODAL THANH TOÁN (New) === */}
+      {showPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-yellow-500 fill-current"/> Nạp Credits Tự Động
+              </h3>
+              <button onClick={() => setShowPayment(false)} className="p-1 hover:bg-slate-200 rounded-full transition text-slate-500">
+                <X className="w-6 h-6"/>
+              </button>
+            </div>
+            
+            <div className="p-6 text-center overflow-y-auto">
+              <p className="text-slate-600 mb-4 text-sm font-sans">
+                Quét mã QR bằng ứng dụng ngân hàng.<br/>Hệ thống sẽ tự động cộng Credits sau 10-30 giây.
+              </p>
+              
+              {/* QR Code */}
+              <div className="border-2 border-blue-100 rounded-xl p-2 inline-block mb-4 shadow-inner bg-white relative group">
+                 <img src={getVietQRUrl()} alt="VietQR Payment" className="w-64 h-64 object-contain" />
+                 <div className="absolute inset-0 flex items-center justify-center bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <span className="text-xs font-bold text-slate-600">Quét để thanh toán</span>
+                 </div>
+              </div>
+              
+              <div className="bg-yellow-50 text-yellow-800 p-3 rounded-lg text-sm mb-4 border border-yellow-100 text-left">
+                <div className="font-bold text-yellow-900 mb-1 flex items-center gap-1">⚠️ Lưu ý quan trọng:</div>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>Không sửa nội dung chuyển khoản.</li>
+                    <li>Gói nạp: <strong>50.000 VNĐ = 50 Credits</strong>.</li>
+                    <li>Nếu sau 5 phút chưa nhận được, vui lòng liên hệ Zalo.</li>
+                </ul>
+              </div>
+
+              <div className="text-xs text-slate-400 mt-2">
+                Nội dung chuyển khoản bắt buộc: <br/>
+                <div className="mt-1 flex items-center justify-center gap-2">
+                    <span className="font-mono bg-slate-100 border border-slate-200 px-2 py-1.5 rounded text-slate-700 font-bold select-all text-sm">
+                        OSKP {profile?.id}
+                    </span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-slate-50 border-t border-slate-100 text-center">
+                <a href={CONTACT_LINK} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline text-sm font-medium">
+                    Gặp vấn đề? Liên hệ hỗ trợ ngay
+                </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Navbar */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
@@ -227,7 +324,7 @@ export default function App() {
                   <button onClick={handleTopup} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
                     <Zap className="w-4 h-4 fill-current"/> Nạp thêm / Mua gói
                   </button>
-                  <p className="text-xs text-slate-400 mt-3 text-center font-medium">Liên hệ Admin để mua thêm lượt Render</p>
+                  <p className="text-xs text-slate-400 mt-3 text-center font-medium">Hệ thống nạp tự động 24/7</p>
               </div>
             </div>
 
@@ -262,7 +359,7 @@ export default function App() {
                </div>
                <button onClick={handleDownload} className="w-full py-3 mt-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg">
                   <Download className="w-4 h-4" /> Tải xuống 
-                </button>
+               </button>
             </div>
 
             {/* License Key Section */}
