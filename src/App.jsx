@@ -382,7 +382,7 @@ export default function App() {
                     <div className="mt-6 flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-sm text-blue-800">
                         <Box className="w-8 h-8 shrink-0 mt-0.5 text-blue-600"/>
                         <p>
-                            <strong>Hướng dẫn cài đặt:</strong> Tải Plugin &rarr; Giải nén &rarr; Copy 2 file vào thư mục &rarr; C:\Users\Tên_người_dùng\AppData\Roaming\SketchUp\SketchUp 202x\SketchUp\Plugins <br/><strong>Đăng ký license:</strong> Mở SketchUp &rarr; View &rarr; Toolbars &rarr; Tick OpenSkp &rarr; Khởi động plugin &rarr; Dán Key và sử dụng.
+                            <strong>Hướng dẫn cài đặt:</strong> Tải Plugin &rarr; Chọn phiên bản Skp &rarr; Copy 2 file &rarr; Paste vào C:\Users\Tên_người_dùng\AppData\Roaming\SketchUp\SketchUp 202x\SketchUp\Plugins <br/><strong>Đăng ký license:</strong> Mở SketchUp &rarr; View &rarr; Toolbars &rarr; Tick OpenSkp &rarr; Khởi động plugin &rarr; Dán Key và sử dụng.
                         </p>
                         
                     </div>
