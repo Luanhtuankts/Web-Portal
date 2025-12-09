@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, Mail, X } from 'lucide-react';
+import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, X } from 'lucide-react';
 
 // --- CẤU HÌNH SUPABASE ---
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -102,20 +102,7 @@ export default function App() {
     }
   };
 
-  // 3. Đăng nhập Email
-  const handleLoginEmail = async (email) => {
-    if (!supabaseUrl) return alert("Lỗi cấu hình!");
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ 
-        email,
-        options: { emailRedirectTo: window.location.origin }
-    });
-    if (error) alert(error.message);
-    else alert('✅ Đã gửi link! Kiểm tra hộp thư (cả mục Spam nhé).');
-    setLoading(false);
-  };
-
-  // 4. Đăng nhập Google
+  // 3. Đăng nhập Google (CHỨC NĂNG DUY NHẤT)
   const handleLoginGoogle = async () => {
     if (!supabaseUrl) return alert("Lỗi cấu hình!");
     setLoading(true);
@@ -129,7 +116,7 @@ export default function App() {
     }
   };
 
-  // 5. Xử lý tải Plugin
+  // 4. Xử lý tải Plugin
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = `/${PLUGIN_FILENAME}`; 
@@ -139,12 +126,12 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // 6. Xử lý Nạp tiền: MỞ MODAL
+  // 5. Xử lý Nạp tiền: MỞ MODAL
   const handleTopup = () => {
     setShowPayment(true);
   };
 
-  // 7. Tạo Link QR VietQR
+  // 6. Tạo Link QR VietQR
   const getVietQRUrl = () => {
     if (!profile) return "";
     const AMOUNT = "50000";
@@ -176,7 +163,7 @@ export default function App() {
   };
 
 
-  // --- MÀN HÌNH ĐĂNG NHẬP ---
+  // --- MÀN HÌNH ĐĂNG NHẬP (CHỈ CÒN GOOGLE) ---
   if (!session) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 text-slate-900 font-serif font-sans">
@@ -195,27 +182,13 @@ export default function App() {
                 disabled={loading}
                 className="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-sans py-3.5 rounded-xl flex items-center justify-center gap-3 transition shadow-sm font-Arial"
             >
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
-                Đăng nhập bằng Google
+                {loading ? <Loader2 className="animate-spin" /> : (
+                  <>
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
+                    Đăng nhập bằng Google
+                  </>
+                )}
             </button>
-
-            <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-slate-200"></div>
-                <span className="flex-shrink mx-4 text-slate-400 text-sm">Hoặc dùng Email</span>
-                <div className="flex-grow border-t border-slate-200"></div>
-            </div>
-
-            <form onSubmit={(e) => { e.preventDefault(); handleLoginEmail(e.target.email.value); }} className="space-y-4">
-                <div>
-                <input 
-                    type="email" name="email" placeholder="architect@example.com" required 
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none transition" 
-                />
-                </div>
-                <button disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-sans py-3.5 rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/20 disabled:opacity-70">
-                {loading ? <Loader2 className="animate-spin" /> : <><Mail className="w-4 h-4"/> Gửi Link đăng nhập</>}
-                </button>
-            </form>
           </div>
         </div>
       </div>
