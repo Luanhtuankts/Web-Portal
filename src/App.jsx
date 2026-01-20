@@ -8,7 +8,9 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // --- CẤU HÌNH LIÊN HỆ & FILE ---
 const CONTACT_LINK = "https://zalo.me/0965585879"; 
-const PLUGIN_FILENAME = "OpenSkp 1.0.2.rar"; 
+
+// 🔴 QUAN TRỌNG: Dán link Google Drive (hoặc Fshare/Mediafire) của bạn vào đây
+const DRIVE_DOWNLOAD_LINK = "https://drive.google.com/file/d/1TOwlNNs3L5C9hCiV-LX4dcpLG4y3HzPo/view?usp=sharing"; 
 
 // --- CẤU HÌNH NGÂN HÀNG (VIETQR) ---
 const BANK_ID = "MB"; 
@@ -120,14 +122,10 @@ export default function App() {
     }
   };
 
-  // 4. Xử lý tải Plugin
+  // 4. Xử lý tải Plugin (ĐÃ SỬA: Mở link Google Drive)
   const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = `/${PLUGIN_FILENAME}`; 
-    link.download = PLUGIN_FILENAME;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Mở link Google Drive trong tab mới
+    window.open(DRIVE_DOWNLOAD_LINK, '_blank');
   };
 
   // 5. Xử lý Nạp tiền
@@ -140,7 +138,6 @@ export default function App() {
     if (!profile || !selectedPkg) return "";
     
     // NỘI DUNG CHUYỂN KHOẢN: OSKP <USER_ID>
-    // SePay sẽ dựa vào số tiền thực nhận để biết cộng bao nhiêu credits
     const DESCRIPTION = `OSKP ${profile.id}`; 
     
     return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${selectedPkg.price}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
@@ -357,7 +354,7 @@ export default function App() {
                  <p className="text-slate-100 text-sm leading-relaxed">Phiên bản <strong>v2.0.1</strong> mới nhất.<br/>Hiện tại chỉ hoạt động trên Sketchup 2025 trở lên</p>
                </div>
                <button onClick={handleDownload} className="w-full py-3 mt-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg">
-                  <Download className="w-4 h-4" /> Tải xuống 
+                  <Download className="w-4 h-4" /> Tải xuống từ Drive
                </button>
             </div>
 
