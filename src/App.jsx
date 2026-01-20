@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, X } from 'lucide-react';
+import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, X, Star } from 'lucide-react';
 
 // --- CẤU HÌNH SUPABASE ---
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -11,9 +11,17 @@ const CONTACT_LINK = "https://zalo.me/0965585879";
 const PLUGIN_FILENAME = "OpenSkp 1.0.2.rar"; 
 
 // --- CẤU HÌNH NGÂN HÀNG (VIETQR) ---
-const BANK_ID = "MB"; // Điền mã ngân hàng của bạn: MB, VCB, TCB, VPB, ACB...
-const BANK_ACCOUNT = "0965585879"; // Số tài khoản ngân hàng của bạn
-const ACCOUNT_NAME = "OPEN SKP"; // Tên chủ tài khoản (hiển thị khi quét)
+const BANK_ID = "MB"; 
+const BANK_ACCOUNT = "0965585879"; 
+const ACCOUNT_NAME = "OPEN SKP"; 
+
+// --- CẤU HÌNH CÁC GÓI CREDITS ---
+const PACKAGES = [
+  { id: 1, price: 50000, credits: 100, label: "Cơ bản", popular: false },
+  { id: 2, price: 100000, credits: 250, label: "Phổ biến", popular: true }, // Tặng 50
+  { id: 3, price: 200000, credits: 550, label: "Nâng cao", popular: false }, // Tặng 50
+  { id: 4, price: 500000, credits: 1500, label: "Siêu hời", popular: false }, // Tặng 250
+];
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error("⛔ LỖI: Chưa cấu hình biến môi trường Supabase.");
@@ -30,21 +38,20 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
   
-  // State quản lý Modal thanh toán
+  // State quản lý Modal thanh toán & Gói đang chọn
   const [showPayment, setShowPayment] = useState(false);
+  const [selectedPkg, setSelectedPkg] = useState(PACKAGES[0]); // Mặc định chọn gói đầu tiên
 
   // 1. Kiểm tra session & Realtime Subscription
   useEffect(() => {
     if (!supabaseUrl) { setLoading(false); return; }
 
-    // Lấy session hiện tại
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchProfile(session.user.id);
       else setLoading(false);
     });
 
-    // Lắng nghe thay đổi Auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) fetchProfile(session.user.id);
@@ -58,20 +65,17 @@ export default function App() {
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    // Đăng ký kênh lắng nghe thay đổi trên bảng 'users' đúng row của user này
     const channel = supabase
       .channel('realtime-credits')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'users', filter: `id=eq.${session.user.id}` },
         (payload) => {
-          // Khi database thay đổi (Casso bắn webhook), cập nhật ngay state profile
           console.log("🔔 Nhận tín hiệu thay đổi data:", payload.new);
           setProfile(payload.new);
-          // Nếu đang mở bảng thanh toán thì đóng lại và thông báo
           if (showPayment) {
              setShowPayment(false);
-             alert(`✅ Đã nhận được tiền! Số dư mới: ${payload.new.credits} credits.`);
+             alert(`✅ Đã nhận được tiền! Tài khoản đã được cộng Credits.`);
           }
         }
       )
@@ -102,7 +106,7 @@ export default function App() {
     }
   };
 
-  // 3. Đăng nhập Google (CHỨC NĂNG DUY NHẤT)
+  // 3. Đăng nhập Google
   const handleLoginGoogle = async () => {
     if (!supabaseUrl) return alert("Lỗi cấu hình!");
     setLoading(true);
@@ -126,19 +130,20 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // 5. Xử lý Nạp tiền: MỞ MODAL
+  // 5. Xử lý Nạp tiền
   const handleTopup = () => {
     setShowPayment(true);
   };
 
-  // 6. Tạo Link QR VietQR
+  // 6. Tạo Link QR VietQR (Cập nhật theo gói đã chọn)
   const getVietQRUrl = () => {
-    if (!profile) return "";
-    const AMOUNT = "50000";
-    // Cú pháp quan trọng: OSKP <USER_ID>
+    if (!profile || !selectedPkg) return "";
+    
+    // NỘI DUNG CHUYỂN KHOẢN: OSKP <USER_ID>
+    // SePay sẽ dựa vào số tiền thực nhận để biết cộng bao nhiêu credits
     const DESCRIPTION = `OSKP ${profile.id}`; 
     
-    return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${AMOUNT}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
+    return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${selectedPkg.price}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); };
@@ -150,12 +155,6 @@ export default function App() {
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       } catch (err) {
-        const textField = document.createElement('textarea');
-        textField.innerText = profile.license_key;
-        document.body.appendChild(textField);
-        textField.select();
-        document.execCommand('copy');
-        textField.remove();
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       }
@@ -163,7 +162,7 @@ export default function App() {
   };
 
 
-  // --- MÀN HÌNH ĐĂNG NHẬP (CHỈ CÒN GOOGLE) ---
+  // --- MÀN HÌNH ĐĂNG NHẬP ---
   if (!session) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 text-slate-900 font-serif font-sans">
@@ -199,56 +198,83 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-serif relative">
       
-      {/* === MODAL THANH TOÁN (New) === */}
+      {/* === MODAL THANH TOÁN (ĐÃ CẬP NHẬT CHỌN GÓI) === */}
       {showPayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                <Zap className="w-5 h-5 text-yellow-500 fill-current"/> Nạp Credits Tự Động
-              </h3>
-              <button onClick={() => setShowPayment(false)} className="p-1 hover:bg-slate-200 rounded-full transition text-slate-500">
-                <X className="w-6 h-6"/>
-              </button>
-            </div>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
             
-            <div className="p-6 text-center overflow-y-auto">
-              <p className="text-slate-600 mb-4 text-sm font-sans">
-                Quét mã QR bằng ứng dụng ngân hàng.<br/>Hệ thống sẽ tự động cộng Credits sau 10-30 giây.
-              </p>
-              
-              {/* QR Code */}
-              <div className="border-2 border-blue-100 rounded-xl p-2 inline-block mb-4 shadow-inner bg-white relative group">
-                 <img src={getVietQRUrl()} alt="VietQR Payment" className="w-64 h-64 object-contain" />
-                 <div className="absolute inset-0 flex items-center justify-center bg-white/80 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                    <span className="text-xs font-bold text-slate-600">Quét để thanh toán</span>
-                 </div>
-              </div>
-              
-              <div className="bg-yellow-50 text-yellow-800 p-3 rounded-lg text-sm mb-4 border border-yellow-100 text-left">
-                <div className="font-bold text-yellow-900 mb-1 flex items-center gap-1">⚠️ Lưu ý quan trọng:</div>
-                <ul className="list-disc list-inside space-y-1 text-xs">
-                    <li>Không sửa nội dung chuyển khoản.</li>
-                    <li>Gói nạp: <strong>50.000 VNĐ = 50 Credits</strong>.</li>
-                    <li>Nếu sau 5 phút chưa nhận được, vui lòng liên hệ Zalo.</li>
-                </ul>
-              </div>
-
-              <div className="text-xs text-slate-400 mt-2">
-                Nội dung chuyển khoản bắt buộc: <br/>
-                <div className="mt-1 flex items-center justify-center gap-2">
-                    <span className="font-mono bg-slate-100 border border-slate-200 px-2 py-1.5 rounded text-slate-700 font-bold select-all text-sm">
-                        OSKP {profile?.id}
-                    </span>
+            {/* Cột Trái: Chọn Gói */}
+            <div className="flex-1 p-6 bg-slate-50 border-r border-slate-100 overflow-y-auto">
+                <h3 className="font-bold text-xl text-slate-800 mb-4 flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-yellow-500 fill-current"/> Chọn Gói Credits
+                </h3>
+                <div className="space-y-3">
+                    {PACKAGES.map((pkg) => (
+                        <div 
+                            key={pkg.id}
+                            onClick={() => setSelectedPkg(pkg)}
+                            className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-center group
+                                ${selectedPkg.id === pkg.id 
+                                    ? 'border-blue-500 bg-blue-50 shadow-md' 
+                                    : 'border-slate-200 bg-white hover:border-blue-300'}`}
+                        >
+                            {pkg.popular && (
+                                <span className="absolute -top-2.5 -right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                                    <Star className="w-3 h-3 fill-current"/> BEST
+                                </span>
+                            )}
+                            <div>
+                                <div className="font-bold text-slate-700">{pkg.credits} Credits</div>
+                                <div className="text-xs text-slate-500 font-sans">{pkg.label}</div>
+                            </div>
+                            <div className="text-blue-600 font-bold font-mono">
+                                {pkg.price.toLocaleString('vi-VN')} đ
+                            </div>
+                        </div>
+                    ))}
                 </div>
-              </div>
+                <p className="text-xs text-slate-400 mt-4 italic">
+                    * Credits dùng để dựng model bằng AI. Không giới hạn thời gian sử dụng.
+                </p>
             </div>
-            
-            <div className="p-4 bg-slate-50 border-t border-slate-100 text-center">
-                <a href={CONTACT_LINK} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline text-sm font-medium">
-                    Gặp vấn đề? Liên hệ hỗ trợ ngay
-                </a>
+
+            {/* Cột Phải: QR Code */}
+            <div className="flex-1 flex flex-col">
+                <div className="p-4 border-b border-slate-100 flex justify-end">
+                    <button onClick={() => setShowPayment(false)} className="p-1 hover:bg-slate-200 rounded-full transition text-slate-500">
+                        <X className="w-6 h-6"/>
+                    </button>
+                </div>
+
+                <div className="p-6 text-center flex-1 flex flex-col items-center justify-center">
+                    <p className="text-slate-600 mb-2 font-sans text-sm">
+                        Quét mã QR để thanh toán gói <br/>
+                        <span className="font-bold text-blue-600 text-lg">{selectedPkg.credits} Credits</span>
+                    </p>
+                    
+                    {/* QR Code Container */}
+                    <div className="border-2 border-blue-100 rounded-xl p-2 inline-block mb-4 shadow-inner bg-white relative">
+                        {/* Key trick: Thêm key={selectedPkg.id} để React vẽ lại ảnh khi đổi gói */}
+                        <img 
+                            key={selectedPkg.id} 
+                            src={getVietQRUrl()} 
+                            alt="VietQR Payment" 
+                            className="w-56 h-56 object-contain" 
+                        />
+                    </div>
+                    
+                    <div className="text-xs text-slate-400">
+                        Nội dung CK: <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded">OSKP {profile?.id}</span>
+                        <br/>
+                        Số tiền: <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded">{selectedPkg.price.toLocaleString('vi-VN')} đ</span>
+                    </div>
+
+                    <div className="mt-4 bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg text-xs border border-yellow-100">
+                        Hệ thống tự động cộng Credits sau 10-30 giây.
+                    </div>
+                </div>
             </div>
+
           </div>
         </div>
       )}
@@ -283,7 +309,7 @@ export default function App() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Card 1: Credits (Nạp tiền) */}
+            {/* Card 1: Credits */}
             <div className="bg-white border border-slate-200 rounded-2xl p-6 relative overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
               <div className="absolute -top-6 -right-6 p-4 opacity-5 group-hover:opacity-10 transition"><Zap className="w-40 h-40 text-blue-600 transform rotate-12" /></div>
               <div className="flex items-center gap-4 mb-4 relative z-10">
@@ -324,11 +350,11 @@ export default function App() {
               </div>
             </div>
             
-            {/* Card 3: Download (Tải thật) */}
+            {/* Card 3: Download */}
             <div className="bg-gradient-to-br from-slate-600 to-slate-400 text-white border rounded-2xl p-6 flex flex-col justify-between shadow-lg">
                <div>
                  <h3 className="text-lg font-sans  mb-2 flex items-center gap-2 text-white"><Download className="w-5 h-5 text-blue-400"/> Tải Plugin</h3>
-                 <p className="text-slate-100 text-sm leading-relaxed">Phiên bản <strong>v1.0.2</strong> ổn định.<br/>Bấm bên dưới để tải file cài đặt.</p>
+                 <p className="text-slate-100 text-sm leading-relaxed">Phiên bản <strong>v2.0.1</strong> ổn định.<br/>Hiện tại chỉ hoạt động trên Sketchup 2025 trở lên</p>
                </div>
                <button onClick={handleDownload} className="w-full py-3 mt-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg">
                   <Download className="w-4 h-4" /> Tải xuống 
@@ -355,7 +381,7 @@ export default function App() {
                     <div className="mt-6 flex gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100 text-sm text-blue-800">
                         <Box className="w-8 h-8 shrink-0 mt-0.5 text-blue-600"/>
                         <p>
-                            <strong>Hướng dẫn cài đặt:</strong> Tải Plugin &rarr; Chọn phiên bản Skp &rarr; Copy 2 file &rarr; Paste vào C:\Users\Tên_người_dùng\AppData\Roaming\SketchUp\SketchUp 202x\SketchUp\Plugins <br/><strong>Đăng ký license:</strong> Mở SketchUp &rarr; View &rarr; Toolbars &rarr; Tick OpenSkp &rarr; Khởi động plugin &rarr; Dán Key và sử dụng.
+                            <strong>Hướng dẫn cài đặt:</strong> Tải Plugin &rarr; Copy 2 file &rarr; Paste vào C:\Users\Tên_người_dùng\AppData\Roaming\SketchUp\SketchUp 202x\SketchUp\Plugins <br/><strong>Đăng ký license:</strong> Mở SketchUp &rarr; View &rarr; Toolbars &rarr; Tick OpenSkp &rarr; Khởi động plugin &rarr; Dán Key và sử dụng.
                         </p>
                         
                     </div>
