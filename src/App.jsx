@@ -354,7 +354,7 @@ export default function App() {
                  <p className="text-slate-100 text-sm leading-relaxed">Phiên bản <strong>v2.0.1</strong> mới nhất.<br/>Hiện tại chỉ hoạt động trên Sketchup 2025 trở lên</p>
                </div>
                <button onClick={handleDownload} className="w-full py-3 mt-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg">
-                  <Download className="w-4 h-4" /> Tải xuống từ Drive
+                  <Download className="w-4 h-4" /> Tải xuống
                </button>
             </div>
 
