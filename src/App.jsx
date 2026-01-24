@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, X, Star } from 'lucide-react';
+import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, X, Star, PlayCircle } from 'lucide-react';
 
 // --- CẤU HÌNH SUPABASE ---
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -11,6 +11,7 @@ const CONTACT_LINK = "https://zalo.me/0965585879";
 
 // 🔴 QUAN TRỌNG: Dán link Google Drive (hoặc Fshare/Mediafire) của bạn vào đây
 const DRIVE_DOWNLOAD_LINK = "https://drive.google.com/file/d/1TOwlNNs3L5C9hCiV-LX4dcpLG4y3HzPo/view?usp=sharing"; 
+const YOUTUBE_GUIDE_LINK = "https://www.youtube.com/watch?v=CfP27yN0jwE";
 
 // --- CẤU HÌNH NGÂN HÀNG (VIETQR) ---
 const BANK_ID = "MB"; 
@@ -299,6 +300,20 @@ export default function App() {
         <div className="mb-10 text-center sm:text-left">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">Xin chào, Kiến trúc sư!</h1>
           <p className="text-slate-500 max-w-2xl text-lg">Bạn là nhà thiết kế - hãy để AI dựng hình cho bạn.</p>
+          
+          {/* NÚT HƯỚNG DẪN SỬ DỤNG MỚI */}
+          <div className="mt-4">
+            <a 
+              href={YOUTUBE_GUIDE_LINK}
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition shadow-sm hover:shadow-md group"
+            >
+              <PlayCircle className="w-5 h-5 fill-current text-white/20 group-hover:text-white/40" />
+              Hướng dẫn sử dụng
+            </a>
+          </div>
+
         </div>
 
         {loading && !profile ? (
