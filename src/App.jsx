@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from 'react';
+// FIX: Sử dụng đường dẫn CDN cho Supabase để chạy được trên trình duyệt
 import { createClient } from '@supabase/supabase-js';
 import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, X, Star, PlayCircle } from 'lucide-react';
 
 // --- CẤU HÌNH SUPABASE ---
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Lưu ý: Trong môi trường xem trước này, import.meta.env có thể không hoạt động.
+// Bạn có thể cần điền trực tiếp URL và Key vào đây để test nếu biến môi trường bị rỗng.
+const getEnv = (key) => {
+  try {
+    return import.meta.env?.[key];
+  } catch (e) {
+    return undefined;
+  }
+};
+
+const supabaseUrl = getEnv('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
 // --- CẤU HÌNH LIÊN HỆ & FILE ---
 const CONTACT_LINK = "https://zalo.me/0965585879"; 
-
-// 🔴 QUAN TRỌNG: Dán link Google Drive (hoặc Fshare/Mediafire) của bạn vào đây
 const DRIVE_DOWNLOAD_LINK = "https://drive.google.com/file/d/1TOwlNNs3L5C9hCiV-LX4dcpLG4y3HzPo/view?usp=sharing"; 
 const YOUTUBE_GUIDE_LINK = "https://www.youtube.com/watch?v=CfP27yN0jwE";
 
@@ -27,7 +36,7 @@ const PACKAGES = [
 ];
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("⛔ LỖI: Chưa cấu hình biến môi trường Supabase.");
+  console.warn("⛔ LƯU Ý: Chưa cấu hình biến môi trường Supabase hoặc môi trường không hỗ trợ import.meta.env.");
 }
 
 const supabase = createClient(
@@ -47,7 +56,11 @@ export default function App() {
 
   // 1. Kiểm tra session & Realtime Subscription
   useEffect(() => {
-    if (!supabaseUrl) { setLoading(false); return; }
+    // Nếu không có URL hợp lệ (đang chạy fallback), dừng loading giả lập
+    if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') { 
+        setLoading(false); 
+        return; 
+    }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -76,9 +89,11 @@ export default function App() {
         (payload) => {
           console.log("🔔 Nhận tín hiệu thay đổi data:", payload.new);
           setProfile(payload.new);
+          // Nếu đang mở modal thanh toán thì đóng lại và thông báo
           if (showPayment) {
              setShowPayment(false);
-             alert(`✅ Đã nhận được tiền! Tài khoản đã được cộng Credits.`);
+             // Sử dụng setTimeout để tránh conflict render
+             setTimeout(() => alert(`✅ Đã nhận được tiền! Tài khoản đã được cộng thêm Credits.`), 100);
           }
         }
       )
@@ -111,7 +126,7 @@ export default function App() {
 
   // 3. Đăng nhập Google
   const handleLoginGoogle = async () => {
-    if (!supabaseUrl) return alert("Lỗi cấu hình!");
+    if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') return alert("Lỗi cấu hình! Vui lòng kiểm tra biến môi trường.");
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -123,9 +138,8 @@ export default function App() {
     }
   };
 
-  // 4. Xử lý tải Plugin (ĐÃ SỬA: Mở link Google Drive)
+  // 4. Xử lý tải Plugin
   const handleDownload = () => {
-    // Mở link Google Drive trong tab mới
     window.open(DRIVE_DOWNLOAD_LINK, '_blank');
   };
 
@@ -135,11 +149,14 @@ export default function App() {
   };
 
   // 6. Tạo Link QR VietQR (Cập nhật theo gói đã chọn)
+  // FIX LỖI QUAN TRỌNG: Thay @ bằng khoảng trắng để tránh lỗi ngân hàng
   const getVietQRUrl = () => {
     if (!profile || !selectedPkg) return "";
     
-    // NỘI DUNG CHUYỂN KHOẢN: OSKP <USER_ID>
-    const DESCRIPTION = `OSKP ${profile.email}`; 
+    // NỘI DUNG CHUYỂN KHOẢN: OSKP <EMAIL_KHONG_CO_@>
+    // Ví dụ: abc@gmail.com -> abc gmail com
+    const safeEmail = profile.email ? profile.email.replace('@', ' ') : 'user';
+    const DESCRIPTION = `OSKP ${safeEmail}`; 
     
     return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${selectedPkg.price}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
   };
@@ -167,7 +184,8 @@ export default function App() {
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-xl animate-fade-in">
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
-              <img src="/openskp-logo.png" alt="OpenSKP Logo" className="w-16 h-16" />
+              {/* Fallback nếu chưa có logo */}
+              <img src="/openskp-logo.png" onError={(e) => e.target.style.display='none'} alt="OpenSKP Logo" className="w-16 h-16" />
             </div>
             <h1 className="text-3xl font-serif text-slate-900 mb-2">OpenSkp</h1>
             <p className="text-slate-500">Open Sketchup with AI</p>
@@ -196,7 +214,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-serif relative">
       
-      {/* === MODAL THANH TOÁN (ĐÃ CẬP NHẬT CHỌN GÓI) === */}
+      {/* === MODAL THANH TOÁN === */}
       {showPayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
@@ -252,7 +270,6 @@ export default function App() {
                     
                     {/* QR Code Container */}
                     <div className="border-2 border-blue-100 rounded-xl p-2 inline-block mb-4 shadow-inner bg-white relative">
-                        {/* Key trick: Thêm key={selectedPkg.id} để React vẽ lại ảnh khi đổi gói */}
                         <img 
                             key={selectedPkg.id} 
                             src={getVietQRUrl()} 
@@ -262,7 +279,9 @@ export default function App() {
                     </div>
                     
                     <div className="text-xs text-slate-400">
-                        Nội dung CK: <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded">OSKP {profile?.id}</span>
+                        Nội dung CK: <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded">
+                             OSKP {profile?.email ? profile.email.replace('@', ' ') : '...'}
+                        </span>
                         <br/>
                         Số tiền: <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded">{selectedPkg.price.toLocaleString('vi-VN')} đ</span>
                     </div>
@@ -281,7 +300,7 @@ export default function App() {
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
           <div className="flex items-center gap-1.5">
-            <img src="/openskp-logo.png" alt="OpenSKP Logo" className="w-12 h-12" />
+            <img src="/openskp-logo.png" onError={(e) => e.target.style.display='none'} alt="OpenSKP Logo" className="w-12 h-12" />
             <span className="font-serif text-2xl text-slate-800 tracking-tight mt-3">OpenSkp</span>
           </div>
           <div className="flex items-center gap-4">
@@ -301,7 +320,6 @@ export default function App() {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">Xin chào, Kiến trúc sư!</h1>
           <p className="text-slate-500 max-w-2xl text-lg">Bạn là nhà thiết kế - hãy để AI dựng hình cho bạn.</p>
           
-          {/* NÚT HƯỚNG DẪN SỬ DỤNG MỚI */}
           <div className="mt-4">
             <a 
               href={YOUTUBE_GUIDE_LINK}
@@ -395,7 +413,6 @@ export default function App() {
                         <p>
                             <strong>Hướng dẫn cài đặt:</strong> Tải Plugin &rarr; Copy 2 file &rarr; Paste vào C:\Users\Tên_người_dùng\AppData\Roaming\SketchUp\SketchUp 202x\SketchUp\Plugins <br/><strong>Đăng ký license:</strong> Mở SketchUp &rarr; View &rarr; Toolbars &rarr; Tick OpenSkp &rarr; Khởi động plugin &rarr; Dán Key và sử dụng.
                         </p>
-                        
                     </div>
                 </div>
             </div>
