@@ -139,7 +139,7 @@ export default function App() {
     if (!profile || !selectedPkg) return "";
     
     // NỘI DUNG CHUYỂN KHOẢN: OSKP <USER_ID>
-    const DESCRIPTION = `OSKP ${profile.id}`; 
+    const DESCRIPTION = `OSKP ${profile.email}`; 
     
     return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${selectedPkg.price}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
   };
