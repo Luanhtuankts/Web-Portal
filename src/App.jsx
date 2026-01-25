@@ -4,8 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 import { CreditCard, Copy, Download, LogOut, Loader2, Zap, ShieldCheck, Box, User, CheckCircle2, X, Star, PlayCircle } from 'lucide-react';
 
 // --- CẤU HÌNH SUPABASE ---
-// Lưu ý: Trong môi trường xem trước này, import.meta.env có thể không hoạt động.
-// Bạn có thể cần điền trực tiếp URL và Key vào đây để test nếu biến môi trường bị rỗng.
 const getEnv = (key) => {
   try {
     return import.meta.env?.[key];
@@ -36,7 +34,7 @@ const PACKAGES = [
 ];
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn("⛔ LƯU Ý: Chưa cấu hình biến môi trường Supabase hoặc môi trường không hỗ trợ import.meta.env.");
+  console.warn("⛔ LƯU Ý: Chưa cấu hình biến môi trường Supabase.");
 }
 
 const supabase = createClient(
@@ -52,11 +50,10 @@ export default function App() {
   
   // State quản lý Modal thanh toán & Gói đang chọn
   const [showPayment, setShowPayment] = useState(false);
-  const [selectedPkg, setSelectedPkg] = useState(PACKAGES[0]); // Mặc định chọn gói đầu tiên
+  const [selectedPkg, setSelectedPkg] = useState(PACKAGES[0]); 
 
   // 1. Kiểm tra session & Realtime Subscription
   useEffect(() => {
-    // Nếu không có URL hợp lệ (đang chạy fallback), dừng loading giả lập
     if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') { 
         setLoading(false); 
         return; 
@@ -89,10 +86,8 @@ export default function App() {
         (payload) => {
           console.log("🔔 Nhận tín hiệu thay đổi data:", payload.new);
           setProfile(payload.new);
-          // Nếu đang mở modal thanh toán thì đóng lại và thông báo
           if (showPayment) {
              setShowPayment(false);
-             // Sử dụng setTimeout để tránh conflict render
              setTimeout(() => alert(`✅ Đã nhận được tiền! Tài khoản đã được cộng thêm Credits.`), 100);
           }
         }
@@ -148,15 +143,15 @@ export default function App() {
     setShowPayment(true);
   };
 
-  // 6. Tạo Link QR VietQR (Cập nhật theo gói đã chọn)
-  // FIX LỖI QUAN TRỌNG: Thay @ bằng khoảng trắng để tránh lỗi ngân hàng
+  // 6. Tạo Link QR VietQR
+  // CẬP NHẬT MỚI: Dùng LICENSE KEY để định danh giao dịch
   const getVietQRUrl = () => {
     if (!profile || !selectedPkg) return "";
     
-    // NỘI DUNG CHUYỂN KHOẢN: OSKP <EMAIL_KHONG_CO_@>
-    // Ví dụ: abc@gmail.com -> abc gmail com
-    const safeEmail = profile.email ? profile.email.replace('@', ' ') : 'user';
-    const DESCRIPTION = `OSKP ${safeEmail}`; 
+    // NỘI DUNG CHUYỂN KHOẢN: OSKP <LICENSE_KEY>
+    // License Key thường là chuỗi ký tự an toàn, không sợ ngân hàng lọc bỏ như email
+    const key = profile.license_key || 'UNKNOWN';
+    const DESCRIPTION = `OSKP ${key}`; 
     
     return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${selectedPkg.price}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
   };
@@ -177,14 +172,13 @@ export default function App() {
   };
 
 
-  // --- MÀN HÌNH ĐĂNG NHẬP ---
+  // --- UI RENDER ---
   if (!session) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 text-slate-900 font-serif font-sans">
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-xl animate-fade-in">
           <div className="text-center mb-6">
             <div className="flex justify-center mb-4">
-              {/* Fallback nếu chưa có logo */}
               <img src="/openskp-logo.png" onError={(e) => e.target.style.display='none'} alt="OpenSKP Logo" className="w-16 h-16" />
             </div>
             <h1 className="text-3xl font-serif text-slate-900 mb-2">OpenSkp</h1>
@@ -210,7 +204,6 @@ export default function App() {
     );
   }
 
-  // --- DASHBOARD ---
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-serif relative">
       
@@ -280,7 +273,7 @@ export default function App() {
                     
                     <div className="text-xs text-slate-400">
                         Nội dung CK: <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded">
-                             OSKP {profile?.email ? profile.email.replace('@', ' ') : '...'}
+                             OSKP {profile?.license_key || '...'}
                         </span>
                         <br/>
                         Số tiền: <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1 rounded">{selectedPkg.price.toLocaleString('vi-VN')} đ</span>
