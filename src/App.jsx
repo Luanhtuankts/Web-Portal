@@ -377,7 +377,7 @@ export default function App() {
             <div className="bg-gradient-to-br from-slate-600 to-slate-400 text-white border rounded-2xl p-6 flex flex-col justify-between shadow-lg">
                <div>
                  <h3 className="text-lg font-sans  mb-2 flex items-center gap-2 text-white"><Download className="w-5 h-5 text-blue-400"/> Tải Plugin</h3>
-                 <p className="text-slate-100 text-sm leading-relaxed">Phiên bản <strong>v2.0.1</strong> mới nhất.<br/>Hiện tại chỉ hoạt động trên Sketchup 2025 trở lên</p>
+                 <p className="text-slate-100 text-sm leading-relaxed">Phiên bản <strong>v3.0.1</strong> mới nhất.<br/>Đã hoạt động ổn định trên Sketchup 2021-2025</p>
                </div>
                <button onClick={handleDownload} className="w-full py-3 mt-6 bg-white hover:bg-blue-50 text-slate-900 rounded-xl font-sans font-bold flex items-center justify-center gap-2 transition shadow-lg">
                   <Download className="w-4 h-4" /> Tải xuống
