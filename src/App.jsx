@@ -16,22 +16,22 @@ const getEnv = (key) => {
 const supabaseUrl = getEnv('VITE_SUPABASE_URL');
 const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
-// --- CẤU HÌNH LIÊN HỆ & FILE (GIỮ NGUYÊN) ---
-const CONTACT_LINK = "https://zalo.me/0965585879"; 
-const FACEBOOK_LINK = "https://www.facebook.com/openskp"; // Thêm link FB hỗ trợ
+// --- CẤU HÌNH LIÊN HỆ (BẠN SỬA LINK TẠI ĐÂY) ---
+const ZALO_LINK = "https://zalo.me/0965585879"; 
+const FACEBOOK_LINK = "https://web.facebook.com/tuan.936796/"; 
 const DRIVE_DOWNLOAD_LINK = "https://drive.google.com/file/d/1TOwlNNs3L5C9hCiV-LX4dcpLG4y3HzPo/view?usp=sharing"; 
 const YOUTUBE_GUIDE_LINK = "https://www.youtube.com/watch?v=CfP27yN0jwE";
 
-// --- CẤU HÌNH NGÂN HÀNG (VIETQR - GIỮ NGUYÊN) ---
+// --- CẤU HÌNH NGÂN HÀNG (VIETQR) ---
 const BANK_ID = "MB"; 
 const BANK_ACCOUNT = "0965585879"; 
 const ACCOUNT_NAME = "OPEN SKP"; 
 
-// --- CẤU HÌNH PAYPAL (MỚI) ---
-// Thay CLIENT ID thật của bạn vào đây
-const PAYPAL_CLIENT_ID = "ARPc_R309yq_8l2tkRJCxb6TooyNcfrF-LNN7AKv6UdlCaVSK5t6Sh8tbyS0_6hlq5lCfORUVhwXJ1Wn"; 
+// --- CẤU HÌNH PAYPAL ---
+// Thay CLIENT ID thật của bạn vào đây (Lấy bên PayPal Developer -> Live)
+const PAYPAL_CLIENT_ID = "YOUR_PAYPAL_CLIENT_ID"; 
 
-// --- CẤU HÌNH CÁC GÓI CREDITS (VNĐ - GIỮ NGUYÊN) ---
+// --- CẤU HÌNH CÁC GÓI CREDITS (VNĐ) ---
 const PACKAGES_VND = [
   { id: 1, price: 50000, credits: 100, label: "Cơ bản", popular: false, currency: 'VND' },
   { id: 2, price: 100000, credits: 250, label: "Phổ biến", popular: true, currency: 'VND' },
@@ -39,7 +39,7 @@ const PACKAGES_VND = [
   { id: 4, price: 500000, credits: 1500, label: "Siêu hời", popular: false, currency: 'VND' },
 ];
 
-// --- CẤU HÌNH CÁC GÓI CREDITS (USD - MỚI) ---
+// --- CẤU HÌNH CÁC GÓI CREDITS (USD - PAYPAL) ---
 const PACKAGES_USD = [
   { id: 'usd_1', price: 2, credits: 100, label: "Basic", popular: false, currency: 'USD' },
   { id: 'usd_2', price: 4, credits: 250, label: "Popular", popular: true, currency: 'USD' },
@@ -196,10 +196,9 @@ export default function App() {
   };
 
   // --- UI RENDER ---
-  // Bọc toàn bộ ứng dụng trong PayPalScriptProvider
   return (
     <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID }}>
-        {/* GIỮ NGUYÊN PHẦN LOGIN */}
+        {/* === MÀN HÌNH LOGIN === */}
         {!session ? (
             <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 text-slate-900 font-serif font-sans">
                 <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-xl animate-fade-in">
@@ -230,19 +229,19 @@ export default function App() {
         ) : (
             <div className="min-h-screen bg-slate-50 text-slate-900 font-serif relative">
             
-            {/* === MODAL THANH TOÁN (CÓ SỬA ĐỔI THÊM PAYPAL) === */}
+            {/* === MODAL THANH TOÁN === */}
             {showPayment && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
                 <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
                     
-                    {/* Cột Trái: Chọn Gói */}
-                    <div className="flex-1 p-6 bg-slate-50 border-r border-slate-100 overflow-y-auto">
+                    {/* CỘT TRÁI: CHỌN GÓI & LIÊN HỆ */}
+                    <div className="flex-1 p-6 bg-slate-50 border-r border-slate-100 flex flex-col">
                         <h3 className="font-bold text-xl text-slate-800 mb-4 flex items-center gap-2">
                             <Zap className="w-5 h-5 text-yellow-500 fill-current"/> Chọn Gói Credits
                         </h3>
                         
-                        {/* --- TAB CHUYỂN ĐỔI TIỀN TỆ (MỚI) --- */}
-                        <div className="flex bg-slate-200 p-1 rounded-xl mb-4 font-sans">
+                        {/* Tab Chuyển đổi Tiền tệ */}
+                        <div className="flex bg-slate-200 p-1 rounded-xl mb-4 font-sans shrink-0">
                             <button 
                                 onClick={() => handleSwitchMethod('VND')}
                                 className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${paymentMethod === 'VND' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
@@ -257,8 +256,8 @@ export default function App() {
                             </button>
                         </div>
 
-                        {/* Danh sách gói thay đổi theo Tab */}
-                        <div className="space-y-3">
+                        {/* Danh sách gói (Scrollable) */}
+                        <div className="space-y-3 overflow-y-auto flex-1 custom-scrollbar pr-1">
                             {(paymentMethod === 'VND' ? PACKAGES_VND : PACKAGES_USD).map((pkg) => (
                                 <div 
                                     key={pkg.id}
@@ -278,15 +277,40 @@ export default function App() {
                                         <div className="text-xs text-slate-500 font-sans">{pkg.label}</div>
                                     </div>
                                     <div className="text-blue-600 font-bold font-mono">
-                                        {/* Hiển thị giá tiền */}
                                         {paymentMethod === 'USD' ? '$' : ''}{pkg.price.toLocaleString('vi-VN')}{paymentMethod === 'VND' ? ' đ' : ''}
                                     </div>
                                 </div>
                             ))}
                         </div>
+
+                        {/* KHU VỰC HỖ TRỢ (MỚI THÊM VÀO CUỐI CỘT TRÁI) */}
+                        <div className="mt-4 pt-4 border-t border-slate-200 shrink-0 font-sans">
+                            <p className="text-xs text-slate-500 mb-2 font-bold text-center uppercase tracking-wider">
+                                Gặp khó khăn khi thanh toán?
+                            </p>
+                            <div className="flex gap-2">
+                                <a 
+                                    href={FACEBOOK_LINK} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition shadow-sm"
+                                >
+                                    <Facebook className="w-4 h-4" /> Facebook
+                                </a>
+                                <a 
+                                    href={ZALO_LINK} 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 rounded-lg text-xs font-bold transition"
+                                >
+                                    <MessageCircle className="w-4 h-4" /> Zalo
+                                </a>
+                            </div>
+                        </div>
+
                     </div>
 
-{/* Cột Phải: Xử lý thanh toán */}
+                    {/* CỘT PHẢI: XỬ LÝ THANH TOÁN */}
                     <div className="flex-1 flex flex-col h-full relative bg-white">
                         {/* Header: Nút đóng */}
                         <div className="p-4 border-b border-slate-100 flex justify-end shrink-0">
@@ -311,15 +335,8 @@ export default function App() {
                                         {paypalSuccess}
                                     </div>
 
-                                    <div className="flex flex-col gap-3 w-full px-4">
-                                        <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" 
-                                            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold transition">
-                                            <Facebook className="w-5 h-5" /> Gửi qua Facebook
-                                        </a>
-                                        <a href={CONTACT_LINK} target="_blank" rel="noreferrer"
-                                            className="flex items-center justify-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 py-3 rounded-xl font-bold transition">
-                                            <MessageCircle className="w-5 h-5" /> Gửi qua Zalo
-                                        </a>
+                                    <div className="bg-blue-50 text-blue-800 text-xs p-3 rounded-lg border border-blue-100 mb-4">
+                                        Vui lòng dùng nút hỗ trợ ở cột bên trái để gửi mã cho Admin.
                                     </div>
                                 </div>
                             ) : (
@@ -353,7 +370,7 @@ export default function App() {
                                             </div>
                                         </div>
                                     ) : (
-                                        /* HIỂN THỊ NÚT PAYPAL (ĐÃ CẤU HÌNH POPUP) */
+                                        /* HIỂN THỊ NÚT PAYPAL */
                                         <div className="w-full mt-6 font-sans">
                                             <div className="mb-6 p-4 bg-blue-50 text-blue-800 text-xs rounded-xl text-left border border-blue-100 leading-relaxed shadow-sm">
                                                 <h4 className="font-bold mb-1 flex items-center gap-1">ℹ️ Hướng dẫn thanh toán thẻ:</h4>
@@ -367,7 +384,6 @@ export default function App() {
                                             <div className="relative z-0 px-4">
                                                 <PayPalButtons
                                                     key={selectedPkg.id} 
-                                                    // QUAN TRỌNG: fundingSource="paypal" buộc nó dùng nút vàng -> Mở Popup
                                                     fundingSource="paypal"
                                                     style={{ 
                                                         layout: "vertical", 
@@ -410,7 +426,7 @@ export default function App() {
                 </div>
             )}
 
-            {/* Navbar (GIỮ NGUYÊN) */}
+            {/* Navbar */}
             <nav className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
                 <div className="flex items-center gap-1.5">
@@ -429,8 +445,8 @@ export default function App() {
                 </div>
             </nav>
 
-            {/* Dashboard Main Content (GIỮ NGUYÊN) */}
-            <main className="max-w-7xl mx-auto px-4 py-10 animate-fade-in">
+            {/* Main Content */}
+            <main className="max-w-7xl mx-auto px-4 py-10 animate-fade-in pb-24">
                 <div className="mb-10 text-center sm:text-left">
                 <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-2">Xin chào, Kiến trúc sư!</h1>
                 <p className="text-slate-500 max-w-2xl text-lg">Bạn là nhà thiết kế - hãy để AI dựng hình cho bạn.</p>
@@ -534,6 +550,29 @@ export default function App() {
                 </div>
                 )}
             </main>
+
+            {/* === FLOATING SUPPORT BUTTONS (VẪN GIỮ ĐỂ TRANG CHỦ CÓ NÚT) === */}
+            <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+                <a 
+                    href={FACEBOOK_LINK} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110"
+                    title="Liên hệ Facebook"
+                >
+                    <Facebook className="w-6 h-6" />
+                </a>
+                <a 
+                    href={ZALO_LINK} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110 ring-2 ring-white"
+                    title="Liên hệ Zalo"
+                >
+                     <MessageCircle className="w-6 h-6" />
+                </a>
+            </div>
+
             </div>
         )}
     </PayPalScriptProvider>
