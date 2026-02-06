@@ -29,7 +29,7 @@ const ACCOUNT_NAME = "OPEN SKP";
 
 // --- CẤU HÌNH PAYPAL ---
 // Thay CLIENT ID thật của bạn vào đây (Lấy bên PayPal Developer -> Live)
-const PAYPAL_CLIENT_ID = "YOUR_PAYPAL_CLIENT_ID"; 
+const PAYPAL_CLIENT_ID = "ARPc_R309yq_8l2tkRJCxb6TooyNcfrF-LNN7AKv6UdlCaVSK5t6Sh8tbyS0_6hlq5lCfORUVhwXJ1Wn"; 
 
 // --- CẤU HÌNH CÁC GÓI CREDITS (VNĐ) ---
 const PACKAGES_VND = [
