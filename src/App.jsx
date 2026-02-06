@@ -286,19 +286,22 @@ export default function App() {
                         </div>
                     </div>
 
-                    {/* Cột Phải: Xử lý thanh toán */}
-                    <div className="flex-1 flex flex-col">
-                        <div className="p-4 border-b border-slate-100 flex justify-end">
+{/* Cột Phải: Xử lý thanh toán */}
+                    <div className="flex-1 flex flex-col h-full relative">
+                        {/* Header của cột phải: Nút đóng */}
+                        <div className="p-4 border-b border-slate-100 flex justify-end shrink-0 z-20 bg-white">
                             <button onClick={() => setShowPayment(false)} className="p-1 hover:bg-slate-200 rounded-full transition text-slate-500">
                                 <X className="w-6 h-6"/>
                             </button>
                         </div>
 
-                        <div className="p-6 text-center flex-1 flex flex-col items-center justify-center">
+                        {/* Nội dung chính: Đã thêm overflow-y-auto để cuộn được */}
+                        <div className="p-6 text-center flex-1 overflow-y-auto custom-scrollbar">
+                            <div className="flex flex-col items-center justify-start min-h-full pb-10">
                             
                             {/* CASE 1: PayPal Thành Công */}
                             {paypalSuccess ? (
-                                <div className="animate-fade-in w-full font-sans">
+                                <div className="animate-fade-in w-full font-sans mt-10">
                                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <CheckCircle2 className="w-10 h-10" />
                                     </div>
@@ -322,7 +325,7 @@ export default function App() {
                                 </div>
                             ) : (
                                 /* CASE 2: Đang chờ thanh toán */
-                                <>
+                                <div className="w-full">
                                     <p className="text-slate-600 mb-2 font-sans text-sm">
                                         Thanh toán gói <br/>
                                         <span className="font-bold text-blue-600 text-lg">{selectedPkg.credits} Credits</span>
@@ -330,7 +333,7 @@ export default function App() {
                                     
                                     {paymentMethod === 'VND' ? (
                                         /* HIỂN THỊ MÃ QR VIETQR (LOGIC GỐC) */
-                                        <>
+                                        <div className="flex flex-col items-center mt-4">
                                             <div className="border-2 border-blue-100 rounded-xl p-2 inline-block mb-4 shadow-inner bg-white relative">
                                                 <img 
                                                     key={selectedPkg.id} 
@@ -349,38 +352,48 @@ export default function App() {
                                             <div className="mt-4 bg-yellow-50 text-yellow-800 px-4 py-2 rounded-lg text-xs border border-yellow-100">
                                                 Hệ thống tự động cộng Credits sau 10-30 giây.
                                             </div>
-                                        </>
+                                        </div>
                                     ) : (
-                                        /* HIỂN THỊ NÚT PAYPAL (MỚI) */
-                                        <div className="w-full px-4 mt-2 font-sans">
+                                        /* HIỂN THỊ NÚT PAYPAL (ĐÃ FIX LỖI BỐ CỤC) */
+                                        <div className="w-full px-1 mt-4 font-sans pb-8">
                                             <div className="mb-4 p-3 bg-blue-50 text-blue-800 text-xs rounded-lg text-left border border-blue-100">
-                                                ℹ️ <strong>Lưu ý:</strong> Sau khi thanh toán thành công, vui lòng gửi mã giao dịch cho Admin để kích hoạt.
+                                                ℹ️ <strong>Lưu ý:</strong> Nếu form thẻ quá dài, hãy cuộn xuống để thấy nút thanh toán.
                                             </div>
-                                            <PayPalButtons
-                                                key={selectedPkg.id} 
-                                                style={{ layout: "vertical", shape: "rect", label: "paypal" }}
-                                                createOrder={(data, actions) => {
-                                                    return actions.order.create({
-                                                        purchase_units: [{
-                                                            description: `${selectedPkg.credits} Credits - OSKP`,
-                                                            amount: { value: selectedPkg.price.toString() }
-                                                        }]
-                                                    });
-                                                }}
-                                                onApprove={async (data, actions) => {
-                                                    const order = await actions.order.capture();
-                                                    console.log("PayPal Success:", order);
-                                                    setPaypalSuccess(order.id); // Chuyển sang màn hình thông báo thành công
-                                                }}
-                                                onError={(err) => {
-                                                    console.error("PayPal Error:", err);
-                                                    alert("Thanh toán thất bại hoặc đã bị hủy.");
-                                                }}
-                                            />
+                                            
+                                            {/* Container chứa nút PayPal */}
+                                            <div className="relative z-0">
+                                                <PayPalButtons
+                                                    key={selectedPkg.id} 
+                                                    style={{ 
+                                                        layout: "vertical", 
+                                                        shape: "rect", 
+                                                        label: "paypal",
+                                                        height: 48 // Cố định chiều cao nút chính để đẹp hơn
+                                                    }}
+                                                    createOrder={(data, actions) => {
+                                                        return actions.order.create({
+                                                            purchase_units: [{
+                                                                description: `${selectedPkg.credits} Credits - OSKP`,
+                                                                amount: { value: selectedPkg.price.toString() }
+                                                            }]
+                                                        });
+                                                    }}
+                                                    onApprove={async (data, actions) => {
+                                                        const order = await actions.order.capture();
+                                                        console.log("PayPal Success:", order);
+                                                        setPaypalSuccess(order.id); 
+                                                    }}
+                                                    onError={(err) => {
+                                                        console.error("PayPal Error:", err);
+                                                        alert("Thanh toán thất bại hoặc đã bị hủy.");
+                                                    }}
+                                                />
+                                            </div>
                                         </div>
                                     )}
-                                </>
+                                </div>
                             )}
+                            </div>
                         </div>
                     </div>
 
