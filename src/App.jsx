@@ -287,21 +287,20 @@ export default function App() {
                     </div>
 
 {/* Cột Phải: Xử lý thanh toán */}
-                    <div className="flex-1 flex flex-col h-full relative">
-                        {/* Header của cột phải: Nút đóng */}
-                        <div className="p-4 border-b border-slate-100 flex justify-end shrink-0 z-20 bg-white">
+                    <div className="flex-1 flex flex-col h-full relative bg-white">
+                        {/* Header: Nút đóng */}
+                        <div className="p-4 border-b border-slate-100 flex justify-end shrink-0">
                             <button onClick={() => setShowPayment(false)} className="p-1 hover:bg-slate-200 rounded-full transition text-slate-500">
                                 <X className="w-6 h-6"/>
                             </button>
                         </div>
 
-                        {/* Nội dung chính: Đã thêm overflow-y-auto để cuộn được */}
-                        <div className="p-6 text-center flex-1 overflow-y-auto custom-scrollbar">
-                            <div className="flex flex-col items-center justify-start min-h-full pb-10">
+                        {/* Nội dung chính */}
+                        <div className="p-6 text-center flex-1 overflow-y-auto custom-scrollbar flex flex-col items-center">
                             
                             {/* CASE 1: PayPal Thành Công */}
                             {paypalSuccess ? (
-                                <div className="animate-fade-in w-full font-sans mt-10">
+                                <div className="animate-fade-in w-full font-sans mt-4">
                                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <CheckCircle2 className="w-10 h-10" />
                                     </div>
@@ -325,14 +324,14 @@ export default function App() {
                                 </div>
                             ) : (
                                 /* CASE 2: Đang chờ thanh toán */
-                                <div className="w-full">
+                                <div className="w-full max-w-sm mx-auto">
                                     <p className="text-slate-600 mb-2 font-sans text-sm">
                                         Thanh toán gói <br/>
                                         <span className="font-bold text-blue-600 text-lg">{selectedPkg.credits} Credits</span>
                                     </p>
                                     
                                     {paymentMethod === 'VND' ? (
-                                        /* HIỂN THỊ MÃ QR VIETQR (LOGIC GỐC) */
+                                        /* HIỂN THỊ MÃ QR VIETQR */
                                         <div className="flex flex-col items-center mt-4">
                                             <div className="border-2 border-blue-100 rounded-xl p-2 inline-block mb-4 shadow-inner bg-white relative">
                                                 <img 
@@ -354,21 +353,28 @@ export default function App() {
                                             </div>
                                         </div>
                                     ) : (
-                                        /* HIỂN THỊ NÚT PAYPAL (ĐÃ FIX LỖI BỐ CỤC) */
-                                        <div className="w-full px-1 mt-4 font-sans pb-8">
-                                            <div className="mb-4 p-3 bg-blue-50 text-blue-800 text-xs rounded-lg text-left border border-blue-100">
-                                                ℹ️ <strong>Lưu ý:</strong> Nếu form thẻ quá dài, hãy cuộn xuống để thấy nút thanh toán.
+                                        /* HIỂN THỊ NÚT PAYPAL (ĐÃ CẤU HÌNH POPUP) */
+                                        <div className="w-full mt-6 font-sans">
+                                            <div className="mb-6 p-4 bg-blue-50 text-blue-800 text-xs rounded-xl text-left border border-blue-100 leading-relaxed shadow-sm">
+                                                <h4 className="font-bold mb-1 flex items-center gap-1">ℹ️ Hướng dẫn thanh toán thẻ:</h4>
+                                                <ul className="list-disc pl-4 space-y-1">
+                                                    <li>Bấm vào nút <strong>PayPal</strong> màu vàng bên dưới.</li>
+                                                    <li>Một cửa sổ bảo mật mới sẽ hiện ra.</li>
+                                                    <li>Chọn <strong>"Pay with Debit or Credit Card"</strong> trong cửa sổ đó để nhập thẻ.</li>
+                                                </ul>
                                             </div>
                                             
-                                            {/* Container chứa nút PayPal */}
-                                            <div className="relative z-0">
+                                            <div className="relative z-0 px-4">
                                                 <PayPalButtons
                                                     key={selectedPkg.id} 
+                                                    // QUAN TRỌNG: fundingSource="paypal" buộc nó dùng nút vàng -> Mở Popup
+                                                    fundingSource="paypal"
                                                     style={{ 
                                                         layout: "vertical", 
+                                                        color: "gold",
                                                         shape: "rect", 
-                                                        label: "paypal",
-                                                        height: 48 // Cố định chiều cao nút chính để đẹp hơn
+                                                        label: "checkout",
+                                                        height: 50
                                                     }}
                                                     createOrder={(data, actions) => {
                                                         return actions.order.create({
@@ -385,15 +391,18 @@ export default function App() {
                                                     }}
                                                     onError={(err) => {
                                                         console.error("PayPal Error:", err);
-                                                        alert("Thanh toán thất bại hoặc đã bị hủy.");
+                                                        alert("Giao dịch bị hủy hoặc lỗi kết nối.");
                                                     }}
                                                 />
                                             </div>
+                                            
+                                            <p className="text-[10px] text-slate-400 mt-4 text-center">
+                                                Giao dịch được bảo mật bởi PayPal quốc tế.
+                                            </p>
                                         </div>
                                     )}
                                 </div>
                             )}
-                            </div>
                         </div>
                     </div>
 
