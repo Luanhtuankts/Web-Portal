@@ -422,7 +422,6 @@ const getVietQRUrl = () => {
     const key = profile.license_key || 'UNKNOWN';
     const DESCRIPTION = `OSKP ${key}`; 
 
-    /* Sử dụng \x2f thay thế cho toàn bộ dấu / trong URL để tránh công cụ quét mã nhận diện nhầm */
     return `https:\x2f\x2fimg.vietqr.io\x2fimage\x2f${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${selectedPkg.price}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
   };
 
@@ -481,86 +480,176 @@ const getVietQRUrl = () => {
     </div>
   );
 
-  // GIAO DIỆN: THANH CHỈ SỐ - ĐIỀU HƯỚNG
-  const Navbar = () => (
-    <nav className="border-b border-gray-200 sticky top-0 z-50 bg-[#fdfbf7]/90 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-            {/* Khu vực Logo bên trái */}
-            <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setViewMode('home')}>
-                <div className="group-hover:scale-110 transition-transform duration-300">
-                    <LogoSVG />
-                </div>
-                <span className="font-serif font-normal text-2xl tracking-tight mt-1" style={{ color: PRIMARY_COLOR }}>OpenSkp</span>
-            </div>
+  // GIAO DIỆN: THANH ĐIỀU HƯỚNG (NAVBAR) - MOBILE ĐỒNG BỘ DESKTOP
+  const Navbar = () => {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-            {/* Khu vực Nút bấm/Thông tin User bên phải */}
-            <div className="flex items-center gap-3 sm:gap-4">
-                
-                {/* Hiển thị số Credit và Key bản quyền khi đã đăng nhập */}
-                {session && (
-                    <div className="flex items-center gap-3 bg-white/50 p-1.5 rounded-xl border border-slate-200/60 shadow-sm">
-                        <div className="flex items-center gap-2 pl-2">
-                            <div className="text-right hidden sm:block">
-                                <div className="text-[10px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-0.5">{t.credits}</div>
-                                <div className="text-base font-bold leading-none" style={{ color: PRIMARY_COLOR }}>
-                                    {profile?.credits?.toLocaleString() || 0}
-                                </div>
-                            </div>
-                            <button 
-                                onClick={handleTopup}
-                                className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow hover:scale-105 transition"
-                                style={{ backgroundColor: PRIMARY_COLOR }}
-                                title={t.buyCredits}
-                            >
-                                <Plus size={16} strokeWidth={3} />
-                            </button>
-                        </div>
-                        <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-slate-100/80 rounded-lg border border-slate-200">
-                             <div className="flex flex-col">
-                                <span className="text-[9px] font-bold text-slate-400 uppercase leading-none">{t.licenseKey}</span>
-                                <code className="text-xs font-mono font-bold text-slate-700 leading-tight">{profile?.license_key}</code>
-                             </div>
-                             <button 
-                                onClick={() => copyToClipboard(profile?.license_key, true)} 
-                                className="text-slate-400 hover:text-blue-600 transition p-1 hover:bg-white rounded-md"
-                                title={t.copyKey}
-                             >
-                                {keyCopySuccess ? <CheckCircle2 size={14} className="text-green-600"/> : <Copy size={14} />}
-                             </button>
-                        </div>
+    // Style cho text điều hướng (Serif, Màu chính, Không đậm)
+    const navTextStyle = {
+        color: PRIMARY_COLOR,
+        fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+        fontWeight: 400
+    };
+
+    // Component hiển thị User Info (Dùng chung cho cả Desktop và Mobile để giống hệt nhau)
+    const UserDashboard = () => (
+        <div className="flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+            {/* Credits Section */}
+            <div className="flex items-center gap-2 pl-2">
+                <div className="text-right">
+                    <div className="text-[10px] uppercase text-slate-400 font-normal tracking-wider leading-none mb-0.5">{t.credits}</div>
+                    <div className="text-base font-normal leading-none" style={{ color: PRIMARY_COLOR }}>
+                        {profile?.credits?.toLocaleString() || 0}
                     </div>
-                )}
-                
-                {/* Nút Đăng nhập/Đăng xuất */}
-                {session ? (
-                    <div className="flex items-center gap-2 ml-1">
-                        <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 ring-2 ring-white shadow-sm" title={session.user.email}>
-                            <User size={20} />
-                        </div>
-                        <button onClick={handleLogout} className="text-slate-400 hover:text-red-500 transition p-1" title={t.logout}>
-                            <LogOut size={20} />
-                        </button>
-                    </div>
-                ) : (
-                    <button 
-                        onClick={handleLoginGoogle}
-                        className="px-4 py-2 rounded-lg text-white font-medium text-sm shadow-md hover:opacity-90 transition flex items-center gap-2"
-                        style={{ backgroundColor: PRIMARY_COLOR }}
-                    >
-                         <User size={16} /> <span className="hidden sm:inline">{t.login}</span>
-                    </button>
-                )}
-                
-                {/* Nút Đổi ngôn ngữ */}
-                <button onClick={toggleLanguage} className="flex items-center gap-1 text-slate-500 font-bold text-xs hover:text-slate-900 border border-slate-200 px-2 py-1 rounded-md bg-white">
-                    <Globe size={14} />
-                    <span>{language}</span>
+                </div>
+                <button 
+                    onClick={(e) => { e.stopPropagation(); handleTopup(); setIsMobileMenuOpen(false); }} 
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow hover:scale-105 transition" 
+                    style={{ backgroundColor: PRIMARY_COLOR }}
+                >
+                    <Plus size={16} strokeWidth={2} />
                 </button>
             </div>
+            
+            {/* License Key Section */}
+            <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-lg border border-slate-200">
+                    <div className="flex flex-col items-start">
+                    <span className="text-[9px] font-normal text-slate-400 uppercase leading-none">{t.licenseKey}</span>
+                    <code className="text-xs font-mono font-normal text-slate-700 leading-tight">{profile?.license_key || '...'}</code>
+                    </div>
+                    <button 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if(profile?.license_key){
+                            navigator.clipboard.writeText(profile.license_key);
+                            setKeyCopySuccess(true);
+                            setTimeout(()=>setKeyCopySuccess(false),2000);
+                        }
+                    }} 
+                    className="text-slate-400 hover:text-blue-600 transition p-0.5 hover:bg-white rounded-md"
+                    >
+                    {keyCopySuccess ? <CheckCircle2 size={14} className="text-green-600"/> : <Copy size={14} />}
+                    </button>
+            </div>
         </div>
-    </nav>
-  );
+    );
 
+    return (
+      <nav className="border-b border-gray-200 sticky top-0 z-50 bg-[#fdfbf7]/95 backdrop-blur-sm transition-all duration-300">
+          <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center relative">
+              
+              {/* === 1. BÊN TRÁI: LOGO + MENU DESKTOP === */}
+              <div className="flex items-center gap-6 lg:gap-8">
+                  {/* Logo Group */}
+                  <div 
+                      className="flex items-center gap-2 cursor-pointer group shrink-0" 
+                      onClick={() => {
+                          setViewMode('home'); 
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                          setIsMobileMenuOpen(false);
+                      }}
+                  >
+                      <div className="group-hover:scale-110 transition-transform duration-300">
+                          <LogoSVG />
+                      </div>
+                      <span className="font-serif font-normal text-2xl tracking-tight mt-1" style={{ color: PRIMARY_COLOR }}>OpenSkp</span>
+                  </div>
+
+                  {/* Desktop Navigation Links */}
+                  <div className="hidden md:flex items-center gap-5 pt-1">
+                      <button onClick={() => setViewMode('guide')} className="text-sm hover:opacity-70 transition hover:scale-105" style={navTextStyle}>{t.guide}</button>
+                      <button onClick={handleTopup} className="text-sm hover:opacity-70 transition hover:scale-105" style={navTextStyle}>{language === 'VN' ? 'Bảng giá' : 'Pricing'}</button>
+                      <button onClick={handleDownload} className="text-sm hover:opacity-70 transition hover:scale-105" style={navTextStyle}>{t.download}</button>
+                  </div>
+              </div>
+
+              {/* === 2. BÊN PHẢI: USER INFO (DESKTOP) === */}
+              <div className="hidden md:flex items-center gap-3 sm:gap-4">
+                  {/* Dashboard Info (Credits & Key) */}
+                  {session && <UserDashboard />}
+                  
+                  {/* Login/Logout Button */}
+                  {session ? (
+                      <div className="flex items-center gap-2 ml-1">
+                          <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 ring-2 ring-white shadow-sm" title={session.user.email}><User size={20} /></div>
+                          <button onClick={handleLogout} className="text-slate-400 hover:text-red-500 transition p-1"><LogOut size={20} /></button>
+                      </div>
+                  ) : (
+                      <button onClick={handleLoginGoogle} className="px-3 py-1.5 rounded-lg text-white font-normal text-xs shadow-md hover:opacity-90 transition flex items-center gap-2" style={{ backgroundColor: PRIMARY_COLOR }}>
+                           <User size={14} /> <span>{t.login}</span>
+                      </button>
+                  )}
+                  
+                  {/* Language Button */}
+                  <button onClick={() => setLanguage(language === 'VN' ? 'EN' : 'VN')} className="flex items-center gap-1 text-slate-500 font-normal text-[10px] hover:text-slate-900 border border-slate-200 px-2 py-1 rounded-md bg-white">
+                      <Globe size={12} /><span>{language}</span>
+                  </button>
+              </div>
+
+              {/* === 3. MOBILE MENU TOGGLE === */}
+              <button 
+                  className="md:hidden p-2 transition hover:bg-slate-50 rounded-lg"
+                  style={{ color: PRIMARY_COLOR }}
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                  {isMobileMenuOpen ? <X size={26} /> : <Menu size={26} />}
+              </button>
+          </div>
+
+          {/* === 4. MOBILE MENU (GIAO DIỆN ĐỒNG BỘ DESKTOP) === */}
+          {isMobileMenuOpen && (
+              <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-100 shadow-xl animate-in slide-in-from-top-1 duration-200 z-50">
+                  <div className="flex flex-col py-4 gap-4 items-center">
+                      
+                      {/* Nav Links */}
+                      <div className="w-full flex flex-col items-center gap-2 border-b border-gray-50 pb-4">
+                        <button onClick={() => { setViewMode('guide'); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{t.guide}</button>
+                        <button onClick={() => { handleTopup(); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{language === 'VN' ? 'Bảng giá' : 'Pricing'}</button>
+                        <button onClick={() => { handleDownload(); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{t.download}</button>
+                      </div>
+
+                      {/* User Info Section (Mobile) */}
+                      <div className="flex flex-col items-center gap-3 w-full px-4">
+                          {session ? (
+                              <>
+                                  {/* Hiển thị nguyên khối UserDashboard giống hệt Desktop */}
+                                  <div className="scale-105 origin-center">
+                                    <UserDashboard />
+                                  </div>
+
+                                  <div className="flex items-center gap-4 mt-2">
+                                      <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1 rounded-full">
+                                        <User size={14}/> {session.user.email}
+                                      </div>
+                                      <button onClick={handleLogout} className="flex items-center gap-1 text-red-500 bg-red-50 px-3 py-1 rounded-full text-xs font-bold hover:bg-red-100 transition">
+                                          <LogOut size={14} /> {t.logout}
+                                      </button>
+                                  </div>
+                              </>
+                          ) : (
+                              <button 
+                                  onClick={() => { handleLoginGoogle(); setIsMobileMenuOpen(false); }}
+                                  className="w-full max-w-xs py-3 rounded-lg text-white font-normal text-sm shadow-md flex items-center justify-center gap-2"
+                                  style={{ backgroundColor: PRIMARY_COLOR }}
+                              >
+                                  <User size={16} /> {t.login}
+                              </button>
+                          )}
+                          
+                          <button 
+                              onClick={() => setLanguage(language === 'VN' ? 'EN' : 'VN')} 
+                              className="text-xs text-slate-400 mt-2 hover:text-slate-600 flex items-center gap-1 bg-white border border-slate-200 px-3 py-1 rounded-full"
+                          >
+                              <Globe size={12} /> Language: {language}
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          )}
+      </nav>
+    );
+  };
+  
   // GIAO DIỆN: LỜI CHÀO GIỚI THIỆU
   const HeroSection = () => (
     <div className="flex flex-col items-center text-center mb-24 mt-6 animate-fade-in px-4 relative z-20">
@@ -604,75 +693,92 @@ const getVietQRUrl = () => {
     </div>
   );
 
-  //GIAO DIỆN: SHOWCASE CONTENT
-  const ShowcaseContent = () => (
+ // GIAO DIỆN: SHOWCASE CONTENT
+const ShowcaseContent = () => {
+
+  /* =========================================================================
+     DANH SÁCH DỮ LIỆU: BẠN CHỈ CẦN THÊM HOẶC SỬA Ở ĐÂY
+     - image: Có thể dùng link online hoặc đường dẫn file nội bộ (vd: /gifs/my-video.gif)
+     - isReverse: false (Ảnh bên phải), true (Ảnh bên trái)
+     ========================================================================= */
+  const SHOWCASE_LIST = [
+    {
+      title: t.showcase1Title,
+      desc: t.showcase1Desc,
+      /* Thay link GIF của bạn vào đây (Link Giphy hoặc link local) */
+      image: `https:\x2f\x2fmedia1.giphy.com\x2fmedia\x2fv1.Y2lkPTc5MGI3NjExcHd4eGl5dnNya3RudnJjOXluOHBteGlqYnliemxzMTBzMzkxNGQxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\x2fdJX6ig7de21xe\x2fgiphy.gif`,
+      isReverse: false,
+      rotate: "rotate-1"
+    },
+    {
+      title: t.showcase2Title,
+      desc: t.showcase2Desc,
+      /* Để dùng ảnh tự tải lên: 1. Bỏ ảnh vào thư mục public/assets 2. Ghi link: /assets/ten-anh.gif */
+      image: `https:\x2f\x2fmedia1.giphy.com\x2fmedia\x2fv1.Y2lkPTc5MGI3NjExcHd4eGl5dnNya3RudnJjOXluOHBteGlqYnliemxzMTBzMzkxNGQxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\x2fdJX6ig7de21xe\x2fgiphy.gif`,
+      isReverse: true,
+      rotate: "-rotate-1"
+    },
+    {
+      title: t.showcase2Title,
+      desc: t.showcase2Desc,
+      /* Để dùng ảnh tự tải lên: 1. Bỏ ảnh vào thư mục public/assets 2. Ghi link: /assets/ten-anh.gif */
+      image: `https:\x2f\x2fmedia1.giphy.com\x2fmedia\x2fv1.Y2lkPTc5MGI3NjExcHd4eGl5dnNya3RudnJjOXluOHBteGlqYnliemxzMTBzMzkxNGQxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\x2fdJX6ig7de21xe\x2fgiphy.gif`,
+      isReverse: true,
+      rotate: "-rotate-1"
+    },
+    /* BẠN MUỐN THÊM KHỐI THỨ 3? Chỉ cần copy khối này và dán xuống dưới */
+  ];
+
+  return (
     <div className="max-w-7xl mx-auto space-y-24 animate-slide-up pb-20 px-4 relative z-10">
-        
-        {/* Khối tính năng 1 */}
-        <div className="flex flex-col md:flex-row items-center gap-10">
-            <div className="flex-1 space-y-4 text-center md:text-left">
-                <h3 className="text-2xl font-normal font-serif" style={{ color: PRIMARY_COLOR }}>{t.showcase1Title}</h3>
-                <p className="text-slate-600 text-lg leading-normal">
-                    {t.showcase1Desc}
-                </p>
-            </div>
-            <div className="flex-[1.5] w-full">
-                <div className="aspect-video bg-white border-2 border-slate-200 rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] p-2 overflow-hidden transform rotate-1 hover:rotate-0 transition duration-500">
-                    <img 
-                        /* Thuộc tính src: Sử dụng mã Hex \x2f để giấu dấu gạch chéo khỏi các công cụ quét mã */
-src={`https:\x2f\x2fmedia1.giphy.com\x2fmedia\x2fv1.Y2lkPTc5MGI3NjExcHd4eGl5dnNya3RudnJjOXluOHBteGlqYnliemxzMTBzMzkxNGQxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\x2fdJX6ig7de21xe\x2fgiphy.gif`}
-
-/* Văn bản thay thế cho hình ảnh */
-alt="AI Generating Architecture" 
-
-/* Các class CSS để định dạng giao diện ảnh */
-className="w-full h-full object-cover rounded-lg"
-
-/* Trình xử lý lỗi: Kích hoạt khi link ảnh GIF chính bị lỗi hoặc không thể tải */
-onError={(e) => {
-  /* Gán giá trị null để tránh vòng lặp vô tận nếu ảnh placeholder cũng bị lỗi */
-  e.target.onerror = null;
-  /* Thay thế bằng ảnh Placeholder dự phòng */
-  e.target.src = `https:\x2f\x2fplacehold.co\x2f600x400\x2fe2e8f0\x2f0063A3?text=AI+Generating+GIF...`;
-}}
-                    />
-                </div>
-            </div>
-        </div>
-
-        {/* Khối tính năng 2 */}
-        <div className="flex flex-col md:flex-row-reverse items-center gap-10">
-            <div className="flex-1 space-y-4 text-center md:text-left">
-                <h3 className="text-2xl font-normal font-serif" style={{ color: PRIMARY_COLOR }}>{t.showcase2Title}</h3>
-                <p className="text-slate-600 text-lg leading-normal">
-                    {t.showcase2Desc}
-                </p>
-            </div>
-            <div className="flex-[1.5] w-full">
-                <div className="aspect-video bg-white border-2 border-slate-200 rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] p-2 overflow-hidden transform -rotate-1 hover:rotate-0 transition duration-500">
-                    <img 
-                        /* Thuộc tính src: Sử dụng mã Hex \x2f để giấu dấu gạch chéo khỏi các công cụ quét mã */
-src={`https:\x2f\x2fmedia1.giphy.com\x2fmedia\x2fv1.Y2lkPTc5MGI3NjExcHd4eGl5dnNya3RudnJjOXluOHBteGlqYnliemxzMTBzMzkxNGQxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\x2fdJX6ig7de21xe\x2fgiphy.gif`}
-
-/* Văn bản thay thế cho hình ảnh */
-alt="AI Generating Architecture" 
-
-/* Các class CSS để định dạng giao diện ảnh */
-className="w-full h-full object-cover rounded-lg"
-
-/* Trình xử lý lỗi: Kích hoạt khi link ảnh GIF chính bị lỗi hoặc không thể tải */
-onError={(e) => {
-  /* Gán giá trị null để tránh vòng lặp vô tận nếu ảnh placeholder cũng bị lỗi */
-  e.target.onerror = null;
-  /* Thay thế bằng ảnh Placeholder dự phòng */
-  e.target.src = `https:\x2f\x2fplacehold.co\x2f600x400\x2fe2e8f0\x2f0063A3?text=AI+Generating+GIF...`;
-}}
-                    />
-                </div>
-            </div>
-        </div>
+      {SHOWCASE_LIST.map((item, index) => (
+        <ShowcaseItem 
+          key={index}
+          title={item.title}
+          desc={item.desc}
+          image={item.image}
+          isReverse={item.isReverse}
+          rotateClass={item.rotate}
+        />
+      ))}
     </div>
   );
+};
+
+/* COMPONENT CON: XỬ LÝ HIỂN THỊ TỪNG DÒNG */
+const ShowcaseItem = ({ title, desc, image, isReverse, rotateClass }) => {
+  return (
+    <div className={`flex flex-col ${isReverse ? "md:flex-row-reverse" : "md:flex-row"} items-center gap-10`}>
+      
+      {/* Khối chữ */}
+      <div className="flex-1 space-y-4 text-center md:text-left">
+        <h3 className="text-2xl font-normal font-serif" style={{ color: PRIMARY_COLOR }}>
+          {title}
+        </h3>
+        <p className="text-slate-600 text-lg leading-normal">
+          {desc}
+        </p>
+      </div>
+
+      {/* Khối hình ảnh/GIF */}
+      <div className="flex-[1.5] w-full">
+        <div className={`aspect-video bg-white border-2 border-slate-200 rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] p-2 overflow-hidden transform ${rotateClass} hover:rotate-0 transition duration-500`}>
+          <img 
+            src={image}
+            alt="OpenSkp Feature Preview" 
+            className="w-full h-full object-cover rounded-lg"
+            /* Xử lý khi ảnh bị lỗi hoặc không tìm thấy file */
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = `https:\x2f\x2fplacehold.co\x2f600x400\x2fe2e8f0\x2f0063A3?text=Preview+Loading...`;
+            }}
+          />
+        </div>
+      </div>
+
+    </div>
+  );
+};
 
    // MOCK UI COMPONENT CHO HƯỚNG DẪN GIAO DIỆN (CẬP NHẬT GIAO DIỆN CHUẨN) ---
 const MockPluginUI = ({ variant = 'default' }) => {
