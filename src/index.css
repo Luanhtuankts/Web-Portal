@@ -1,15 +1,56 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=Mali:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Thiết lập font và màu nền sáng */
-body {
-  margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc; /* Màu trắng xám nhẹ (Slate-50) dễ chịu */
-  color: #0f172a; /* Chữ màu đen xanh đậm (Slate-900) dễ đọc */
+
+@layer base {
+  :root {
+    --primary-brand: #0063A3;
+    --bg-site: #fdfbf7;
+  }
+
+  body {
+    margin: 0;
+    /* Font Mali cho toàn bộ nội dung web */
+    font-family: 'Mali', cursive;
+    background-color: var(--bg-site);
+    color: #1e293b; /* Slate-800 để chữ trông mềm mại hơn đen thuần */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Thiết lập font cho tiêu đề và logo */
+  h1, h2, h3, h4, .font-heading, .logo {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 400; /* font-normal theo yêu cầu của bạn */
+    line-height: 1.2;
+  }
+
+  /* Utility cho số liệu: rõ ràng và thẳng hàng */
+  h5, .number {
+    font-family:  system-ui, sans-serif, 'Inter'; 
+    font-variant-numeric: tabular-nums; /* Giúp các chữ số thẳng hàng trong bảng */
+    font-weight: 400;
+    line-height: 1.5;
+  }
+}
+
+@layer utilities {
+  .text-primary-brand {
+    color: var(--primary-brand);
+  }
+  
+  .bg-primary-brand {
+    background-color: var(--primary-brand);
+  }
+
+  /* Animation giữ nguyên như cũ của bạn */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
 }
 
 @keyframes fadeIn {
@@ -17,6 +58,8 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+/* Tùy chỉnh màu khi bôi đen văn bản cho đúng màu thương hiệu */
+::selection {
+  background-color: #0063A3;
+  color: white;
 }
