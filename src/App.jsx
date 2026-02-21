@@ -1254,15 +1254,23 @@ const GuideContent = () => {
                                         Flash Mode
                                     </h3>
                                 </div>
-                                <h5 className="text-slate-600 leading-relaxed mb-6 max-w-3xl text-justify text-justify">
+                                <h5 className="text-slate-600 leading-relaxed mb-6 max-w-3xl text-justify">
                                     {t.guideFlashDetail || "Chế độ tốc độ cao dành cho việc phác thảo ý tưởng nhanh..."}
                                 </h5>
-                                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm flex items-center justify-center relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-50"></div>
-                                    <div className="z-10 text-center">
-                                        <span className="text-slate-400 text-sm font-medium italic">[ Animation: Flash Mode ]</span>
-                                    </div>
+                                
+                                {/* ĐÃ SỬA: Dùng thẻ Video với các thuộc tính để chạy lặp như ảnh GIF */}
+                                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm relative overflow-hidden pointer-events-none">
+                                    <video 
+                                        autoPlay 
+                                        loop 
+                                        muted 
+                                        playsInline
+                                        className="w-full h-full object-cover"
+                                    >
+                                        <source src="/210226.mp4" type="video/mp4" />
+                                    </video>
                                 </div>
+
                                 <h5 className="mt-3 text-center text-sm text-slate-500 italic">
                                     {t.editFeature1Caption}
                                 </h5>
