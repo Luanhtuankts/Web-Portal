@@ -59,7 +59,7 @@ const TRANSLATIONS = {
     download: "Tải Plugin",
     guide: "Hướng dẫn",
     backHome: "Quay lại Trang chủ",
-    showcase1Title: "\"Vẽ một cái bàn 1mx2m...\"",
+    showcase1Title: "\"Vẽ 1 khoang tủ bếp dài 4m, đầy đủ thiết bị...\"",
     showcase1Desc: "Chỉ cần nhập lệnh, OpenSKP sẽ tự động tạo mô hình 3D chi tiết ngay trong SketchUp. Không cần dựng hình thủ công tốn thời gian.",
     showcase2Title: "Tùy chỉnh không giới hạn",
     showcase2Desc: "Thay đổi vật liệu, kích thước và kiểu dáng chỉ với vài cú click chuột. Công cụ hỗ trợ đắc lực cho việc lên concept nhanh chóng.",
@@ -762,36 +762,32 @@ const HeroSection = () => (
 const ShowcaseContent = () => {
 
   /* =========================================================================
-     DANH SÁCH DỮ LIỆU: BẠN CHỈ CẦN THÊM HOẶC SỬA Ở ĐÂY
-     - image: Có thể dùng link online hoặc đường dẫn file nội bộ (vd: /gifs/my-video.gif)
-     - isReverse: false (Ảnh bên phải), true (Ảnh bên trái)
+     DANH SÁCH DỮ LIỆU DÙNG VIDEO LẶP (MP4)
+     - video: Đường dẫn file video (vd: /0221.mp4 - file đặt trong thư mục public)
+     - isReverse: false (Video bên phải), true (Video bên trái)
      ========================================================================= */
   const SHOWCASE_LIST = [
     {
       title: t.showcase1Title,
       desc: t.showcase1Desc,
-      /* Thay link GIF của bạn vào đây (Link Giphy hoặc link local) */
-      image: `https:\x2f\x2fmedia1.giphy.com\x2fmedia\x2fv1.Y2lkPTc5MGI3NjExcHd4eGl5dnNya3RudnJjOXluOHBteGlqYnliemxzMTBzMzkxNGQxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\x2fdJX6ig7de21xe\x2fgiphy.gif`,
+      video: "/210226.3.mp4", // Thay bằng tên file video số 1 của bạn
       isReverse: false,
       rotate: "rotate-1"
     },
     {
       title: t.showcase2Title,
       desc: t.showcase2Desc,
-      /* Để dùng ảnh tự tải lên: 1. Bỏ ảnh vào thư mục public/assets 2. Ghi link: /assets/ten-anh.gif */
-      image: `https:\x2f\x2fmedia1.giphy.com\x2fmedia\x2fv1.Y2lkPTc5MGI3NjExcHd4eGl5dnNya3RudnJjOXluOHBteGlqYnliemxzMTBzMzkxNGQxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\x2fdJX6ig7de21xe\x2fgiphy.gif`,
+      video: "/210226.mp4", // Thay bằng tên file video số 2 của bạn
       isReverse: true,
       rotate: "-rotate-1"
     },
     {
-      title: t.showcase2Title,
-      desc: t.showcase2Desc,
-      /* Để dùng ảnh tự tải lên: 1. Bỏ ảnh vào thư mục public/assets 2. Ghi link: /assets/ten-anh.gif */
-      image: `https:\x2f\x2fmedia1.giphy.com\x2fmedia\x2fv1.Y2lkPTc5MGI3NjExcHd4eGl5dnNya3RudnJjOXluOHBteGlqYnliemxzMTBzMzkxNGQxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw\x2fdJX6ig7de21xe\x2fgiphy.gif`,
-      isReverse: true,
-      rotate: "-rotate-1"
-    },
-    /* BẠN MUỐN THÊM KHỐI THỨ 3? Chỉ cần copy khối này và dán xuống dưới */
+      title: t.showcase3Title, // Đã sửa lại thành title 3 cho chuẩn
+      desc: t.showcase3Desc,
+      video: "/210226.2.mp4", // Thay bằng tên file video số 3 của bạn
+      isReverse: false, // Để false cho so le với cái số 2
+      rotate: "rotate-1"
+    }
   ];
 
   return (
@@ -801,7 +797,7 @@ const ShowcaseContent = () => {
           key={index}
           title={item.title}
           desc={item.desc}
-          image={item.image}
+          video={item.video} /* Đổi từ image={item.image} thành video={item.video} */
           isReverse={item.isReverse}
           rotateClass={item.rotate}
         />
@@ -810,8 +806,8 @@ const ShowcaseContent = () => {
   );
 };
 
-/* COMPONENT CON: XỬ LÝ HIỂN THỊ TỪNG DÒNG */
-const ShowcaseItem = ({ title, desc, image, isReverse, rotateClass }) => {
+/* COMPONENT CON: XỬ LÝ HIỂN THỊ TỪNG DÒNG (DÙNG VIDEO LẶP) */
+const ShowcaseItem = ({ title, desc, video, isReverse, rotateClass }) => {
   return (
     <div className={`flex flex-col ${isReverse ? "md:flex-row-reverse" : "md:flex-row"} items-center gap-10`}>
       
@@ -826,19 +822,26 @@ const ShowcaseItem = ({ title, desc, image, isReverse, rotateClass }) => {
         </h3>
       </div>
 
-      {/* Khối hình ảnh/GIF */}
+      {/* Khối Video (Thay thế cho GIF) */}
       <div className="flex-[1.5] w-full">
         <div className={`aspect-video bg-white border-2 border-slate-200 rounded-xl shadow-[8px_8px_0px_0px_rgba(0,0,0,0.05)] p-2 overflow-hidden transform ${rotateClass} hover:rotate-0 transition duration-500`}>
-          <img 
-            src={image}
-            alt="OpenSkp Feature Preview" 
-            className="w-full h-full object-cover rounded-lg"
-            /* Xử lý khi ảnh bị lỗi hoặc không tìm thấy file */
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = `https:\x2f\x2fplacehold.co\x2f600x400\x2fe2e8f0\x2f0063A3?text=Preview+Loading...`;
-            }}
-          />
+          
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            /* Thêm pointer-events-none để người dùng không click chuột vào hiện nút Pause */
+            className="w-full h-full object-cover rounded-lg pointer-events-none"
+          >
+            <source src={video} type="video/mp4" />
+            
+            {/* Fallback: Hiển thị nếu trình duyệt quá cũ không hỗ trợ thẻ video */}
+            <p className="text-center text-slate-500 p-4">
+              Trình duyệt của bạn không hỗ trợ phát video.
+            </p>
+          </video>
+          
         </div>
       </div>
 
@@ -1289,11 +1292,16 @@ const GuideContent = () => {
                                 <h5 className="text-slate-600 leading-relaxed mb-6 max-w-3xl text-justify">
                                     {t.guideProDetail || "Chế độ cân bằng hoàn hảo..."}
                                 </h5>
-                                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm flex items-center justify-center relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-50"></div>
-                                    <div className="z-10 text-center">
-                                        <span className="text-slate-400 text-sm font-medium italic">[ Animation: Pro Mode ]</span>
-                                    </div>
+                                 <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm relative overflow-hidden pointer-events-none">
+                                    <video 
+                                        autoPlay 
+                                        loop 
+                                        muted 
+                                        playsInline
+                                        className="w-full h-full object-cover"
+                                    >
+                                        <source src="/210226.2.mp4" type="video/mp4" />
+                                    </video>
                                 </div>
                                 <h5 className="mt-3 text-center text-sm text-slate-500 italic">
                                     {t.editFeature1Caption}
@@ -1313,12 +1321,18 @@ const GuideContent = () => {
                                 <h5 className="text-slate-600 leading-relaxed mb-6 max-w-3xl text-justify">
                                     {t.guideProMaxDetail || "Sức mạnh tối đa..."}
                                 </h5>
-                                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm flex items-center justify-center relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-50"></div>
-                                    <div className="z-10 text-center">
-                                        <span className="text-slate-400 text-sm font-medium italic">[ Animation: Pro Max ]</span>
-                                    </div>
+                                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm relative overflow-hidden pointer-events-none">
+                                    <video 
+                                        autoPlay 
+                                        loop 
+                                        muted 
+                                        playsInline
+                                        className="w-full h-full object-cover"
+                                    >
+                                        <source src="/210226.3.mp4" type="video/mp4" />
+                                    </video>
                                 </div>
+
                             </div>
                         </div>
                     </article>
