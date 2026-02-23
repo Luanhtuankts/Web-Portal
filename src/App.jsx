@@ -61,8 +61,10 @@ const TRANSLATIONS = {
     backHome: "Quay lại Trang chủ",
     showcase1Title: "\"Vẽ 1 khoang tủ bếp dài 4m, đầy đủ thiết bị...\"",
     showcase1Desc: "Chỉ cần nhập lệnh, OpenSKP sẽ tự động tạo mô hình 3D chi tiết ngay trong SketchUp. Không cần dựng hình thủ công tốn thời gian.",
-    showcase2Title: "Tùy chỉnh không giới hạn",
+    showcase2Title: "\"Vẽ 1 khoang tủ quần áo dài 3m, đầy đủ công năng...\"",
     showcase2Desc: "Thay đổi vật liệu, kích thước và kiểu dáng chỉ với vài cú click chuột. Công cụ hỗ trợ đắc lực cho việc lên concept nhanh chóng.",
+    showcase3Title: "Hãy miêu tả chi tiết thiết kế của bạn để AI có thể vẽ chính xác nhất",
+    showcase3Desc: "\"Giá sách gỗ (1800x800x300mm) bao gồm khung ngoài dày 30mm, tấm hậu 5mm, và hệ thống chia 10 ô bằng vách ngăn đứng và các đợt ngang dày 20mm....\"",
     footerRights: "© 2024 OpenSkp. Bảo lưu mọi quyền.",
     footerTerms: "Điều khoản sử dụng",
     footerPrivacy: "Chính sách bảo mật",
@@ -145,10 +147,12 @@ const TRANSLATIONS = {
     download: "Download Plugin",
     guide: "Guide",
     backHome: "Back to Home",
-    showcase1Title: "\"Draw a 1mx2m table...\"",
+    showcase1Title: "\"Draw a kitchen cabinet compartment 4 meters long, fully equipped...\"",
     showcase1Desc: "Just enter a prompt, OpenSKP automatically creates detailed 3D models right inside SketchUp. No need for time-consuming manual modeling.",
-    showcase2Title: "Unlimited Customization",
+    showcase2Title: "\"Draw a 3-meter long, fully functional wardrobe compartment...\"",
     showcase2Desc: "Change materials, dimensions, and styles with just a few clicks. A powerful tool for quick concept development.",
+    showcase3Title: "Describe your design in detail so the AI ​​can draw it as accurately as possible",
+    showcase3Desc: "\"Wooden bookshelf (1800x800x300mm) includes a 30mm thick outer frame, a 5mm thick back panel, and a system dividing it into 10 compartments using vertical dividers and 20mm thick horizontal shelves....\"",
     footerRights: "© 2024 OpenSkp. All rights reserved.",
     footerTerms: "Terms of Use",
     footerPrivacy: "Privacy Policy",
@@ -770,22 +774,22 @@ const ShowcaseContent = () => {
     {
       title: t.showcase1Title,
       desc: t.showcase1Desc,
-      video: "/210226.3.mp4", // Thay bằng tên file video số 1 của bạn
+      video: "/210226.3.mp4",
       isReverse: false,
       rotate: "rotate-1"
     },
     {
       title: t.showcase2Title,
       desc: t.showcase2Desc,
-      video: "/210226.mp4", // Thay bằng tên file video số 2 của bạn
+      video: "/210226.4.mp4",
       isReverse: true,
       rotate: "-rotate-1"
     },
     {
-      title: t.showcase3Title, // Đã sửa lại thành title 3 cho chuẩn
+      title: t.showcase3Title, 
       desc: t.showcase3Desc,
-      video: "/210226.2.mp4", // Thay bằng tên file video số 3 của bạn
-      isReverse: false, // Để false cho so le với cái số 2
+      video: "/210226.mp4", 
+      isReverse: false,
       rotate: "rotate-1"
     }
   ];
@@ -1363,11 +1367,16 @@ const GuideContent = () => {
                                 <h5 className="text-slate-600 leading-relaxed mb-6 max-w-3xl text-justify">
                                     {t.editFeature1Desc || "Khi chọn một Group do AI tạo ra..."}
                                 </h5>
-                                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm flex items-center justify-center relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-50"></div>
-                                    <div className="z-10 text-center">
-                                        <span className="text-slate-400 text-sm font-medium italic">[ Animation: Auto-Load Chat History ]</span>
-                                    </div>
+                                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm relative overflow-hidden pointer-events-none">
+                                    <video 
+                                        autoPlay 
+                                        loop 
+                                        muted 
+                                        playsInline
+                                        className="w-full h-full object-cover"
+                                    >
+                                        <source src="/210226.5.mp4" type="video/mp4" />
+                                    </video>
                                 </div>
                                 <h5 className="mt-3 text-center text-sm text-slate-500 italic">
                                     {t.editFeature1Caption}
