@@ -85,13 +85,14 @@ const TRANSLATIONS = {
     guideItem2: "2. Giao diện",
     guideItem3: "3. Bắt đầu vẽ",
     guideItem4: "4. Chỉnh sửa model",
-    guideNext: "Bước tiếp theo",
-    guidePrev: "Quay lại",
+    guideItem5: "5. Thư viện & vật liệu mẫu",
+    
     /* Guide Content */
     guideTitle1: "Hướng dẫn cài đặt",
     guideTitle2: "Tổng quan giao diện",
     guideTitle3: "Bắt đầu vẽ (Model Selection)",
     guideTitle4: "Chỉnh sửa & Quản lý (History)",
+    guideTitle5: "Thư viện & vật liệu mẫu",
     /* Guide 1 Content */
     guideNote: "Lưu ý quan trọng:",
     guideNoteText: "Vui lòng tắt hoàn toàn SketchUp trước khi thực hiện cài đặt.",
@@ -128,10 +129,17 @@ const TRANSLATIONS = {
     menusidebar: "Menu sidebar quản lý dữ liệu lịch sử dựng hình và Prompt mẫu",
     editFeature1Title: "Ngữ cảnh dựa trên lịch sử hội thoại",
     editFeature1Desc: "Cơ chế Đồng bộ Lịch sử: Khi bạn chọn một Group do AI kiến tạo, hệ thống sẽ tự động tải lại toàn bộ lịch sử trò chuyện của phiên làm việc đó. Điều này giúp AI tái lập ngữ cảnh thiết kế, ghi nhớ các đối tượng đã vẽ để thực hiện các bước chỉnh sửa liền mạch và đảm bảo các đối tượng mới được đưa vào đúng Group chỉ định.",
+    tipFlash: "Đối với model Flash: Cần mô tả chi tiết ý đồ thiết kế để AI đạt được độ chính xác cao nhất.",
+    tipPro: "Đối với model Pro: Yêu cầu mô tả chi tiết; mang lại độ chính xác vượt trội hơn Flash khi xử lý các cấu trúc phức tạp.",
+    tipProMax: "Model Pro Max: Chủ động phân tích yêu cầu, tự động diễn giải nhiệm vụ thiết kế và kiến tạo model với độ chi tiết tối đa.",
+    tipSync: "Hệ thống tự động đồng bộ lịch sử hội thoại ngay khi bạn chọn đối tượng.",
+    tipSelect: "Nhận diện mục tiêu: Khi bạn chọn một thành phần và gửi yêu cầu, hệ thống sẽ xác định chính xác đối tượng đó để thực hiện chỉnh sửa.",    
+    tipLibrary: "Thư viện có sẵn: Tích hợp đa dạng các model 3D độ chi tiết cao, sẵn sàng để AI sử dụng ngay lập tức.",
     editFeature1Caption: "Hệ thống tự động hiển thị lại Chat History khi chọn Group",
     editFeature2Title: "Nhận diện đối tượng chính xác",
     editFeature2Desc: "Để tinh chỉnh một cấu kiện cụ thể, hãy chọn đối tượng đó cùng các thành phần liên quan. Tên các Group tương ứng sẽ tự động xuất hiện trong khung chat. Khi bạn gửi yêu cầu kèm theo tên đối tượng, hệ thống sẽ ưu tiên xử lý dữ liệu của chúng trong bộ nhớ, giúp AI xác định chính xác mục tiêu cần sửa đổi với độ chính xác cao nhất.",
     editFeature2Caption: "AI tự động đọc tên Group con để chỉnh sửa chi tiết",
+    guideLibraryDetail: "Để tối ưu hóa độ chi tiết và giảm tải khối lượng công việc cho AI, OpenSKP đã tích hợp sẵn hệ thống thư viện 3D và vật liệu cơ bản. Thay vì tiêu tốn tài nguyên để tạo sinh các đối tượng phức tạp như đồ nội thất, phụ kiện hay thiết bị decor, AI sẽ chủ động truy xuất và đặt các model chất lượng cao từ thư viện vào chính xác vị trí yêu cầu. Sau đó, bạn có thể linh hoạt thay thế bằng các model hoặc vật liệu khác để hoàn thiện ý đồ thiết kế cá nhân. Chúng tôi cam kết liên tục cập nhật và mở rộng hệ thống thư viện này trong tương lai.",
     guideFinal: "Vậy là chúng ta đã cùng đi qua tất cả các tính năng chính của OpenSKP. Giờ là lúc để bạn bắt đầu khám phá và thử dựng những vật thể đầu tiên phù hợp với dự án của mình.\n\nMặc dù AI đang phát triển thần tốc, nhưng nó vẫn chưa thể đạt đến sự hoàn mỹ như một Kiến trúc sư thực thụ. Sẽ có những lúc AI gặp lỗi hoặc những yêu cầu nằm ngoài khả năng xử lý. Rất mong bạn kiên nhẫn và đồng hành cùng OpenSKP. Hy vọng đây sẽ trở thành người trợ lý đắc lực hỗ trợ hiệu quả cho công việc của bạn. Xin chân thành cảm ơn!",
   },
   EN: {
@@ -173,11 +181,13 @@ const TRANSLATIONS = {
     guideItem2: "2. Interface",
     guideItem3: "3. Start Drawing",
     guideItem4: "4. Edit Model",
+    guideItem5: "5. Library & sample materials",
     /* Guide Content */
     guideTitle1: "Installation Guide",
     guideTitle2: "Interface Overview",
     guideTitle3: "Start Drawing (Model Selection)",
     guideTitle4: "Edit & Manage (History)",
+    guideTitle5: "Library & sample materials",
     /* Guide Steps */
     guideNote: "Important Note:",
     guideNoteText: "Please completely close SketchUp before installing.",
@@ -214,10 +224,17 @@ const TRANSLATIONS = {
     menusidebar: "The sidebar menu manages the history of rendering data and the template prompt.",
     editFeature1Title: "Context based on conversation history",
     editFeature1Desc: "Automatic History Synchronization: When you select an AI-generated Group, the system automatically reloads the entire conversation history for that session. This enables the AI to restore the design context, recall previously drawn objects for seamless editing, and ensure that new additions are accurately placed within the designated Group.",
+    tipFlash: "Flash Model: Detailed descriptions of your design intent are required for maximum modeling accuracy.",
+    tipPro: "Pro Model: Requires detailed input; delivers higher precision than Flash for more complex architectural requests.",
+    tipProMax: "Pro Max Model: Autonomously analyzes prompts, interprets design briefs, and generates models with the highest level of detail.",
+    tipSync: "Session History: Automatically syncs conversation history when an object is selected.",
+    tipSelect: "Object Recognition: Select any component and send a request; the system will identify and modify that specific object with high precision.",
+    tipLibrary: "Ready-to-use Assets: A collection of high-detail 3D models is pre-integrated and ready for instant AI deployment.",
     editFeature1Caption: "Chat history reappears automatically upon group selection",
     editFeature2Title: "Precision Object Recognition",
     editFeature2Desc: "To edit a specific component, select the target object along with any related elements. Their group names will automatically populate in the chat field. By including these names in your prompt, the system prioritizes their attributes in memory, allowing the AI to identify and modify the exact object with high precision.",
     editFeature2Caption: "Deep selection triggers automatic object naming",
+    guideLibraryDetail: "To maximize model detail while optimizing AI workload, OpenSKP comes with a pre-integrated library of 3D assets and standard materials. Instead of generating complex, standalone objects from scratch—such as furniture, fixtures, decor, and accessories—the AI intelligently imports high-quality assets into precise locations. You can then easily swap these with alternative models or materials to match your specific design intent. We are committed to continuously expanding this library system in future updates.",
     guideFinal: "We have completed our tour of the plugin's core features. Now, it's time for you to get familiar and start generating your first models that fit your project's needs.\n\nAI is evolving rapidly, but it hasn't yet reached the full spectrum of human skill and intuition. There will be occasional errors or requests that exceed current AI capabilities. We appreciate your patience as we continue to improve. Our hope is that OpenSKP becomes an indispensable tool that empowers your professional workflow and creativity. Thank you for choosing us!",
   }
 };
@@ -1279,7 +1296,7 @@ const GuideContent = () => {
                                 </div>
 
                                 <h5 className="mt-3 text-center text-sm text-slate-500 italic">
-                                    {t.editFeature1Caption}
+                                    {t.tipFlash}
                                 </h5>
                             </div>
 
@@ -1308,7 +1325,7 @@ const GuideContent = () => {
                                     </video>
                                 </div>
                                 <h5 className="mt-3 text-center text-sm text-slate-500 italic">
-                                    {t.editFeature1Caption}
+                                    {t.tipPro}
                                 </h5>
                             </div>
 
@@ -1336,6 +1353,9 @@ const GuideContent = () => {
                                         <source src="/210226.3.mp4" type="video/mp4" />
                                     </video>
                                 </div>
+                                <h5 className="mt-3 text-center text-sm text-slate-500 italic">
+                                    {t.tipProMax}
+                                </h5>
 
                             </div>
                         </div>
@@ -1379,7 +1399,7 @@ const GuideContent = () => {
                                     </video>
                                 </div>
                                 <h5 className="mt-3 text-center text-sm text-slate-500 italic">
-                                    {t.editFeature1Caption}
+                                    {t.tipSync}
                                 </h5>
                             </div>
 
@@ -1408,9 +1428,45 @@ const GuideContent = () => {
                                     </video>
                                 </div>
                                 <h5 className="mt-3 text-center text-sm text-slate-500 italic">
-                                    {t.editFeature2Caption}
+                                    {t.tipSelect}
                                 </h5>
                             </div>
+                            
+                        </div>
+                    </article>
+                );
+                case 5: // BƯỚC 5
+                 /* Nội dung Bước 4: Quản lý và chỉnh sửa (EDIT MODEL) */
+                return (
+                    <article className="prose prose-slate max-w-none">
+                        <h2 className="text-3xl font-brand font-normal mb-6 pb-2 border-b border-slate-100 text-primary-brand">
+                            {t.guideTitle5}
+                        </h2>
+                        <h5 className="text-slate-600 leading-relaxed mb-6 max-w-3xl text-justify">
+                            {t.guideLibraryDetail || "Công cụ hỗ trợ chỉnh sửa thông minh..."}
+                        </h5>
+
+                        <div className="flex flex-col space-y-16">
+                            {/* --- TÍNH NĂNG 1: KHÔI PHỤC NGỮ CẢNH --- */}
+                            <div className="group">
+                                
+                                <div className="w-full aspect-video rounded-xl bg-slate-50 border border-slate-200 shadow-sm relative overflow-hidden pointer-events-none">
+                                    <video 
+                                        autoPlay 
+                                        loop 
+                                        muted 
+                                        playsInline
+                                        className="w-full h-full object-cover"
+                                    >
+                                        <source src="/210226.7.mp4" type="video/mp4" />
+                                    </video>
+                                </div>
+                                <h5 className="mt-3 text-center text-sm text-slate-500 italic">
+                                    {t.tipLibrary}
+                                </h5>
+                            </div>
+
+                            
                             <h5 className="text-slate-600 leading-relaxed mb-6 max-w-3xl text-justify whitespace-pre-line">
                                     {t.guideFinal || "Khi chọn thành phần con..."}
                                 </h5>
@@ -1427,14 +1483,19 @@ const GuideContent = () => {
                 {/* Menu Sidebar */}
                 <div className="md:col-span-1 hidden md:block">
                     <div className="sticky top-24 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-5 shadow-sm">
-                        <h4 className="font-normal text-2xl mb-4 flex items-center gap-2 font-brand text-primary-brand">
+                        <h4 className="font-normal text-2xl mb-4 flex items-center gap-2 font-serif" style={{ color: PRIMARY_COLOR }}>
                             <Menu size={20} /> {t.guideToc}
                         </h4>
                         <ul className="space-y-1 text-sm">
-                            {[1, 2, 3, 4].map((step) => (
-                                <h5 
+                            {[1, 2, 3, 4, 5].map((step) => (
+                                <li 
                                     key={step}
-                                    onClick={() => setActiveGuideStep(step)} 
+                                    onClick={() => {
+                                        setActiveGuideStep(step);
+                                        if (contentTopRef.current) {
+                                            contentTopRef.current.scrollIntoView({ behavior: 'smooth' });
+                                        }
+                                    }} 
                                     className={`cursor-pointer p-2 rounded-lg transition flex items-center gap-2 
                                         ${activeGuideStep === step 
                                             ? 'bg-blue-50 text-blue-700 font-bold' 
@@ -1443,7 +1504,7 @@ const GuideContent = () => {
                                 >
                                     {activeGuideStep === step && <ArrowRight size={14} />} 
                                     {t[`guideItem${step}`]}
-                                </h5>
+                                </li>
                             ))}
                         </ul>
                     </div>
@@ -1457,7 +1518,7 @@ const GuideContent = () => {
                     <div
                         className="absolute inset-0 opacity-[0.03] pointer-events-none"
                         style={{
-                            backgroundImage: `url("https:\x2f\x2fwww.transparenttextures.com/patterns/notebook.png")`
+                            backgroundImage: `url("https://www.transparenttextures.com/patterns/notebook.png")`
                         }}
                     ></div>
                     <div className="relative z-10">
@@ -1483,15 +1544,16 @@ const GuideContent = () => {
 
                             {/* NEXT BUTTON */}
                             <button
-                                onClick={() => setActiveGuideStep(Math.min(4, activeGuideStep + 1))}
-                                disabled={activeGuideStep === 4}
+                                onClick={() => setActiveGuideStep(Math.min(5, activeGuideStep + 1))}
+                                disabled={activeGuideStep === 5}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition
-                                    ${activeGuideStep === 4
+                                    ${activeGuideStep === 5
                                         ? 'text-slate-300 cursor-not-allowed'
-                                        : 'bg-primary-brand text-white hover:opacity-90 shadow-md hover:shadow-lg'
+                                        : 'text-white hover:opacity-90 shadow-md hover:shadow-lg'
                                     }`}
+                                style={activeGuideStep !== 5 ? { backgroundColor: PRIMARY_COLOR } : {}}
                             >
-                                {activeGuideStep < 4
+                                {activeGuideStep < 5
                                     ? t[`guideItem${activeGuideStep + 1}`]
                                     : t.guideNext}
                                 <ArrowRight size={16} />
@@ -1502,7 +1564,7 @@ const GuideContent = () => {
             </div>
         </div>
     );
-};
+  };
 
   // GIAO DIỆN: PAYMENT MODAL
   /* Component Modal thanh toán nội bộ */
