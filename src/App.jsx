@@ -89,7 +89,7 @@ const MOCK_PROFILE = { wallet_balance: 20000, license_key: 'OSKP-8822-1133-PRO',
 // CÁC ĐƯỜNG DẪN & CẤU HÌNH THANH TOÁN
 const ZALO_LINK = "https://zalo.me/0965585879";
 const FACEBOOK_LINK = "https://web.facebook.com/tuan.936796/";
-const DRIVE_DOWNLOAD_LINK = "https://rwptjxjtxdvvlmsbzbec.supabase.co/storage/v1/object/public/openskp-library/Openskp%202.1.rar";
+const DRIVE_DOWNLOAD_LINK = "https://rwptjxjtxdvvlmsbzbec.supabase.co/storage/v1/object/public/openskp-library/Openskp%202.1.rbz";
 
 const BANK_ID = "MB"; 
 const BANK_ACCOUNT = "0965585879"; 
