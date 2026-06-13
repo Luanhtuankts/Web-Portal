@@ -1,3 +1,8 @@
+// KHỞI TẠO BỘ ĐỆM ĐỂ TRÁNH LỖI BIÊN DỊCH TRÊN TRÌNH DUYỆT CỦA CANVAS (ES2015 TARGET)
+if (typeof window !== 'undefined' && !window.process) {
+  window.process = { env: {} };
+}
+
 // KẾT NỐI ONLINE: IMPORT THƯ VIỆN CHÍNH
 import React, { useState, useRef, useEffect } from 'react';
 /* Import bộ icon từ lucide-react */
@@ -16,21 +21,11 @@ import {
 // ĐẶT LÀ false: Khi deploy lên hosting thật (sẽ tự động kết nối Supabase & PayPal thật qua CDN).
 const IS_PREVIEW_MOCK_MODE = false;
 
-// Sử dụng cơ chế thực thi gián tiếp (dynamic evaluation) để đọc biến môi trường Vite.
-// Thao tác này giúp triệt tiêu hoàn toàn lỗi cú pháp "import.meta" khi đóng gói ES2015.
-const getMetaEnv = () => {
-  try {
-    return new Function('return import.meta.env')();
-  } catch (e) {
-    return {};
-  }
-};
-const metaEnv = getMetaEnv();
-
-// Toàn bộ các thông tin cấu hình nhạy cảm hiện tại đã được loại bỏ hoàn toàn giá trị fallback nhạy cảm
-const supabaseUrl = metaEnv.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = metaEnv.VITE_SUPABASE_ANON_KEY || "";
-const PAYPAL_CLIENT_ID = metaEnv.VITE_PAYPAL_CLIENT_ID || "";
+// Để giải quyết triệt để cảnh báo ES2015 "import.meta", chúng ta chuyển sang dùng cổng nạp "process.env" tiêu chuẩn.
+// Trình đóng gói Vite trên Cloudflare Pages vẫn sẽ nhận diện và thay thế tĩnh (Static Replacement) các biến này chuẩn xác.
+const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+const PAYPAL_CLIENT_ID = process.env.VITE_PAYPAL_CLIENT_ID || "";
 
 // Khởi tạo Supabase Client động nếu không ở chế độ giả lập
 let supabaseInstance = null;
@@ -127,14 +122,14 @@ const TRANSLATIONS = {
 const MOCK_SESSION_DATA = { user: { email: 'architect_test@openskp.com', id: 'mock-user-uuid-12345' } };
 const MOCK_PROFILE_DATA = { wallet_balance: 150000, license_key: 'OPENSKP-V2-PREVIEW-ACTIVE', is_active: true, hardware_id: 'HWID-SKETCHUP-CLIENT-9999' };
 
-// CÁC ĐƯỜNG DẪN & CẤU HÌNH THANH TOÁN (ĐÃ XÓA SẠCH NỘI DUNG NHẠY CẢM HARDCODED)
-const ZALO_LINK = metaEnv.VITE_ZALO_LINK || "";
-const FACEBOOK_LINK = metaEnv.VITE_FACEBOOK_LINK || "";
-const DRIVE_DOWNLOAD_LINK = metaEnv.VITE_DRIVE_DOWNLOAD_LINK || "";
+// CÁC ĐƯỜNG DẪN & CẤU HÌNH THANH TOÁN (ĐỌC ĐỘNG TỪ BIẾN MÔI TRƯỜNG AN TOÀN QUA VITE PROCESS.ENV)
+const ZALO_LINK = process.env.VITE_ZALO_LINK || "";
+const FACEBOOK_LINK = process.env.VITE_FACEBOOK_LINK || "";
+const DRIVE_DOWNLOAD_LINK = process.env.VITE_DRIVE_DOWNLOAD_LINK || "";
 
-const BANK_ID = metaEnv.VITE_BANK_ID || ""; 
-const BANK_ACCOUNT = metaEnv.VITE_BANK_ACCOUNT || ""; 
-const ACCOUNT_NAME = metaEnv.VITE_BANK_ACCOUNT_NAME || ""; 
+const BANK_ID = process.env.VITE_BANK_ID || ""; 
+const BANK_ACCOUNT = process.env.VITE_BANK_ACCOUNT || ""; 
+const ACCOUNT_NAME = process.env.VITE_BANK_ACCOUNT_NAME || ""; 
 
 const PACKAGES_VND = [
   { id: 1, price: 50000, value: 50000, label: "Cơ bản", popular: false, currency: 'VND' },
