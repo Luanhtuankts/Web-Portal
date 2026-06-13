@@ -1,24 +1,65 @@
 // KẾT NỐI ONLINE: IMPORT THƯ VIỆN CHÍNH
-/* Thư viện kết nối Database và Auth */
 import React, { useState, useRef, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 /* Import bộ icon từ lucide-react */
 import { 
   CreditCard, Copy, Download, LogOut, Loader2, Zap, 
-  Box, User, CheckCircle2, X, Star, PlayCircle, LibraryBig ,
+  Box, User, CheckCircle2, X, Star, PlayCircle, LibraryBig,
   Facebook, MessageCircle, Globe, Plus, Menu, ArrowRight, ArrowLeft, BookOpen,
   Mic, Image as ImageIcon, Send, History, LayoutTemplate, ScanEye,
-  MoreVertical, Eye, EyeOff, Key
+  MoreVertical, Eye, EyeOff, Key, AlertTriangle
 } from 'lucide-react';
 
 // ==============================================================================
-// 1. CẤU HÌNH SUPABASE (ĐÃ ĐIỀN KEY CHUẨN CỦA BẠN)
+// 1. CẤU HÌNH BẬT/TẮT CHẾ ĐỘ XEM THỬ (MOCK MODE FOR CANVAS PREVIEW)
 // ==============================================================================
-const supabaseUrl = "https://rwptjxjtxdvvlmsbzbec.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3cHRqeGp0eGR2dmxtc2J6YmVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMDkxMTcsImV4cCI6MjA3OTc4NTExN30.RRXlEviP64hJ6jsmLa1P013CBkXuw4AQpErBixg0K64"; 
+// ĐẶT LÀ true: Để chạy thử giao diện, test tính năng ngay trên Canvas không bị lỗi biên dịch.
+// ĐẶT LÀ false: Khi deploy lên hosting thật (sẽ tự động kết nối Supabase & PayPal thật qua CDN).
+const IS_PREVIEW_MOCK_MODE = false;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Sử dụng cơ chế thực thi gián tiếp (dynamic evaluation) để đọc biến môi trường Vite.
+// Thao tác này giúp triệt tiêu hoàn toàn lỗi cú pháp "import.meta" khi đóng gói ES2015.
+const getMetaEnv = () => {
+  try {
+    return new Function('return import.meta.env')();
+  } catch (e) {
+    return {};
+  }
+};
+const metaEnv = getMetaEnv();
+
+// Toàn bộ các thông tin cấu hình nhạy cảm hiện tại đã được loại bỏ hoàn toàn giá trị fallback nhạy cảm
+const supabaseUrl = metaEnv.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = metaEnv.VITE_SUPABASE_ANON_KEY || "";
+const PAYPAL_CLIENT_ID = metaEnv.VITE_PAYPAL_CLIENT_ID || "";
+
+// Khởi tạo Supabase Client động nếu không ở chế độ giả lập
+let supabaseInstance = null;
+const getSupabase = () => {
+  if (IS_PREVIEW_MOCK_MODE) return null;
+  if (supabaseInstance) return supabaseInstance;
+  if (typeof window !== 'undefined' && window.supabase) {
+    supabaseInstance = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    return supabaseInstance;
+  }
+  return null;
+};
+
+// Hàm tải động các thư viện JS từ CDN bảo mật
+const loadScript = (src, id) => {
+  return new Promise((resolve, reject) => {
+    if (document.getElementById(id)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.id = id;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    document.body.appendChild(script);
+  });
+};
 
 // CẤU HÌNH MÀU SẮC TỔNG THỂ
 const PRIMARY_COLOR = "#0063A3";
@@ -82,20 +123,18 @@ const TRANSLATIONS = {
   }
 };
 
-// DỮ LIỆU GIẢ LẬP (MOCK DATA)
-const MOCK_SESSION = { user: { email: 'architect@openskp.com', id: 'mock-user-id' } };
-const MOCK_PROFILE = { wallet_balance: 20000, license_key: 'OSKP-8822-1133-PRO', is_active: true, hardware_id: 'HW-8822-1133' };
+// DỮ LIỆU GIẢ LẬP ĐỂ TEST TRÊN CANVAS PREVIEW
+const MOCK_SESSION_DATA = { user: { email: 'architect_test@openskp.com', id: 'mock-user-uuid-12345' } };
+const MOCK_PROFILE_DATA = { wallet_balance: 150000, license_key: 'OPENSKP-V2-PREVIEW-ACTIVE', is_active: true, hardware_id: 'HWID-SKETCHUP-CLIENT-9999' };
 
-// CÁC ĐƯỜNG DẪN & CẤU HÌNH THANH TOÁN
-const ZALO_LINK = "https://zalo.me/0965585879";
-const FACEBOOK_LINK = "https://web.facebook.com/tuan.936796/";
-const DRIVE_DOWNLOAD_LINK = "https://rwptjxjtxdvvlmsbzbec.supabase.co/storage/v1/object/public/openskp-library/Openskp%202.1.rbz";
+// CÁC ĐƯỜNG DẪN & CẤU HÌNH THANH TOÁN (ĐÃ XÓA SẠCH NỘI DUNG NHẠY CẢM HARDCODED)
+const ZALO_LINK = metaEnv.VITE_ZALO_LINK || "";
+const FACEBOOK_LINK = metaEnv.VITE_FACEBOOK_LINK || "";
+const DRIVE_DOWNLOAD_LINK = metaEnv.VITE_DRIVE_DOWNLOAD_LINK || "";
 
-const BANK_ID = "MB"; 
-const BANK_ACCOUNT = "0965585879"; 
-const ACCOUNT_NAME = "OPEN SKP"; 
-
-const PAYPAL_CLIENT_ID = "ARPc_R309yq_8l2tkRJCxb6TooyNcfrF-LNN7AKv6UdlCaVSK5t6Sh8tbyS0_6hlq5lCfORUVhwXJ1Wn";
+const BANK_ID = metaEnv.VITE_BANK_ID || ""; 
+const BANK_ACCOUNT = metaEnv.VITE_BANK_ACCOUNT || ""; 
+const ACCOUNT_NAME = metaEnv.VITE_BANK_ACCOUNT_NAME || ""; 
 
 const PACKAGES_VND = [
   { id: 1, price: 50000, value: 50000, label: "Cơ bản", popular: false, currency: 'VND' },
@@ -112,7 +151,57 @@ const PACKAGES_USD = [
 ];
 
 // ==============================================================================
-// CÁC SUB-COMPONENTS
+// GIẢ LẬP PAYPAL BUTTONS ĐỂ CHẠY THỬ TRÊN CANVAS KHÔNG LỖI BIÊN DỊCH
+// ==============================================================================
+const PayPalButtonContainer = ({ price, value, onSuccess, onError }) => {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (IS_PREVIEW_MOCK_MODE) {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = `
+          <div class="bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold py-3 px-4 rounded-xl shadow cursor-pointer transition flex items-center justify-center gap-2 text-sm">
+             <span>Pay with <b>PayPal</b> (Chế độ Xem thử)</span>
+          </div>
+        `;
+        const btn = containerRef.current.firstElementChild;
+        btn.onclick = () => {
+          const mockOrderId = "PAYID-" + Math.random().toString(36).substring(2, 11).toUpperCase();
+          onSuccess(mockOrderId);
+        };
+      }
+      return;
+    }
+
+    if (window.paypal && containerRef.current) {
+      containerRef.current.innerHTML = "";
+      window.paypal.Buttons({
+        style: { layout: "vertical", shape: "rect", label: "checkout", height: 48 },
+        createOrder: (data, actions) => {
+          return actions.order.create({
+            purchase_units: [{
+              amount: { value: price.toString() },
+              description: `Buy ${value} Credits`
+            }]
+          });
+        },
+        onApprove: async (data, actions) => {
+          const order = await actions.order.capture();
+          onSuccess(order.id);
+        },
+        onError: (err) => {
+          console.error("PayPal SDK Error:", err);
+          onError(err);
+        }
+      }).render(containerRef.current);
+    }
+  }, [price, value]);
+
+  return <div ref={containerRef} className="w-full min-h-[48px]"></div>;
+};
+
+// ==============================================================================
+// CÁC SUB-COMPONENTS GIAO DIỆN
 // ==============================================================================
 
 const LogoSVG = () => (
@@ -177,7 +266,7 @@ const HeroSection = ({ t, handleDownload }) => (
   </div>
 );
 
-const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSelectedPkg, setShowPayment, paypalSuccess, profile, getVietQRUrl, setPaypalSuccess }) => (
+const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSelectedPkg, setShowPayment, paypalSuccess, profile, getVietQRUrl, setPaypalSuccess, showToast, paypalSdkReady }) => (
   <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 ">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
           <div className="flex-1 p-6 bg-slate-50 border-r border-slate-100 flex flex-col">
@@ -233,7 +322,7 @@ const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSe
                           {paymentMethod === 'VND' ? (
                               <div className="bg-white p-2 border border-slate-200 rounded-xl shadow-sm inline-block">
                                   {profile ? (
-                                      <img src={getVietQRUrl()} alt="VietQR" className="w-48 h-48 object-contain" />
+                                      <img src={getVietQRUrl()} alt="VietQR" className="w-48 h-48 object-contain animate-fade-in" />
                                   ) : (
                                       <div className="w-48 h-48 flex items-center justify-center text-xs text-gray-400 bg-gray-50 rounded">
                                           <Loader2 className="animate-spin mr-2" /> {t.loginToView}
@@ -244,26 +333,23 @@ const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSe
                           ) : (
                               <div className="w-full px-4 mt-4 relative z-0">
                                   <div className="h-4"></div>
-                                  <PayPalButtons 
-                                      key={selectedPkg.id}
-                                      style={{ layout: "vertical", shape: "rect", label: "checkout", height: 48 }}
-                                      createOrder={(data, actions) => {
-                                          return actions.order.create({
-                                              purchase_units: [{
-                                                  amount: { value: selectedPkg.price.toString() },
-                                                  description: `Buy ${selectedPkg.value} Credits`
-                                              }]
-                                          });
-                                      }}
-                                      onApprove={async (data, actions) => {
-                                          const order = await actions.order.capture();
-                                          setPaypalSuccess(order.id);
-                                      }}
-                                      onError={(err) => {
-                                          console.error("PayPal Error:", err);
-                                          alert("Giao dịch thất bại / Payment Failed");
-                                      }}
-                                  />
+                                  {(IS_PREVIEW_MOCK_MODE || paypalSdkReady) ? (
+                                      <PayPalButtonContainer 
+                                          price={selectedPkg.price}
+                                          value={selectedPkg.value}
+                                          onSuccess={(orderId) => {
+                                              setPaypalSuccess(orderId);
+                                              showToast("Thanh toán PayPal thành công!", "success");
+                                          }}
+                                          onError={() => {
+                                              showToast("Giao dịch thất bại / Payment Failed", "error");
+                                          }}
+                                      />
+                                  ) : (
+                                      <div className="w-full h-12 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-slate-100">
+                                          <Loader2 className="animate-spin mr-2 w-4 h-4" /> Đang kết nối PayPal...
+                                      </div>
+                                  )}
                                   <div className="bg-blue-50 p-3 rounded-lg text-[10px] text-blue-800 mt-4 border border-blue-100">
                                       ℹ️ {t.paymentCardDesc}
                                   </div>
@@ -290,7 +376,7 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
   };
 
   const renderUserDashboard = () => (
-      <div className="flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm animate-fade-in">
           <div className="flex items-center gap-2 pl-2">
               <div className="text-right">
                   <div className="text-[10px] uppercase text-slate-400 font-normal tracking-wider leading-none mb-0.5">{t.credits}</div>
@@ -313,7 +399,7 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
                     type="text" 
                     readOnly 
                     value={profile?.license_key || 'Đang tạo mã...'} 
-                    className="text-xs font-mono font-normal text-slate-700 leading-tight bg-transparent outline-none border-none w-24"
+                    className="text-xs font-mono font-normal text-slate-700 leading-tight bg-transparent outline-none border-none w-24 cursor-default"
                   />
                   </div>
                   <button 
@@ -447,7 +533,6 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
   );
 };
 
-
 // ==============================================================================
 // APP EXPORT CHÍNH
 // ==============================================================================
@@ -466,19 +551,96 @@ export default function App() {
   const [selectedPkg, setSelectedPkg] = useState(PACKAGES_VND[0]);
   const [paypalSuccess, setPaypalSuccess] = useState(null);
   
+  // Trạng thái tải thư viện cho CDN (Khi deploy thật)
+  const [supabaseReady, setSupabaseReady] = useState(false);
+  const [paypalSdkReady, setPaypalSdkReady] = useState(false);
+
+  // Bộ đếm số lần hủy khóa thiết bị HWID giả lập để phục vụ kiểm thử chế độ Xem thử (Lớp phòng vệ 2)
+  const [mockResetCount, setMockResetCount] = useState(0);
+
+  // Hệ thống thông báo tự phát triển (Toast State)
+  const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
+  
+  // Hộp thoại xác nhận hành động tự phát triển (Confirmation Modal State)
+  const [confirmModal, setConfirmModal] = useState({ show: false, message: '', onConfirm: null });
+
+  // UseRef lưu trữ giá trị Profile mới nhất để ngăn chặn rò rỉ hoặc resubscribe Realtime
+  const latestProfileRef = useRef(profile);
+  useEffect(() => {
+    latestProfileRef.current = profile;
+  }, [profile]);
+
   const t = TRANSLATIONS[language];
 
-  // KẾT NỐI: AUTHENTICATION & REALTIME
-  useEffect(() => {
-    if (!supabaseUrl) { setLoading(false); return; }
+  // Hàm hiển thị thông báo thay thế alert()
+  const showToast = (message, type = 'info') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 3500);
+  };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+  // KÍCH HOẠT TIẾN TRÌNH TẢI CDN TRÊN THIẾT BỊ THẬT (KHI IS_PREVIEW_MOCK_MODE = FALSE)
+  useEffect(() => {
+    if (IS_PREVIEW_MOCK_MODE) {
+      // Ở chế độ Xem thử trên Canvas, tự động đăng nhập tài khoản giả lập ngay lập tức để người dùng tương tác
+      setSession(MOCK_SESSION_DATA);
+      setProfile(MOCK_PROFILE_DATA);
+      setSupabaseReady(true);
+      return;
+    }
+
+    const initSupabase = async () => {
+      try {
+        await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2", "supabase-js-cdn");
+        if (window.supabase) {
+          setSupabaseReady(true);
+        } else {
+          throw new Error("Không thể khởi tạo đối tượng Supabase.");
+        }
+      } catch (err) {
+        console.error("Lỗi Supabase CDN:", err);
+        showToast("Không thể tải kết nối an toàn với máy chủ. Vui lòng tải lại trang.", "error");
+      }
+    };
+    initSupabase();
+  }, []);
+
+  // Tải PayPal SDK động khi người dùng ở môi trường thật
+  useEffect(() => {
+    if (IS_PREVIEW_MOCK_MODE) return;
+
+    if (showPayment && paymentMethod === 'USD' && PAYPAL_CLIENT_ID) {
+      setPaypalSdkReady(false);
+      loadScript(`https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`, "paypal-js-sdk")
+        .then(() => {
+          if (window.paypal) {
+            setPaypalSdkReady(true);
+          } else {
+            throw new Error("Không tìm thấy đối tượng SDK PayPal.");
+          }
+        })
+        .catch((err) => {
+          console.error("Lỗi tải PayPal SDK:", err);
+          showToast("Không thể khởi tạo cổng PayPal. Vui lòng thử lại sau.", "error");
+        });
+    }
+  }, [showPayment, paymentMethod]);
+
+  // KẾT NỐI REALTIME & AUTHENTICATION (KHI IS_PREVIEW_MOCK_MODE = FALSE)
+  useEffect(() => {
+    if (IS_PREVIEW_MOCK_MODE) return;
+
+    const supabaseClient = getSupabase();
+    if (!supabaseReady || !supabaseClient) { setLoading(false); return; }
+
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchProfile(session.user.id);
       else setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, newSession) => {
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
           setSession((prevSession) => {
               if (prevSession?.user?.id === newSession?.user?.id) {
@@ -492,97 +654,178 @@ export default function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabaseReady]);
 
+  // Đăng ký kênh Realtime để tự cập nhật số dư khi khách hàng nạp SePay thành công
+  // VÁ LỖ HỔNG 3: Luôn sử dụng Secure Pull từ DB chính chủ khi có sự kiện Realtime thay vì tin ngay Client payload
   useEffect(() => {
-    if (!session?.user?.id) return;
+    if (IS_PREVIEW_MOCK_MODE) return;
 
-    const channel = supabase
+    const supabaseClient = getSupabase();
+    if (!supabaseReady || !supabaseClient || !session?.user?.id) return;
+
+    const channel = supabaseClient
       .channel('realtime-credits')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'users_v2', filter: `id=eq.${session.user.id}` },
-        (payload) => {
-          console.log("🔔 Data thay đổi từ Server:", payload.new);
-          setProfile(payload.new);
-          if (showPayment && paymentMethod === 'VND') {
-             setShowPayment(false);
-             setTimeout(() => alert(`✅ Đã nhận được tiền! Tài khoản đã được cập nhật số dư.`), 500);
+        async (payload) => {
+          console.log("🔔 Nhận tín hiệu Realtime từ Postgres, đang tiến hành kéo dữ liệu xác minh (Secure Pull)...");
+          
+          try {
+            // Thực hiện kéo độc lập có màng lọc auth.uid() để đảm bảo tính an toàn chống hacker can thiệp client package
+            const verifiedData = await fetchProfile(session.user.id);
+            if (verifiedData) {
+              const oldBalance = latestProfileRef.current?.wallet_balance || 0;
+              const newBalance = verifiedData.wallet_balance || 0;
+
+              // Đối soát: Chỉ cập nhật giao diện nạp tiền thành công nếu số dư thực tế trong DB đã tăng lên thực sự
+              if (newBalance > oldBalance) {
+                if (showPayment && paymentMethod === 'VND') {
+                   setShowPayment(false);
+                   setTimeout(() => showToast("Đã nhận được giao dịch nạp tiền! Tài khoản đã được cập nhật số dư.", "success"), 500);
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Lỗi đối soát bảo mật Realtime:", e);
           }
         }
       )
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [session, showPayment, paymentMethod]);
+    return () => { supabaseClient.removeChannel(channel); };
+  }, [supabaseReady, session, showPayment, paymentMethod]);
 
   const fetchProfile = async (userId, isRetry = false) => {
+    if (IS_PREVIEW_MOCK_MODE) return;
+
+    const supabaseClient = getSupabase();
+    if (!supabaseClient) return;
+
     try {
-      // Thử lấy dữ liệu ngay lập tức (Xử lý trường hợp F5 tải lại trang)
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('users_v2')
         .select('*')
         .eq('id', userId)
         .single();
 
       if (error) throw error;
-      
       setProfile(data);
-      console.log("✅ Lấy dữ liệu thành công:", data);
-      
+      return data; // Trả về dữ liệu chính chủ để làm màng lọc xác thực Realtime
     } catch (err) {
-      console.error("⚠️ Lỗi lấy dữ liệu V2:", err.message);
-      
-      // Lỗi thường gặp nhất: Trigger chạy chưa xong, hoặc RLS đang chặn
+      console.error("⚠️ Lỗi truy xuất hồ sơ:", err.message);
       if (!isRetry) {
-        console.log("⏳ Đang thử tải lại sau 1.5s (Chờ hệ thống tạo mã)...");
         setTimeout(() => fetchProfile(userId, true), 1500);
       } else {
-        console.error("❌ Vẫn không lấy được dữ liệu. Hãy kiểm tra lại RLS trên Supabase.");
+        showToast("Hồ sơ tài khoản chưa được chuẩn bị kịp trên Cloud. Vui lòng tải lại trang.", "error");
       }
+      return null;
     }
   };
 
-  const handleResetHWID = async () => {
-    if (!profile?.license_key) return;
-    if (!window.confirm("Xác nhận hủy liên kết với máy tính hiện tại? Bạn sẽ phải nhập lại License Key trên máy mới.")) return;
+  const executeResetHWID = async () => {
+    if (IS_PREVIEW_MOCK_MODE) {
+      setLoading(true);
+      setTimeout(() => {
+        // KIỂM THỬ GIẢ LẬP LỖ HỔNG 4: Trình diễn lỗi ném ra từ cơ sở dữ liệu nếu vượt quá 3 lần
+        if (mockResetCount >= 3) {
+          showToast("Giao dịch không thành công: Bạn đã vượt quá giới hạn cho phép (Tối đa 3 lần reset trong 24 giờ)!", "error");
+          setLoading(false);
+          return;
+        }
+        
+        // Ghi nhận tăng lượt reset giả lập
+        setMockResetCount(prev => prev + 1);
+        setProfile(prev => ({ ...prev, hardware_id: null }));
+        setLoading(false);
+        showToast(`Hủy liên kết máy thành công! (Lần ${mockResetCount + 1}/3 - Chế độ Xem thử)`, "success");
+      }, 1000);
+      return;
+    }
+
+    const supabaseClient = getSupabase();
+    if (!supabaseClient) return;
+
     setLoading(true);
-    const { error } = await supabase.rpc('reset_hwid', { p_license_key: profile.license_key });
+    // Gọi hàm RPC nạp vào Postgres đã gia cố logic bảo mật đếm log reset 24 giờ qua
+    const { error } = await supabaseClient.rpc('reset_hwid', { p_license_key: profile.license_key });
     if (!error) {
-      alert("Hủy khóa máy thành công! License đã sẵn sàng cho thiết bị mới.");
+      showToast("Hủy liên kết máy thành công! License đã sẵn sàng cho thiết bị mới.", "success");
       fetchProfile(session.user.id);
     } else {
-      alert("Lỗi: " + error.message);
+      // Nhận trực tiếp thông điệp lỗi tự định nghĩa "Bạn đã vượt quá giới hạn cho phép..." từ database ném ra
+      showToast("Giao dịch không thành công: " + error.message, "error");
       setLoading(false);
     }
   };
 
+  const handleResetHWID = () => {
+    if (!profile?.license_key) return;
+    setConfirmModal({
+      show: true,
+      message: "Xác nhận hủy liên kết với máy tính hiện tại? Bạn sẽ phải nhập lại License Key trên máy mới.",
+      onConfirm: executeResetHWID
+    });
+  };
+
   const handleLoginGoogle = async () => {
-    if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co') {
-        return alert("Lỗi cấu hình! Vui lòng kiểm tra file .env.local");
+    if (IS_PREVIEW_MOCK_MODE) {
+      setLoading(true);
+      setTimeout(() => {
+        setSession(MOCK_SESSION_DATA);
+        setProfile(MOCK_PROFILE_DATA);
+        setLoading(false);
+        showToast("Đăng nhập thành công dưới dạng tài khoản Xem thử!", "success");
+      }, 500);
+      return;
+    }
+
+    const supabaseClient = getSupabase();
+    if (!supabaseReady || !supabaseClient) {
+        return showToast("Cổng Supabase chưa tải xong, vui lòng thử lại sau.", "error");
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin, queryParams: { access_type: 'offline', prompt: 'consent' } }
     });
     if (error) {
-        alert("Lỗi đăng nhập Google: " + error.message);
+        showToast("Lỗi kết nối đăng nhập: " + error.message, "error");
         setLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (IS_PREVIEW_MOCK_MODE) {
+      setSession(null);
+      setProfile(null);
+      setShowPayment(false);
+      setMockResetCount(0); // Đưa số lần reset giả lập về lại ban đầu
+      showToast("Đã đăng xuất tài khoản giả lập.", "info");
+      return;
+    }
+
+    const supabaseClient = getSupabase();
+    if (supabaseClient) {
+      await supabaseClient.auth.signOut();
+    }
     setSession(null);
     setProfile(null);
     setShowPayment(false);
+    showToast("Đã đăng xuất tài khoản.", "info");
   };
 
-  const handleDownload = () => { window.open(DRIVE_DOWNLOAD_LINK, '_blank'); };
+  const handleDownload = () => { 
+    if (DRIVE_DOWNLOAD_LINK) {
+      window.open(DRIVE_DOWNLOAD_LINK, '_blank'); 
+    } else {
+      showToast("Đường dẫn tải plugin hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_DOWNLOAD_LINK)", "error");
+    }
+  };
 
   const handleTopup = () => {
-    if (!session) return alert("Vui lòng đăng nhập để mua Credits");
+    if (!session) return showToast("Vui lòng đăng nhập để mua Credits", "error");
     setShowPayment(true);
     setPaymentMethod('VND');
     setSelectedPkg(PACKAGES_VND[0]);
@@ -599,13 +842,27 @@ export default function App() {
     if (!profile || !selectedPkg) return "";
     const key = profile.license_key || 'UNKNOWN';
     const DESCRIPTION = `${key.split('-')[1] || key}`; 
+    // Trả về ảnh giả lập khi chạy thử không có cấu hình ngân hàng thật
+    if (!BANK_ID || !BANK_ACCOUNT) {
+      return "https://placehold.co/300x300/fdfbf7/0063A3?text=VietQR+Simulated";
+    }
     return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${selectedPkg.price}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
   };
 
   const copyToClipboard = async (text, isKey = false) => {
     if (text) {
       try {
-        await navigator.clipboard.writeText(text);
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        }
+        
         if (isKey) {
             setKeyCopySuccess(true);
             setTimeout(() => setKeyCopySuccess(false), 2000);
@@ -613,79 +870,141 @@ export default function App() {
             setCopySuccess(true);
             setTimeout(() => setCopySuccess(false), 2000);
         }
+        showToast("Đã sao chép vào bộ nhớ tạm!", "success");
       } catch (err) {
         console.error('Failed to copy', err);
+        showToast("Không thể tự động sao chép. Vui lòng bôi đen sao chép thủ công.", "error");
       }
     }
   };
 
   return (
-    <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID }}>
-      <div 
-        className="min-h-screen text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col relative"
-        style={{ 
-            backgroundColor: BG_COLOR,
-            backgroundImage: 'linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)',
-            backgroundSize: '20px 20px'
-        }}
-      >
-        <BackgroundDecorations />
+    <div 
+      className="min-h-screen text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col relative"
+      style={{ 
+          backgroundColor: BG_COLOR,
+          backgroundImage: 'linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)',
+          backgroundSize: '20px 20px'
+      }}
+    >
+      <BackgroundDecorations />
 
-        {showPayment && (
-            <PaymentModal 
-              t={t} 
-              paymentMethod={paymentMethod} 
-              handleSwitchMethod={handleSwitchMethod} 
-              selectedPkg={selectedPkg} 
-              setSelectedPkg={setSelectedPkg} 
-              setShowPayment={setShowPayment} 
-              paypalSuccess={paypalSuccess} 
-              profile={profile} 
-              getVietQRUrl={getVietQRUrl} 
-              setPaypalSuccess={setPaypalSuccess} 
-            />
-        )}
-        
-        <Navbar 
-            t={t} 
-            handleTopup={handleTopup} 
-            handleDownload={handleDownload} 
-            session={session} 
-            profile={profile} 
-            handleLogout={handleLogout} 
-            handleLoginGoogle={handleLoginGoogle} 
-            language={language} 
-            setLanguage={setLanguage} 
-            keyCopySuccess={keyCopySuccess} 
-            copyToClipboard={copyToClipboard}
-            handleResetHWID={handleResetHWID}
-            loading={loading}
-        />
-        
-        <main className="flex-grow w-full relative z-10 flex flex-col items-center justify-center">
-            <HeroSection t={t} handleDownload={handleDownload} />
-        </main>
-        
-        <footer className="mt-auto border-t border-slate-200 bg-white/60 backdrop-blur-sm py-8 relative z-10">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-                <div>{t.footerRights}</div>
-                <div className="flex gap-6">
-                        <a href="#" className="hover:text-blue-600">{t.footerTerms}</a>
-                        <a href="#" className="hover:text-blue-600">{t.footerPrivacy}</a>
-                        <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="hover:text-blue-600">{t.footerContact}</a>
-                </div>
-            </div>
-        </footer>
-        
-        <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
-            <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="w-12 h-12 text-white rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110" style={{ backgroundColor: PRIMARY_COLOR }}>
-                <Facebook className="w-6 h-6" />
-            </a>
-            <a href={ZALO_LINK} target="_blank" rel="noreferrer" className="w-12 h-12 text-white rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110 ring-2 ring-white" style={{ backgroundColor: PRIMARY_COLOR }}>
-                <MessageCircle className="w-6 h-6" />
-            </a>
+      {/* THÔNG BÁO BẬT CHẾ ĐỘ XEM THỬ */}
+      {IS_PREVIEW_MOCK_MODE && (
+        <div className="bg-amber-500 text-amber-950 font-semibold text-center text-xs py-1 relative z-50 shrink-0">
+          ⚠️ Chế độ Xem thử trên Canvas đang bật để tránh lỗi biên dịch. Thay đổi <code>const IS_PREVIEW_MOCK_MODE = false;</code> khi triển khai môi trường thật.
         </div>
+      )}
+
+      {/* ----------------- HỆ THỐNG TOAST NOTIFICATION TỰ THIẾT KẾ ----------------- */}
+      {toast.show && (
+        <div className={`fixed top-4 right-4 z-[110] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border animate-in slide-in-from-top-4 duration-300 ${
+          toast.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+          toast.type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+          'bg-blue-50 text-blue-800 border-blue-200'
+        }`}>
+          <span className="text-sm font-semibold">{toast.message}</span>
+          <button onClick={() => setToast({ ...toast, show: false })} className="hover:opacity-75 transition ml-1">
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* ----------------- HỘP THOẠI CONFIRM MODAL TỰ THIẾT KẾ ----------------- */}
+      {confirmModal.show && (
+        <div className="fixed inset-0 z-[105] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center border border-yellow-200">
+                <AlertTriangle size={20} />
+              </div>
+              <h4 className="text-lg font-bold text-slate-800 font-serif" style={{ color: PRIMARY_COLOR }}>Xác nhận thao tác</h4>
+            </div>
+            <p className="text-sm text-slate-600 mb-6 leading-relaxed">{confirmModal.message}</p>
+            <div className="flex gap-3 justify-end">
+              <button 
+                onClick={() => setConfirmModal({ show: false, onConfirm: null, message: '' })}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition"
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                onClick={() => {
+                  if (confirmModal.onConfirm) confirmModal.onConfirm();
+                  setConfirmModal({ show: false, onConfirm: null, message: '' });
+                }}
+                className="px-4 py-2 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition shadow-sm"
+                style={{ backgroundColor: PRIMARY_COLOR }}
+              >
+                Đồng ý
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPayment && (
+          <PaymentModal 
+            t={t} 
+            paymentMethod={paymentMethod} 
+            handleSwitchMethod={handleSwitchMethod} 
+            selectedPkg={selectedPkg} 
+            setSelectedPkg={setSelectedPkg} 
+            setShowPayment={setShowPayment} 
+            paypalSuccess={paypalSuccess} 
+            profile={profile} 
+            getVietQRUrl={getVietQRUrl} 
+            setPaypalSuccess={setPaypalSuccess} 
+            showToast={showToast}
+            paypalSdkReady={paypalSdkReady}
+          />
+      )}
+      
+      <Navbar 
+          t={t} 
+          handleTopup={handleTopup} 
+          handleDownload={handleDownload} 
+          session={session} 
+          profile={profile} 
+          handleLogout={handleLogout} 
+          handleLoginGoogle={handleLoginGoogle} 
+          language={language} 
+          setLanguage={setLanguage} 
+          keyCopySuccess={keyCopySuccess} 
+          copyToClipboard={copyToClipboard}
+          handleResetHWID={handleResetHWID}
+          loading={loading}
+      />
+      
+      <main className="flex-grow w-full relative z-10 flex flex-col items-center justify-center">
+          <HeroSection t={t} handleDownload={handleDownload} />
+      </main>
+      
+      <footer className="mt-auto border-t border-slate-200 bg-white/60 backdrop-blur-sm py-8 relative z-10">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+              <div>{t.footerRights}</div>
+              <div className="flex gap-6">
+                      <a href="#" className="hover:text-blue-600">{t.footerTerms}</a>
+                      <a href="#" className="hover:text-blue-600">{t.footerPrivacy}</a>
+                      {FACEBOOK_LINK && (
+                        <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="hover:text-blue-600">{t.footerContact}</a>
+                      )}
+              </div>
+          </div>
+      </footer>
+      
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+          {FACEBOOK_LINK && (
+            <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="w-12 h-12 text-white rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110" style={{ backgroundColor: PRIMARY_COLOR }}>
+              <Facebook className="w-6 h-6" />
+            </a>
+          )}
+          {ZALO_LINK && (
+            <a href={ZALO_LINK} target="_blank" rel="noreferrer" className="w-12 h-12 text-white rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110 ring-2 ring-white" style={{ backgroundColor: PRIMARY_COLOR }}>
+              <MessageCircle className="w-6 h-6" />
+            </a>
+          )}
       </div>
-    </PayPalScriptProvider>
+    </div>
   );
 }
