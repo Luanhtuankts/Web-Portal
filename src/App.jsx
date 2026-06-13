@@ -671,9 +671,13 @@ export default function App() {
 
               // Đối soát: Chỉ cập nhật giao diện nạp tiền thành công nếu số dư thực tế trong DB đã tăng lên thực sự
               if (newBalance > oldBalance) {
+                const addedAmount = newBalance - oldBalance;
                 if (showPayment && paymentMethod === 'VND') {
                    setShowPayment(false);
-                   setTimeout(() => showToast("Đã nhận được giao dịch nạp tiền! Tài khoản đã được cập nhật số dư.", "success"), 500);
+                   setTimeout(() => showToast(`Nạp tiền thành công! Tài khoản của bạn đã được cộng thêm ${addedAmount.toLocaleString('vi-VN')} VNĐ.`, "success"), 500);
+                } else {
+                   // Nếu người dùng lỡ đóng modal trước hoặc nạp qua luồng khác, vẫn hiện Toast thông báo số tiền được cộng lập tức!
+                   showToast(`Tài khoản đã được tự động cộng thêm ${addedAmount.toLocaleString('vi-VN')} VNĐ từ hệ thống!`, "success");
                 }
               }
             }
