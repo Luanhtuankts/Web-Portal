@@ -12,17 +12,12 @@ import {
 // ==============================================================================
 // 1. CẤU HÌNH BẬT/TẮT CHẾ ĐỘ XEM THỬ (MOCK MODE FOR CANVAS PREVIEW)
 // ==============================================================================
-// ĐẶT LÀ true: Để chạy thử giao diện, test tính năng ngay trên Canvas không bị lỗi biên dịch.
-// ĐẶT LÀ false: Khi deploy lên hosting thật (sẽ tự động kết nối Supabase & PayPal thật qua CDN).
 const IS_PREVIEW_MOCK_MODE = false;
 
-// Sử dụng chuẩn ES Modules của Vite để đọc biến môi trường tĩnh trên Cloudflare Pages.
-// Điều này giúp Vite dễ dàng bóc tách và thay thế tĩnh giá trị thực tế tại thời điểm build (Compile-time).
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 const PAYPAL_CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID || "";
 
-// Khởi tạo Supabase Client động nếu không ở chế độ giả lập
 let supabaseInstance = null;
 const getSupabase = () => {
   if (IS_PREVIEW_MOCK_MODE) return null;
@@ -34,7 +29,6 @@ const getSupabase = () => {
   return null;
 };
 
-// Hàm tải động các thư viện JS từ CDN bảo mật
 const loadScript = (src, id) => {
   return new Promise((resolve, reject) => {
     if (document.getElementById(id)) {
@@ -51,30 +45,30 @@ const loadScript = (src, id) => {
   });
 };
 
-// CẤU HÌNH MÀU SẮC TỔNG THỂ
 const PRIMARY_COLOR = "#0063A3";
-const BG_COLOR = "#fdfbf7";
+const BG_COLOR = "#fdfbf7"; // Nền sáng mặc định
 
 // TỪ ĐIỂN ĐA NGÔN NGỮ (TRANSLATIONS)
 const TRANSLATIONS = {
   VN: {
     login: "Đăng nhập",
     logout: "Đăng xuất",
-    credits: "VNĐ",
+    credits: "OpenSkp-AI Token",
     licenseKey: "License Key",
     copyKey: "Sao chép Key",
     copyKeyBtn: "Copy Key Ngay",
-    buyCredits: "Mua thêm Credits",
+    buyCredits: "Mua thêm Token",
     heroTitle: "Xin chào, Kiến trúc sư!",
     heroSubtitle: "\"Bạn là nhà thiết kế - hãy để AI dựng hình cho bạn.\"",
-    download: "Tải Plugin",
+    downloadMain: "OpenSkp-AI",
+    downloadLite: "OpenSkp-Lite",
     guide: "Hướng dẫn",
     backHome: "Quay lại Trang chủ",
     footerRights: "© 2026 OpenSkp. Bảo lưu mọi quyền.",
     footerTerms: "Điều khoản sử dụng",
     footerPrivacy: "Chính sách bảo mật",
     footerContact: "Liên hệ",
-    paymentTitle: "Nạp Credits",
+    paymentTitle: "Bảng giá phần mềm",
     paymentVND: "VNĐ",
     paymentUSD: "USD",
     paymentTotal: "Tổng thanh toán:",
@@ -82,26 +76,41 @@ const TRANSLATIONS = {
     paymentSuccess: "Thanh toán thành công!",
     paymentSuccessMsg: "Vui lòng gửi mã này cho Admin qua Zalo/Facebook.",
     paymentCardDesc: "Thẻ Tín dụng / Ghi nợ",
-    loginToView: "Vui lòng đăng nhập..."
+    loginToView: "Vui lòng đăng nhập...",
+    
+    // Bản dịch chuyên biệt cho Bảng giá
+    liteDesc: "Chức năng dựng mặt bằng 3D từ ảnh 2D.",
+    aiDesc: "Chuyên dựng mặt bằng, đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng hình 3D, ví dụ 1 khoang tủ bếp sẽ mất 6000 đến 8000 Token.",
+    pkgLiteValue: "Phiên bản Trọn đời",
+    pkgLiteLabel: "Mua đứt 1 lần, sử dụng vĩnh viễn",
+    pkgBasic: "Cơ bản",
+    pkgPopular: "Phổ biến (Tặng 5%)",
+    pkgAdvanced: "Nâng cao (Tặng 10%)",
+    pkgPro: "Siêu hời (Tặng 15%)",
+    selectedBadge: "ĐANG CHỌN",
+    statusActivated: "Đã kích hoạt",
+    statusInactive: "Chưa kích hoạt",
+    pricingPricing: "Bảng giá"
   },
   EN: {
     login: "Log in",
     logout: "Log out",
-    credits: "VND",
+    credits: "OpenSkp-AI Token",
     licenseKey: "License Key",
     copyKey: "Copy Key",
     copyKeyBtn: "Copy Key Now",
-    buyCredits: "Buy Credits",
+    buyCredits: "Buy Tokens",
     heroTitle: "Hello, Architect!",
     heroSubtitle: "You are the designer - let AI do the modeling for you.",
-    download: "Download Plugin",
+    downloadMain: "OpenSkp-AI",
+    downloadLite: "OpenSkp-Lite",
     guide: "Guide",
     backHome: "Back to Home",
     footerRights: "© 2026 OpenSkp. All rights reserved.",
     footerTerms: "Terms of Use",
     footerPrivacy: "Privacy Policy",
     footerContact: "Contact",
-    paymentTitle: "Buy Credits",
+    paymentTitle: "Software Pricing",
     paymentVND: "VND",
     paymentUSD: "USD",
     paymentTotal: "Total payment:",
@@ -109,40 +118,51 @@ const TRANSLATIONS = {
     paymentSuccess: "Payment Successful!",
     paymentSuccessMsg: "Please send this code to Admin via Zalo/Facebook.",
     paymentCardDesc: "Debit or Credit Card",
-    loginToView: "Please login..."
+    loginToView: "Please login...",
+
+    // Bản dịch chuyên biệt cho Bảng giá
+    liteDesc: "3D floor plan generation from 2D images.",
+    aiDesc: "Specializes in floor plans, furniture modeling, and much more. The system calculates costs based on Tokens consumed per AI 3D modeling request; e.g., a kitchen cabinet module costs 6,000 to 8,000 Tokens.",
+    pkgLiteValue: "Lifetime License",
+    pkgLiteLabel: "Pay once, use forever",
+    pkgBasic: "Basic",
+    pkgPopular: "Popular (+5%)",
+    pkgAdvanced: "Advanced (+10%)",
+    pkgPro: "Best Value (+15%)",
+    selectedBadge: "SELECTED",
+    statusActivated: "Activated",
+    statusInactive: "Inactive",
+    pricingPricing: "Pricing"
   }
 };
 
-// DỮ LIỆU GIẢ LẬP ĐỂ TEST TRÊN CANVAS PREVIEW
 const MOCK_SESSION_DATA = { user: { email: 'architect_test@openskp.com', id: 'mock-user-uuid-12345' } };
-const MOCK_PROFILE_DATA = { wallet_balance: 150000, license_key: 'OPENSKP-V2-PREVIEW-ACTIVE', is_active: true, hardware_id: 'HWID-SKETCHUP-CLIENT-9999' };
+const MOCK_PROFILE_DATA = { wallet_balance: 150000, lite: false, license_key: 'OPENSKP-V2-PREVIEW-ACTIVE', is_active: true, hardware_id: 'HWID-SKETCHUP-CLIENT-9999' };
 
-// CÁC ĐƯỜNG DẪN & CẤU HÌNH THANH TOÁN (ĐỌC ĐỘNG TỪ BIẾN MÔI TRƯỜNG AN TOÀN QUA VITE IMPORT.META.ENV)
 const ZALO_LINK = import.meta.env.VITE_ZALO_LINK || "";
 const FACEBOOK_LINK = import.meta.env.VITE_FACEBOOK_LINK || "";
 const DRIVE_DOWNLOAD_LINK = import.meta.env.VITE_DRIVE_DOWNLOAD_LINK || "";
+const DRIVE_LITE_DOWNLOAD_LINK = import.meta.env.VITE_DRIVE_LITE_DOWNLOAD_LINK || "";
 
 const BANK_ID = import.meta.env.VITE_BANK_ID || ""; 
 const BANK_ACCOUNT = import.meta.env.VITE_BANK_ACCOUNT || ""; 
 const ACCOUNT_NAME = import.meta.env.VITE_BANK_ACCOUNT_NAME || ""; 
 
+const LITE_PKG_VND = { id: 'lite_vnd', price: 200000, value: 'Phiên bản Trọn đời', label: 'Mua đứt 1 lần, sử dụng vĩnh viễn', isLite: true };
+const LITE_PKG_USD = { id: 'lite_usd', price: 10, value: 'Lifetime License', label: 'Pay once, use forever', isLite: true };
+
 const PACKAGES_VND = [
-  { id: 1, price: 50000, value: 50000, label: "Cơ bản", popular: false, currency: 'VND' },
-  { id: 2, price: 100000, value: 105000, label: "Phổ biến (Tặng 5%)", popular: true, currency: 'VND' },
-  { id: 3, price: 200000, value: 220000, label: "Nâng cao (Tặng 10%)", popular: false, currency: 'VND' },
-  { id: 4, price: 500000, value: 575000, label: "Siêu hời (Tặng 15%)", popular: false, currency: 'VND' },
+  { id: 1, price: 50000, value: 50000, label: "Cơ bản", currency: 'VND' },
+  { id: 2, price: 100000, value: 105000, label: "Phổ biến (Tặng 5%)", currency: 'VND' },
+  { id: 3, price: 200000, value: 220000, label: "Nâng cao (Tặng 10%)", currency: 'VND' },
+  { id: 4, price: 500000, value: 575000, label: "Siêu hời (Tặng 15%)", currency: 'VND' },
 ];
 
 const PACKAGES_USD = [
-  { id: 'usd_1', price: 2, value: 50000, label: "Basic", popular: false, currency: 'USD' },
-  { id: 'usd_2', price: 4, value: 105000, label: "Popular (+5%)", popular: true, currency: 'USD' },
-  { id: 'usd_3', price: 8, value: 220000, label: "Advanced (+10%)", popular: false, currency: 'USD' },
-  { id: 'usd_4', price: 20, value: 575000, label: "Pro (+15%)", popular: false, currency: 'USD' },
+  { id: 'usd_3', price: 8, value: 220000, label: "Advanced (+10%)", currency: 'USD' },
+  { id: 'usd_4', price: 20, value: 575000, label: "Pro (+15%)", currency: 'USD' },
 ];
 
-// ==============================================================================
-// GIẢ LẬP PAYPAL BUTTONS ĐỂ CHẠY THỬ TRÊN CANVAS KHÔNG LỖI BIÊN DỊCH
-// ==============================================================================
 const PayPalButtonContainer = ({ price, value, onSuccess, onError }) => {
   const containerRef = useRef(null);
 
@@ -171,7 +191,7 @@ const PayPalButtonContainer = ({ price, value, onSuccess, onError }) => {
           return actions.order.create({
             purchase_units: [{
               amount: { value: price.toString() },
-              description: `Buy ${value} Credits`
+              description: `Buy ${value}`
             }]
           });
         },
@@ -205,7 +225,7 @@ const BackgroundDecorations = () => (
   <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none h-full w-full">
        <img
           src="/Sketch2.png"
-          className="absolute top-[55%] -right-[5%] w-[45%] opacity-[0.15] rotate-[0deg]"
+          className="absolute top-[55%] -right-[5%] w-[45%] opacity-[0.15] rotate-[0deg] mix-blend-multiply"
           alt="Decoration"
        />
        <img
@@ -214,16 +234,11 @@ const BackgroundDecorations = () => (
           alt="Decoration"
           onError={(e) => e.target.style.display = 'none'}
        />
-       <img
-          src="/Sketch2.png"
-          className="absolute top-[85%] -right-[5%] w-[30%] opacity-[0.04] rotate-[45deg] mix-blend-multiply"
-          alt="Decoration"
-          onError={(e) => e.target.style.display = 'none'}
-       />
   </div>
 );
 
-const HeroSection = ({ t, handleDownload }) => (
+// HIỂN THỊ 2 NÚT TẢI Ở GIỮA MÀN HÌNH
+const HeroSection = ({ t, handleDownloadMain, handleDownloadLite }) => (
   <div className="flex flex-col items-center text-center mb-24 mt-6 animate-fade-in px-4 relative z-20">
       <div className="relative z-0 -mb-0.5 pointer-events-none select-none">
           <img 
@@ -236,125 +251,178 @@ const HeroSection = ({ t, handleDownload }) => (
               }}
           />
       </div>
-      <div className="relative z-10 pt-4">
-          <h1 className="text-3xl font-serif sm:text-5xl mb-4 max-w-3xl leading-tight text-primary-brand" style={{ color: PRIMARY_COLOR }}>
+      <div className="relative z-10 pt-4 text-slate-800">
+          <h1 className="text-3xl font-serif sm:text-5xl mb-4 max-w-3xl leading-tight" style={{ color: PRIMARY_COLOR }}>
               {t.heroTitle} <br/>
           </h1>
-          <h1 className="text-lg sm:text-2xl mt-2 block text-primary-brand" style={{ color: PRIMARY_COLOR }}>
+          <h1 className="text-lg sm:text-2xl mt-2 block" style={{ color: PRIMARY_COLOR }}>
               {t.heroSubtitle}
           </h1>
       </div>
-      <div className="flex flex-col sm:flex-row gap-4 mt-6 mb-1 relative z-20">
+      <div className="flex flex-col sm:flex-row gap-4 mt-8 mb-1 relative z-20">
           <button 
-              onClick={handleDownload}
-              className="px-8 py-3 rounded-xl text-white font-bold text-lg shadow-lg hover:translate-y-[-2px] transition flex items-center justify-center gap-2"
+              onClick={handleDownloadMain}
+              className="px-8 py-3 rounded-xl text-white text-lg shadow-xl hover:translate-y-[-2px] hover:opacity-90 transition flex items-center justify-center gap-2 font-bold"
               style={{ backgroundColor: PRIMARY_COLOR }}
           >
-              <Download size={20} /> {t.download}
+              <Download size={20} /> {t.downloadMain}
+          </button>
+          <button 
+              onClick={handleDownloadLite}
+              className="px-8 py-3 rounded-xl bg-white border-2 text-slate-700 font-bold text-lg shadow-lg hover:translate-y-[-2px] hover:bg-slate-50 transition flex items-center justify-center gap-2"
+              style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
+          >
+              <Download size={20} /> {t.downloadLite}
           </button>
       </div>
   </div>
 );
 
-const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSelectedPkg, setShowPayment, paypalSuccess, profile, getVietQRUrl, setPaypalSuccess, showToast, paypalSdkReady }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 ">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
-          <div className="flex-1 p-6 bg-slate-50 border-r border-slate-100 flex flex-col">
-              <h3 className="text-xl font-normal mb-4 flex items-center gap-2 font-serif" style={{ color: PRIMARY_COLOR }}>
-                   {t.paymentTitle}
-              </h3>
-              <div className="flex bg-slate-200 p-1 rounded-xl mb-4 font-sans shrink-0">
-                  <button onClick={() => handleSwitchMethod('VND')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${paymentMethod === 'VND' ? 'bg-white shadow text-slate-800' : 'text-slate-500'}`}>
-                      {t.paymentVND}
-                  </button>
-                  <button onClick={() => handleSwitchMethod('USD')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${paymentMethod === 'USD' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>
-                      {t.paymentUSD}
-                  </button>
-              </div>
-              <div className="space-y-3 flex-1 custom-scrollbar pr-1 overflow-y-auto">
-                  {(paymentMethod === 'VND' ? PACKAGES_VND : PACKAGES_USD).map((pkg) => (
-                      <div 
-                          key={pkg.id} onClick={() => setSelectedPkg(pkg)}
-                          className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-center group
-                              ${selectedPkg.id === pkg.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300'}`}
-                      >
-                          {pkg.popular && (
-                              <span className="absolute -top-2.5 -right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
-                                  <Star className="w-3 h-3 fill-current"/> HOT
-                              </span>
-                          )}
-                          <div>
-                              <div className="font-bold text-slate-700">{pkg.value.toLocaleString('vi-VN')} {t.credits}</div>
-                              <div className="text-xs text-slate-500">{pkg.label}</div>
-                          </div>
-                          <div className="text-blue-600 font-bold font-mono">
-                              {paymentMethod === 'USD' ? '$' : ''}{pkg.price.toLocaleString('vi-VN')}{paymentMethod === 'VND' ? ' đ' : ''}
-                          </div>
-                      </div>
-                  ))}
-              </div>
-          </div>
-          <div className="flex-1 flex flex-col bg-white relative overflow-y-auto custom-scrollbar">
-               <button onClick={() => setShowPayment(false)} className="absolute top-4 right-4 p-1 hover:bg-slate-100 rounded-full transition text-slate-500 z-10">
-                  <X className="w-6 h-6"/>
-              </button>
-              <div className="px-8 pt-16 pb-8 flex flex-col items-center justify-start min-h-full text-center">
-                  {paypalSuccess ? (
-                       <div className="animate-fade-in w-full">
-                          <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle2 className="w-10 h-10" /></div>
-                          <h3 className="text-xl font-bold text-slate-800">{t.paymentSuccess}</h3>
-                          <div className="bg-slate-100 p-3 rounded-lg font-mono text-sm border border-slate-200 my-4 select-all text-slate-700">{paypalSuccess}</div>
-                          <h5 className="text-slate-500 text-xs">{t.paymentSuccessMsg}</h5>
-                      </div>
-                  ) : (
-                      <div className="w-full">
-                          <h5 className="text-slate-500 text-sm mb-4">{t.paymentTotal} <span className="text-2xl font-bold text-slate-800 block mt-1">{selectedPkg.price.toLocaleString('vi-VN')} {paymentMethod === 'VND' ? 'đ' : '$'}</span></h5>
-                          {paymentMethod === 'VND' ? (
-                              <div className="bg-white p-2 border border-slate-200 rounded-xl shadow-sm inline-block">
-                                  {profile ? (
-                                      <img src={getVietQRUrl()} alt="VietQR" className="w-48 h-48 object-contain animate-fade-in" />
-                                  ) : (
-                                      <div className="w-48 h-48 flex items-center justify-center text-xs text-gray-400 bg-gray-50 rounded">
-                                          <Loader2 className="animate-spin mr-2" /> {t.loginToView}
-                                      </div>
-                                  )}
-                                  <h5 className="text-[10px] text-slate-400 mt-2">{t.paymentScan}</h5>
-                              </div>
-                          ) : (
-                              <div className="w-full px-4 mt-4 relative z-0">
-                                  <div className="h-4"></div>
-                                  {(IS_PREVIEW_MOCK_MODE || paypalSdkReady) ? (
-                                      <PayPalButtonContainer 
-                                          price={selectedPkg.price}
-                                          value={selectedPkg.value}
-                                          onSuccess={(orderId) => {
-                                              setPaypalSuccess(orderId);
-                                              showToast("Thanh toán PayPal thành công!", "success");
-                                          }}
-                                          onError={() => {
-                                              showToast("Giao dịch thất bại / Payment Failed", "error");
-                                          }}
-                                      />
-                                  ) : (
-                                      <div className="w-full h-12 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-slate-100">
-                                          <Loader2 className="animate-spin mr-2 w-4 h-4" /> Đang kết nối PayPal...
-                                      </div>
-                                  )}
-                                  <div className="bg-blue-50 p-3 rounded-lg text-[10px] text-blue-800 mt-4 border border-blue-100">
-                                      ℹ️ {t.paymentCardDesc}
-                                  </div>
-                                  <div className="h-4"></div>
-                              </div>
-                          )}
-                      </div>
-                  )}
-              </div>
-          </div>
-      </div>
-  </div>
-);
+// GIAO DIỆN BẢNG GIÁ
+const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSelectedPkg, setShowPayment, paypalSuccess, profile, getVietQRUrl, setPaypalSuccess, showToast, paypalSdkReady }) => {
+  const litePkg = paymentMethod === 'VND' ? LITE_PKG_VND : LITE_PKG_USD;
+  const tokensPkgList = paymentMethod === 'VND' ? PACKAGES_VND : PACKAGES_USD;
 
-const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout, handleLoginGoogle, language, setLanguage, keyCopySuccess, copyToClipboard, handleResetHWID, loading }) => {
+  const renderPriceCard = (pkg) => {
+      const isSelected = selectedPkg.id === pkg.id;
+      
+      let label = pkg.label;
+      if (pkg.id === 'lite_vnd' || pkg.id === 'lite_usd') label = t.pkgLiteLabel;
+      else if (pkg.id === 1) label = t.pkgBasic;
+      else if (pkg.id === 2) label = t.pkgPopular;
+      else if (pkg.id === 3 || pkg.id === 'usd_3') label = t.pkgAdvanced;
+      else if (pkg.id === 4 || pkg.id === 'usd_4') label = t.pkgPro;
+
+      let valueDisplay = pkg.isLite ? t.pkgLiteValue : `${pkg.value.toLocaleString('vi-VN')} Token`;
+
+      return (
+        <div
+            key={pkg.id} onClick={() => setSelectedPkg(pkg)}
+            className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-center group
+                ${isSelected ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-slate-200 bg-white hover:border-blue-300'}`}
+        >
+            {isSelected && (
+                <span className="absolute -top-2.5 -right-2 bg-blue-500 text-white text-[10px] font-normal px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3"/> {t.selectedBadge}
+                </span>
+            )}
+            <div className="flex items-center gap-4">
+                <div className={`p-2.5 rounded-lg ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                    {pkg.isLite ? <Star className="w-6 h-6" /> : <Zap className="w-6 h-6" />}
+                </div>
+                <div>
+                    <div className="font-normal text-slate-700 text-base">
+                        {valueDisplay}
+                    </div>
+                    <div className="text-xs font-normal text-slate-500">{label}</div>
+                </div>
+            </div>
+            <div className="text-blue-600 font-bold font-mono text-lg">
+                {paymentMethod === 'USD' ? '$' : ''}{pkg.price.toLocaleString('vi-VN')}{paymentMethod === 'VND' ? ' đ' : ''}
+            </div>
+        </div>
+      );
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
+            
+            {/* --- SELECTION AREA --- */}
+            <div className="w-full md:w-3/5 flex flex-col border-r border-slate-200 bg-slate-50 p-6 overflow-y-auto custom-scrollbar">
+                
+                {/* PHẦN OPENSKP-LITE */}
+                <div className="mb-8">
+                    <h3 className="text-2xl font-bold font-sans mb-1 text-slate-800 tracking-tight flex items-center gap-2">
+                        OpenSkp-Lite
+                    </h3>
+                    <p className="text-sm text-slate-500 mb-4 text-justify">{t.liteDesc}</p>
+                    {renderPriceCard(litePkg)}
+                </div>
+
+                {/* PHẦN OPENSKP-AI */}
+                <div>
+                     <h3 className="text-2xl font-bold font-sans mb-1 text-slate-800 tracking-tight flex items-center gap-2">
+                         OpenSkp-AI
+                    </h3>
+                    <p className="text-sm text-slate-500 mb-4 text-justify">{t.aiDesc}</p>
+                    <div className="space-y-3">
+                        {tokensPkgList.map((pkg) => renderPriceCard(pkg))}
+                    </div>
+                </div>
+            </div>
+
+            {/* --- CHECKOUT AREA --- */}
+            <div className="w-full md:w-2/5 flex flex-col relative bg-white overflow-y-auto custom-scrollbar">
+                <button onClick={() => setShowPayment(false)} className="absolute top-4 right-4 p-1 hover:bg-slate-100 rounded-full transition text-slate-500 z-10">
+                    <X className="w-6 h-6"/>
+                </button>
+
+                <div className="px-6 pt-12 pb-6 flex flex-col items-center justify-start min-h-full text-center">
+                    <div className="w-full flex bg-slate-100 p-1 rounded-xl mb-6 font-sans shrink-0">
+                        <button onClick={() => handleSwitchMethod('VND')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${paymentMethod === 'VND' ? 'bg-white shadow text-slate-800' : 'text-slate-500'}`}>
+                            {t.paymentVND}
+                        </button>
+                        <button onClick={() => handleSwitchMethod('USD')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${paymentMethod === 'USD' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>
+                            {t.paymentUSD}
+                        </button>
+                    </div>
+
+                    {paypalSuccess ? (
+                        <div className="animate-fade-in w-full">
+                            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle2 className="w-10 h-10" /></div>
+                            <h3 className="text-xl font-bold text-slate-800">{t.paymentSuccess}</h3>
+                            <div className="bg-slate-100 p-3 rounded-lg font-mono text-sm border border-slate-200 my-4 select-all text-slate-700">{paypalSuccess}</div>
+                            <h5 className="text-slate-500 text-xs">{t.paymentSuccessMsg}</h5>
+                        </div>
+                    ) : (
+                        <div className="w-full">
+                            <h5 className="text-slate-500 text-sm mb-4">{t.paymentTotal} <span className="text-2xl font-bold text-slate-800 block mt-1">{selectedPkg.price.toLocaleString('vi-VN')} {paymentMethod === 'VND' ? 'đ' : '$'}</span></h5>
+                            {paymentMethod === 'VND' ? (
+                                <div className="bg-white p-2 border border-slate-200 rounded-xl shadow-sm inline-block">
+                                    {profile ? (
+                                        <img src={getVietQRUrl()} alt="VietQR" className="w-48 h-48 object-contain animate-fade-in" />
+                                    ) : (
+                                        <div className="w-48 h-48 flex items-center justify-center text-xs text-gray-400 bg-gray-50 rounded">
+                                            <Loader2 className="animate-spin mr-2" /> {t.loginToView}
+                                        </div>
+                                    )}
+                                    <h5 className="text-[10px] text-slate-400 mt-2">{t.paymentScan}</h5>
+                                </div>
+                            ) : (
+                                <div className="w-full px-4 mt-4 relative z-0">
+                                    {(IS_PREVIEW_MOCK_MODE || paypalSdkReady) ? (
+                                        <PayPalButtonContainer 
+                                            price={selectedPkg.price}
+                                            value={selectedPkg.value}
+                                            onSuccess={(orderId) => {
+                                                setPaypalSuccess(orderId);
+                                                showToast("Thanh toán PayPal thành công!", "success");
+                                            }}
+                                            onError={() => {
+                                                showToast("Giao dịch thất bại / Payment Failed", "error");
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="w-full h-12 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-slate-100">
+                                            <Loader2 className="animate-spin mr-2 w-4 h-4" /> Đang kết nối PayPal...
+                                        </div>
+                                    )}
+                                    <div className="bg-blue-50 p-3 rounded-lg text-[10px] text-blue-800 mt-4 border border-blue-100">
+                                        ℹ️ {t.paymentCardDesc}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    </div>
+  );
+};
+
+const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoogle, language, setLanguage, keyCopySuccess, copyToClipboard, handleResetHWID, loading }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navTextStyle = {
@@ -366,30 +434,45 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
   };
 
   const renderUserDashboard = () => (
-      <div className="flex items-center gap-3 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm animate-fade-in">
+      <div className="flex items-center bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 animate-fade-in text-slate-800">
+          
+          {/* CỘT 1: Token */}
           <div className="flex items-center gap-2 pl-2">
               <div className="text-right">
-                  <div className="text-[10px] uppercase text-slate-400 font-normal tracking-wider leading-none mb-0.5">{t.credits}</div>
-                  <div className="text-base font-normal leading-none" style={{ color: PRIMARY_COLOR }}>
+                  <div className="text-[10px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-0.5">{t.credits}</div>
+                  <div className="text-base font-bold leading-none" style={{ color: PRIMARY_COLOR }}>
                       <span>{Number(profile?.wallet_balance || 0).toLocaleString('vi-VN')}</span>
                   </div>
               </div>
               <button 
                   onClick={(e) => { e.stopPropagation(); handleTopup(); setIsMobileMenuOpen(false); }} 
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow hover:scale-105 transition" 
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow hover:scale-105 transition shrink-0" 
                   style={{ backgroundColor: PRIMARY_COLOR }}
               >
                   <Plus size={16} strokeWidth={2} />
               </button>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-lg border border-slate-200">
+
+          {/* VÁCH NGĂN DỌC */}
+          <div className="w-px h-8 bg-slate-200 mx-2.5"></div>
+
+          {/* CỘT 2: Trạng thái OpenSkp-Lite */}
+          <div className="flex flex-col justify-center items-start pr-1 w-[110px] whitespace-nowrap">
+              <div className="text-[9px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-1">OpenSkp-Lite</div>
+              <div className={`text-[10px] font-bold uppercase leading-none ${profile?.lite ? 'text-blue-600' : 'text-slate-400'}`}>
+                   {profile?.lite ? t.statusActivated : t.statusInactive}
+              </div>
+          </div>
+
+          {/* CỘT 3: License Key */}
+          <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-lg border border-slate-200 ml-1">
                   <div className="flex flex-col items-start">
-                  <span className="text-[9px] font-normal text-slate-400 uppercase leading-none">{t.licenseKey}</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase leading-none">{t.licenseKey}</span>
                   <input 
                     type="text" 
                     readOnly 
                     value={profile?.license_key || 'Đang tạo mã...'} 
-                    className="text-xs font-mono font-normal text-slate-700 leading-tight bg-transparent outline-none border-none w-24 cursor-default"
+                    className="text-xs font-mono font-bold text-slate-700 leading-tight bg-transparent outline-none border-none w-24 cursor-default"
                   />
                   </div>
                   <button 
@@ -399,7 +482,7 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
                           copyToClipboard(profile.license_key, true);
                       }
                   }} 
-                  className="text-slate-400 hover:text-blue-600 transition p-0.5 hover:bg-white rounded-md"
+                  className="text-slate-400 hover:text-blue-600 transition p-0.5 hover:bg-white rounded-md shrink-0"
                   >
                   {keyCopySuccess ? <CheckCircle2 size={14} className="text-green-600"/> : <Copy size={14} />}
                   </button>
@@ -408,7 +491,7 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
   );
 
   return (
-    <nav className="border-b border-gray-200 sticky top-0 z-50 bg-[#fdfbf7]/95 backdrop-blur-sm transition-all duration-300">
+    <nav className="border-b border-gray-200 sticky top-0 z-50 bg-[#fdfbf7]/95 backdrop-blur-sm transition-all duration-300 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center relative">
             <div className="flex items-center gap-6 lg:gap-8">
                 <div className="flex items-center gap-2 cursor-pointer group shrink-0" onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setIsMobileMenuOpen(false); }}>
@@ -416,8 +499,8 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
                     <span className="font-serif font-normal text-2xl tracking-tight mt-1" style={{ color: PRIMARY_COLOR }}>OpenSkp</span>
                 </div>
                 <div className="hidden md:flex items-center gap-5 pt-1">
-                    <button onClick={handleTopup} className="text-sm hover:opacity-70 transition hover:scale-105" style={navTextStyle}>{language === 'VN' ? 'Bảng giá' : 'Pricing'}</button>
-                    <button onClick={handleDownload} className="text-sm hover:opacity-70 transition hover:scale-105" style={navTextStyle}>{t.download}</button>
+                    <button onClick={handleTopup} className="text-sm hover:opacity-80 transition hover:scale-105" style={navTextStyle}>{t.pricingPricing}</button>
+                    <a href="https://www.youtube.com/@OpenSkp" target="_blank" rel="noreferrer" className="text-sm hover:opacity-80 transition hover:scale-105" style={navTextStyle}>{t.guide}</a>
                 </div>
             </div>
 
@@ -429,9 +512,9 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
                             <User size={20} />
                         </div>
                         <div className="absolute right-0 top-full pt-3 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right">
-                            <div className="bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 p-4 flex flex-col gap-3">
+                            <div className="bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 p-4 flex flex-col gap-3 text-slate-800">
                                 <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-                                    <div className="w-8 h-8 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-primary-brand border border-slate-100">
+                                    <div className="w-8 h-8 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-primary-brand border border-slate-100" style={{ color: PRIMARY_COLOR }}>
                                         <User size={16} />
                                     </div>
                                     <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -460,11 +543,11 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
                         </div>
                     </div>
                 ) : (
-                    <button onClick={handleLoginGoogle} className="px-3 py-1.5 rounded-lg text-white font-normal text-xs shadow-md hover:opacity-90 transition flex items-center gap-2" style={{ backgroundColor: PRIMARY_COLOR }}>
+                    <button onClick={handleLoginGoogle} className="px-3 py-1.5 rounded-lg text-white font-bold text-xs shadow-md hover:opacity-90 transition flex items-center gap-2" style={{ backgroundColor: PRIMARY_COLOR }}>
                         <User size={14} /> <span>{t.login}</span>
                     </button>
                 )}
-                <button onClick={() => setLanguage(language === 'VN' ? 'EN' : 'VN')} className="flex items-center gap-1 text-slate-500 font-normal text-[10px] hover:text-slate-900 border border-slate-200 px-2 py-1 rounded-md bg-white">
+                <button onClick={() => setLanguage(language === 'VN' ? 'EN' : 'VN')} className="flex items-center gap-1 text-slate-500 font-normal text-[10px] hover:text-slate-900 border border-slate-200 px-2 py-1 rounded-md bg-white transition">
                     <Globe size={12} /><span>{language}</span>
                 </button>
             </div>
@@ -478,8 +561,8 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
             <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-100 shadow-xl animate-in slide-in-from-top-1 duration-200 z-50">
                 <div className="flex flex-col py-4 gap-4 items-center">
                     <div className="w-full flex flex-col items-center gap-2 border-b border-gray-50 pb-4">
-                      <button onClick={() => { handleTopup(); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{language === 'VN' ? 'Bảng giá' : 'Pricing'}</button>
-                      <button onClick={() => { handleDownload(); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{t.download}</button>
+                      <button onClick={() => { handleTopup(); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{t.pricingPricing}</button>
+                      <a href="https://www.youtube.com/@OpenSkp" target="_blank" rel="noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{t.guide}</a>
                     </div>
                     <div className="flex flex-col items-center gap-3 w-full px-4">
                         {session ? (
@@ -493,7 +576,7 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
                                         <LogOut size={14} /> {t.logout}
                                     </button>
                                 </div>
-                                <div className="w-full max-w-xs mt-2 p-3 bg-white border border-slate-100 shadow-sm rounded-xl text-left">
+                                <div className="w-full max-w-xs mt-2 p-3 bg-white border border-slate-100 shadow-sm rounded-xl text-left text-slate-800">
                                     <p className="text-xs font-semibold text-slate-500 mb-2">Trạng thái khóa máy (HWID):</p>
                                     {profile?.hardware_id ? (
                                         <div>
@@ -508,7 +591,7 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
                                 </div>
                             </>
                         ) : (
-                            <button onClick={() => { handleLoginGoogle(); setIsMobileMenuOpen(false); }} className="w-full max-w-xs py-3 rounded-lg text-white font-normal text-sm shadow-md flex items-center justify-center gap-2" style={{ backgroundColor: PRIMARY_COLOR }}>
+                            <button onClick={() => { handleLoginGoogle(); setIsMobileMenuOpen(false); }} className="w-full max-w-xs py-3 rounded-lg text-white font-bold text-sm shadow-md flex items-center justify-center gap-2" style={{ backgroundColor: PRIMARY_COLOR }}>
                                 <User size={16} /> {t.login}
                             </button>
                         )}
@@ -529,7 +612,6 @@ const Navbar = ({ t, handleTopup, handleDownload, session, profile, handleLogout
 
 export default function App() {
   
-  // QUẢN LÝ TRẠNG THÁI (STATE)
   const [session, setSession] = useState(null); 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -541,20 +623,13 @@ export default function App() {
   const [selectedPkg, setSelectedPkg] = useState(PACKAGES_VND[0]);
   const [paypalSuccess, setPaypalSuccess] = useState(null);
   
-  // Trạng thái tải thư viện cho CDN (Khi deploy thật)
   const [supabaseReady, setSupabaseReady] = useState(false);
   const [paypalSdkReady, setPaypalSdkReady] = useState(false);
-
-  // Bộ đếm số lần hủy khóa thiết bị HWID giả lập để phục vụ kiểm thử chế độ Xem thử (Lớp phòng vệ 2)
   const [mockResetCount, setMockResetCount] = useState(0);
 
-  // Hệ thống thông báo tự phát triển (Toast State)
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
-  
-  // Hộp thoại xác nhận hành động tự phát triển (Confirmation Modal State)
   const [confirmModal, setConfirmModal] = useState({ show: false, message: '', onConfirm: null });
 
-  // UseRef lưu trữ giá trị Profile mới nhất để ngăn chặn rò rỉ hoặc resubscribe Realtime
   const latestProfileRef = useRef(profile);
   useEffect(() => {
     latestProfileRef.current = profile;
@@ -562,7 +637,6 @@ export default function App() {
 
   const t = TRANSLATIONS[language];
 
-  // Hàm hiển thị thông báo thay thế alert()
   const showToast = (message, type = 'info') => {
     setToast({ show: true, message, type });
     setTimeout(() => {
@@ -570,10 +644,8 @@ export default function App() {
     }, 3500);
   };
 
-  // KÍCH HOẠT TIẾN TRÌNH TẢI CDN TRÊN THIẾT BỊ THẬT (KHI IS_PREVIEW_MOCK_MODE = FALSE)
   useEffect(() => {
     if (IS_PREVIEW_MOCK_MODE) {
-      // Ở chế độ Xem thử trên Canvas, tự động đăng nhập tài khoản giả lập ngay lập tức để người dùng tương tác
       setSession(MOCK_SESSION_DATA);
       setProfile(MOCK_PROFILE_DATA);
       setSupabaseReady(true);
@@ -596,7 +668,6 @@ export default function App() {
     initSupabase();
   }, []);
 
-  // Tải PayPal SDK động khi người dùng ở môi trường thật
   useEffect(() => {
     if (IS_PREVIEW_MOCK_MODE) return;
 
@@ -617,7 +688,6 @@ export default function App() {
     }
   }, [showPayment, paymentMethod]);
 
-  // KẾT NỐI REALTIME & AUTHENTICATION (KHI IS_PREVIEW_MOCK_MODE = FALSE)
   useEffect(() => {
     if (IS_PREVIEW_MOCK_MODE) return;
 
@@ -646,37 +716,37 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, [supabaseReady]);
 
-  // Đăng ký kênh Realtime để tự cập nhật số dư khi khách hàng nạp SePay thành công
-  // VÁ LỖ HỔNG 3: Luôn sử dụng Secure Pull từ DB chính chủ khi có sự kiện Realtime thay vì tin ngay Client payload
   useEffect(() => {
     if (IS_PREVIEW_MOCK_MODE) return;
 
     const supabaseClient = getSupabase();
-    if (!supabaseReady || !supabaseClient || !session?.user?.id) return;
+    if (!supabaseReady || !supabaseClient) return;
 
     const channel = supabaseClient
       .channel('realtime-credits')
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'users_v2', filter: `id=eq.${session.user.id}` },
+        { event: 'UPDATE', schema: 'public', table: 'users_v2', filter: `id=eq.${session?.user?.id}` },
         async (payload) => {
-          console.log("🔔 Nhận tín hiệu Realtime từ Postgres, đang tiến hành kéo dữ liệu xác minh (Secure Pull)...");
-          
           try {
-            // Thực hiện kéo độc lập có màng lọc auth.uid() để đảm bảo tính an toàn chống hacker can thiệp client package
+            if (!session?.user?.id) return;
             const verifiedData = await fetchProfile(session.user.id);
             if (verifiedData) {
               const oldBalance = latestProfileRef.current?.wallet_balance || 0;
               const newBalance = verifiedData.wallet_balance || 0;
+              const oldLite = latestProfileRef.current?.lite || false;
+              const newLite = verifiedData.lite || false;
 
-              // Đối soát: Chỉ cập nhật giao diện nạp tiền thành công nếu số dư thực tế trong DB đã tăng lên thực sự
-              if (newBalance > oldBalance) {
+              if (newLite && !oldLite) {
+                if (showPayment) setShowPayment(false);
+                showToast(`🎉 Kích hoạt thành công! Tài khoản của bạn đã được nâng cấp lên gói LITE.`, "success");
+              } 
+              else if (newBalance > oldBalance) {
                 const addedAmount = newBalance - oldBalance;
                 if (showPayment && paymentMethod === 'VND') {
                    setShowPayment(false);
                    setTimeout(() => showToast(`Nạp tiền thành công! Tài khoản của bạn đã được cộng thêm ${addedAmount.toLocaleString('vi-VN')} VNĐ.`, "success"), 500);
                 } else {
-                   // Nếu người dùng lỡ đóng modal trước hoặc nạp qua luồng khác, vẫn hiện Toast thông báo số tiền được cộng lập tức!
                    showToast(`Tài khoản đã được tự động cộng thêm ${addedAmount.toLocaleString('vi-VN')} VNĐ từ hệ thống!`, "success");
                 }
               }
@@ -706,7 +776,7 @@ export default function App() {
 
       if (error) throw error;
       setProfile(data);
-      return data; // Trả về dữ liệu chính chủ để làm màng lọc xác thực Realtime
+      return data; 
     } catch (err) {
       console.error("⚠️ Lỗi truy xuất hồ sơ:", err.message);
       if (!isRetry) {
@@ -722,14 +792,11 @@ export default function App() {
     if (IS_PREVIEW_MOCK_MODE) {
       setLoading(true);
       setTimeout(() => {
-        // KIỂM THỬ GIẢ LẬP LỖ HỔNG 4: Trình diễn lỗi ném ra từ cơ sở dữ liệu nếu vượt quá 3 lần
         if (mockResetCount >= 3) {
           showToast("Giao dịch không thành công: Bạn đã vượt quá giới hạn cho phép (Tối đa 3 lần reset trong 24 giờ)!", "error");
           setLoading(false);
           return;
         }
-        
-        // Ghi nhận tăng lượt reset giả lập
         setMockResetCount(prev => prev + 1);
         setProfile(prev => ({ ...prev, hardware_id: null }));
         setLoading(false);
@@ -742,13 +809,11 @@ export default function App() {
     if (!supabaseClient) return;
 
     setLoading(true);
-    // Gọi hàm RPC nạp vào Postgres đã gia cố logic bảo mật đếm log reset 24 giờ qua
     const { error } = await supabaseClient.rpc('reset_hwid', { p_license_key: profile.license_key });
     if (!error) {
       showToast("Hủy liên kết máy thành công! License đã sẵn sàng cho thiết bị mới.", "success");
       fetchProfile(session.user.id);
     } else {
-      // Nhận trực tiếp thông điệp lỗi tự định nghĩa "Bạn đã vượt quá giới hạn cho phép..." từ database ném ra
       showToast("Giao dịch không thành công: " + error.message, "error");
       setLoading(false);
     }
@@ -795,7 +860,7 @@ export default function App() {
       setSession(null);
       setProfile(null);
       setShowPayment(false);
-      setMockResetCount(0); // Đưa số lần reset giả lập về lại ban đầu
+      setMockResetCount(0); 
       showToast("Đã đăng xuất tài khoản giả lập.", "info");
       return;
     }
@@ -810,33 +875,51 @@ export default function App() {
     showToast("Đã đăng xuất tài khoản.", "info");
   };
 
-  const handleDownload = () => { 
+  // 2 HÀM TẢI XUỐNG DẪN LINK ĐỘC LẬP TỪ BIẾN MÔI TRƯỜNG
+  const handleDownloadMain = () => { 
     if (DRIVE_DOWNLOAD_LINK) {
       window.open(DRIVE_DOWNLOAD_LINK, '_blank'); 
     } else {
-      showToast("Đường dẫn tải plugin hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_DOWNLOAD_LINK)", "error");
+      showToast("Đường dẫn tải plugin OpenSkp-AI hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_DOWNLOAD_LINK)", "error");
+    }
+  };
+
+  const handleDownloadLite = () => {
+    if (DRIVE_LITE_DOWNLOAD_LINK) {
+      window.open(DRIVE_LITE_DOWNLOAD_LINK, '_blank');
+    } else {
+      showToast("Đường dẫn tải plugin OpenSkp-Lite hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_LITE_DOWNLOAD_LINK)", "error");
     }
   };
 
   const handleTopup = () => {
-    if (!session) return showToast("Vui lòng đăng nhập để mua Credits", "error");
+    if (!session) return showToast("Vui lòng đăng nhập để xem bảng giá và thanh toán", "error");
     setShowPayment(true);
     setPaymentMethod('VND');
-    setSelectedPkg(PACKAGES_VND[0]);
+    setSelectedPkg(LITE_PKG_VND); 
     setPaypalSuccess(null);
   };
 
   const handleSwitchMethod = (method) => {
     setPaymentMethod(method);
     setPaypalSuccess(null);
-    setSelectedPkg(method === 'VND' ? PACKAGES_VND[0] : PACKAGES_USD[0]);
+    if (selectedPkg.isLite) {
+        setSelectedPkg(method === 'VND' ? LITE_PKG_VND : LITE_PKG_USD);
+    } else {
+        setSelectedPkg(method === 'VND' ? PACKAGES_VND[0] : PACKAGES_USD[0]);
+    }
   };
 
   const getVietQRUrl = () => {
     if (!profile || !selectedPkg) return "";
     const key = profile.license_key || 'UNKNOWN';
-    const DESCRIPTION = `${key.split('-')[1] || key}`; 
-    // Trả về ảnh giả lập khi chạy thử không có cấu hình ngân hàng thật
+    const shortKey = key.split('-').pop() || key; 
+    
+    let DESCRIPTION = `OPENSKP ${shortKey}`;
+    if (selectedPkg.isLite) {
+      DESCRIPTION = `OPENSKP LITE ${shortKey}`;
+    }
+
     if (!BANK_ID || !BANK_ACCOUNT) {
       return "https://placehold.co/300x300/fdfbf7/0063A3?text=VietQR+Simulated";
     }
@@ -883,14 +966,12 @@ export default function App() {
     >
       <BackgroundDecorations />
 
-      {/* THÔNG BÁO BẬT CHẾ ĐỘ XEM THỬ */}
       {IS_PREVIEW_MOCK_MODE && (
         <div className="bg-amber-500 text-amber-950 font-semibold text-center text-xs py-1 relative z-50 shrink-0">
           ⚠️ Chế độ Xem thử trên Canvas đang bật để tránh lỗi biên dịch. Thay đổi <code>const IS_PREVIEW_MOCK_MODE = false;</code> khi triển khai môi trường thật.
         </div>
       )}
 
-      {/* ----------------- HỆ THỐNG TOAST NOTIFICATION TỰ THIẾT KẾ ----------------- */}
       {toast.show && (
         <div className={`fixed top-4 right-4 z-[110] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border animate-in slide-in-from-top-4 duration-300 ${
           toast.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
@@ -904,15 +985,14 @@ export default function App() {
         </div>
       )}
 
-      {/* ----------------- HỘP THOẠI CONFIRM MODAL TỰ THIẾT KẾ ----------------- */}
       {confirmModal.show && (
         <div className="fixed inset-0 z-[105] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border border-slate-100">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border border-slate-100 text-slate-800">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center border border-yellow-200">
                 <AlertTriangle size={20} />
               </div>
-              <h4 className="text-lg font-bold text-slate-800 font-serif" style={{ color: PRIMARY_COLOR }}>Xác nhận thao tác</h4>
+              <h4 className="text-lg font-bold font-serif" style={{ color: PRIMARY_COLOR }}>Xác nhận thao tác</h4>
             </div>
             <p className="text-sm text-slate-600 mb-6 leading-relaxed">{confirmModal.message}</p>
             <div className="flex gap-3 justify-end">
@@ -957,7 +1037,6 @@ export default function App() {
       <Navbar 
           t={t} 
           handleTopup={handleTopup} 
-          handleDownload={handleDownload} 
           session={session} 
           profile={profile} 
           handleLogout={handleLogout} 
@@ -971,17 +1050,17 @@ export default function App() {
       />
       
       <main className="flex-grow w-full relative z-10 flex flex-col items-center justify-center">
-          <HeroSection t={t} handleDownload={handleDownload} />
+          <HeroSection t={t} handleDownloadMain={handleDownloadMain} handleDownloadLite={handleDownloadLite} />
       </main>
       
       <footer className="mt-auto border-t border-slate-200 bg-white/60 backdrop-blur-sm py-8 relative z-10">
           <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
               <div>{t.footerRights}</div>
               <div className="flex gap-6">
-                      <a href="#" className="hover:text-blue-600">{t.footerTerms}</a>
-                      <a href="#" className="hover:text-blue-600">{t.footerPrivacy}</a>
+                      <a href="#" className="hover:text-blue-600 transition">{t.footerTerms}</a>
+                      <a href="#" className="hover:text-blue-600 transition">{t.footerPrivacy}</a>
                       {FACEBOOK_LINK && (
-                        <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="hover:text-blue-600">{t.footerContact}</a>
+                        <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="hover:text-blue-600 transition">{t.footerContact}</a>
                       )}
               </div>
           </div>
