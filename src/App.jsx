@@ -12,7 +12,7 @@ import {
 // ==============================================================================
 // 1. CẤU HÌNH BẬT/TẮT CHẾ ĐỘ XEM THỬ (MOCK MODE FOR CANVAS PREVIEW)
 // ==============================================================================
-const IS_PREVIEW_MOCK_MODE = false;
+const IS_PREVIEW_MOCK_MODE = true;
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
@@ -78,11 +78,11 @@ const TRANSLATIONS = {
     paymentCardDesc: "Thẻ Tín dụng / Ghi nợ",
     loginToView: "Vui lòng đăng nhập...",
     
-    // Bản dịch chuyên biệt cho Bảng giá
-    liteDesc: "Chức năng dựng mặt bằng 3D từ ảnh 2D.",
-    aiDesc: "Chuyên dựng mặt bằng, đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng hình 3D, ví dụ 1 khoang tủ bếp sẽ mất 6000 đến 8000 Token.",
+    // Bản dịch chuyên biệt cho Bảng giá đã được làm cho chuyên nghiệp hơn
+    liteDesc: "Mở khóa chế độ dành riêng cho chức năng dựng mặt bằng khối 3D từ ảnh 2D.",
+    aiDesc: "Sở hữu khả năng dựng model 3D theo yêu cầu, từ mặt bằng không gian đến đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng mô hình 3D (ví dụ: 1 lượt gọi vẽ model sẽ mất từ 6.000 đến 8.000 Token tùy thuộc vào độ phức tạp).",
     pkgLiteValue: "Phiên bản Trọn đời",
-    pkgLiteLabel: "Mua đứt 1 lần, sử dụng vĩnh viễn",
+    pkgLiteLabel: "Đăng ký 1 lần sẽ được update và sử dụng vĩnh viễn",
     pkgBasic: "Cơ bản",
     pkgPopular: "Phổ biến (Tặng 5%)",
     pkgAdvanced: "Nâng cao (Tặng 10%)",
@@ -121,10 +121,10 @@ const TRANSLATIONS = {
     loginToView: "Please login...",
 
     // Bản dịch chuyên biệt cho Bảng giá
-    liteDesc: "3D floor plan generation from 2D images.",
-    aiDesc: "Specializes in floor plans, furniture modeling, and much more. The system calculates costs based on Tokens consumed per AI 3D modeling request; e.g., a kitchen cabinet module costs 6,000 to 8,000 Tokens.",
+    liteDesc: "Unlock the dedicated mode for generating 3D block floor plans from 2D images.",
+    aiDesc: "Gain the ability to generate on-demand 3D models, from spatial floor plans to furniture and beyond. Costs are calculated based on the Tokens consumed per AI 3D modeling request (e.g., a single request costs 6,000 to 8,000 Tokens depending on complexity).",
     pkgLiteValue: "Lifetime License",
-    pkgLiteLabel: "Pay once, use forever",
+    pkgLiteLabel: "Subscribe once for lifetime updates and usage",
     pkgBasic: "Basic",
     pkgPopular: "Popular (+5%)",
     pkgAdvanced: "Advanced (+10%)",
@@ -237,8 +237,8 @@ const BackgroundDecorations = () => (
   </div>
 );
 
-// HIỂN THỊ 2 NÚT TẢI Ở GIỮA MÀN HÌNH
-const HeroSection = ({ t, handleDownloadMain, handleDownloadLite }) => (
+// HIỂN THỊ CHỈ 1 NÚT TẢI OPENSKP-AI
+const HeroSection = ({ t, handleDownloadMain }) => (
   <div className="flex flex-col items-center text-center mb-24 mt-6 animate-fade-in px-4 relative z-20">
       <div className="relative z-0 -mb-0.5 pointer-events-none select-none">
           <img 
@@ -266,13 +266,6 @@ const HeroSection = ({ t, handleDownloadMain, handleDownloadLite }) => (
               style={{ backgroundColor: PRIMARY_COLOR }}
           >
               <Download size={20} /> {t.downloadMain}
-          </button>
-          <button 
-              onClick={handleDownloadLite}
-              className="px-8 py-3 rounded-xl bg-white border-2 text-slate-700 font-bold text-lg shadow-lg hover:translate-y-[-2px] hover:bg-slate-50 transition flex items-center justify-center gap-2"
-              style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
-          >
-              <Download size={20} /> {t.downloadLite}
           </button>
       </div>
   </div>
@@ -345,7 +338,7 @@ const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSe
                      <h3 className="text-2xl font-bold font-sans mb-1 text-slate-800 tracking-tight flex items-center gap-2">
                          OpenSkp-AI
                     </h3>
-                    <p className="text-sm text-slate-500 mb-4 text-justify">{t.aiDesc}</p>
+                    <p className="text-sm text-slate-500 mb-4 text-justify leading-relaxed">{t.aiDesc}</p>
                     <div className="space-y-3">
                         {tokensPkgList.map((pkg) => renderPriceCard(pkg))}
                     </div>
@@ -720,16 +713,15 @@ export default function App() {
     if (IS_PREVIEW_MOCK_MODE) return;
 
     const supabaseClient = getSupabase();
-    if (!supabaseReady || !supabaseClient) return;
+    if (!supabaseReady || !supabaseClient || !session?.user?.id) return;
 
     const channel = supabaseClient
       .channel('realtime-credits')
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'users_v2', filter: `id=eq.${session?.user?.id}` },
+        { event: 'UPDATE', schema: 'public', table: 'users_v2', filter: `id=eq.${session.user.id}` },
         async (payload) => {
           try {
-            if (!session?.user?.id) return;
             const verifiedData = await fetchProfile(session.user.id);
             if (verifiedData) {
               const oldBalance = latestProfileRef.current?.wallet_balance || 0;
@@ -1050,7 +1042,7 @@ export default function App() {
       />
       
       <main className="flex-grow w-full relative z-10 flex flex-col items-center justify-center">
-          <HeroSection t={t} handleDownloadMain={handleDownloadMain} handleDownloadLite={handleDownloadLite} />
+          <HeroSection t={t} handleDownloadMain={handleDownloadMain} />
       </main>
       
       <footer className="mt-auto border-t border-slate-200 bg-white/60 backdrop-blur-sm py-8 relative z-10">
