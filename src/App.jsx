@@ -12,7 +12,7 @@ import {
 // ==============================================================================
 // 1. CẤU HÌNH BẬT/TẮT CHẾ ĐỘ XEM THỬ (MOCK MODE FOR CANVAS PREVIEW)
 // ==============================================================================
-const IS_PREVIEW_MOCK_MODE = true;
+const IS_PREVIEW_MOCK_MODE = false;
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
