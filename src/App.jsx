@@ -48,7 +48,7 @@ const loadScript = (src, id) => {
 const PRIMARY_COLOR = "#0063A3";
 const BG_COLOR = "#fdfbf7"; // Nền sáng mặc định
 
-// TỪ ĐIỂN ĐA NGÔN NGỮ (TRANSLATIONS)
+// TỪ ĐIỂN ĐA NGÔN NGỮ (TRANSLATIONS) ĐÃ CẬP NHẬT CÁC LƯU Ý VÀ TIÊU ĐỀ MỚI
 const TRANSLATIONS = {
   VN: {
     login: "Đăng nhập",
@@ -78,9 +78,15 @@ const TRANSLATIONS = {
     paymentCardDesc: "Thẻ Tín dụng / Ghi nợ",
     loginToView: "Vui lòng đăng nhập...",
     
-    // Bản dịch chuyên biệt cho Bảng giá đã được làm cho chuyên nghiệp hơn
-    liteDesc: "Mở khóa chế độ dành riêng cho chức năng dựng mặt bằng khối 3D từ ảnh 2D.",
-    aiDesc: "Sở hữu khả năng dựng model 3D theo yêu cầu, từ mặt bằng không gian đến đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng mô hình 3D (ví dụ: 1 lượt gọi vẽ model sẽ mất từ 6.000 đến 8.000 Token tùy thuộc vào độ phức tạp).",
+    // Bản dịch chuyên biệt cho Bảng giá
+    liteSubtitle: "Chế độ Lite - đăng ký 1 lần sử dụng vĩnh viễn",
+    liteDesc: "Mở khóa chế độ dành riêng cho chức năng dựng mặt bằng khối 3D từ ảnh 2D. ",
+    liteWarning: "(Lưu ý: chế độ này chỉ dựng được những đối tượng kết cấu không gian như trần, tường, sàn v.v... không bao gồm đồ nội thất và các cấu kiện phức tạp khác. Giới hạn của plugin có thể sẽ được mở rộng trong tương lai, bạn hãy theo dõi và cân nhắc kỹ trước khi đăng ký sử dụng dịch vụ.)",
+    
+    aiSubtitle: "Chế độ AI - tính tiền theo số lượng Token sử dụng",
+    aiDesc: "Sở hữu khả năng dựng model 3D theo yêu cầu, từ mặt bằng không gian đến đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng mô hình 3D (ví dụ: 1 lượt gọi vẽ model sẽ mất từ 6.000 đến 8.000 Token tùy thuộc vào độ phức tạp). ",
+    aiWarning: "(Lưu ý: hiện tại AI chỉ đang dựng được đồ nội thất ghép tấm, liền tường như tủ, giá, khung, kệ v.v.. AI chưa triển khai được các dạng đồ rời, bàn ghế chi tiết hay các dạng model phức tạp khác, hãy xem kỹ các video hướng dẫn và cân nhắc trước khi sử dụng dịch vụ.)",
+
     pkgLiteValue: "Phiên bản Trọn đời",
     pkgLiteLabel: "Đăng ký 1 lần sẽ được update và sử dụng vĩnh viễn",
     pkgBasic: "Cơ bản",
@@ -121,8 +127,14 @@ const TRANSLATIONS = {
     loginToView: "Please login...",
 
     // Bản dịch chuyên biệt cho Bảng giá
-    liteDesc: "Unlock the dedicated mode for generating 3D block floor plans from 2D images.",
-    aiDesc: "Gain the ability to generate on-demand 3D models, from spatial floor plans to furniture and beyond. Costs are calculated based on the Tokens consumed per AI 3D modeling request (e.g., a single request costs 6,000 to 8,000 Tokens depending on complexity).",
+    liteSubtitle: "Lite Mode - subscribe once, use forever",
+    liteDesc: "Unlock the dedicated mode for generating 3D block floor plans from 2D images. ",
+    liteWarning: "(Note: This mode only generates spatial structural objects such as ceilings, walls, floors, etc., and does not include furniture or other complex components. The plugin's capabilities may be expanded in the future. Please follow updates and consider carefully before subscribing.)",
+    
+    aiSubtitle: "AI Mode - pay per Token usage",
+    aiDesc: "Gain the ability to generate on-demand 3D models, from spatial floor plans to furniture and beyond. Costs are calculated based on the Tokens consumed per AI 3D modeling request (e.g., a single request costs 6,000 to 8,000 Tokens depending on complexity). ",
+    aiWarning: "(Note: Currently, the AI only generates panel-based, built-in furniture such as cabinets, shelves, frames, racks, etc. It cannot yet generate loose furniture, detailed chairs/tables, or other complex models. Please watch the tutorial videos carefully and consider before using the service.)",
+
     pkgLiteValue: "Lifetime License",
     pkgLiteLabel: "Subscribe once for lifetime updates and usage",
     pkgBasic: "Basic",
@@ -237,7 +249,7 @@ const BackgroundDecorations = () => (
   </div>
 );
 
-// HIỂN THỊ CHỈ 1 NÚT TẢI OPENSKP-AI
+// HIỂN THỊ CHỈ 1 NÚT TẢI OPENSKP-AI TRÊN MÀN HÌNH CHÍNH THEO YÊU CẦU
 const HeroSection = ({ t, handleDownloadMain }) => (
   <div className="flex flex-col items-center text-center mb-24 mt-6 animate-fade-in px-4 relative z-20">
       <div className="relative z-0 -mb-0.5 pointer-events-none select-none">
@@ -329,7 +341,11 @@ const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSe
                     <h3 className="text-2xl font-bold font-sans mb-1 text-slate-800 tracking-tight flex items-center gap-2">
                         OpenSkp-Lite
                     </h3>
-                    <p className="text-sm text-slate-500 mb-4 text-justify">{t.liteDesc}</p>
+                    <p className="text-sm font-semibold text-slate-700 mb-2">{t.liteSubtitle}</p>
+                    <p className="text-sm text-slate-500 mb-4 text-justify leading-relaxed">
+                        {t.liteDesc} 
+                        <span className="text-red-500 font-medium">{t.liteWarning}</span>
+                    </p>
                     {renderPriceCard(litePkg)}
                 </div>
 
@@ -338,7 +354,11 @@ const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSe
                      <h3 className="text-2xl font-bold font-sans mb-1 text-slate-800 tracking-tight flex items-center gap-2">
                          OpenSkp-AI
                     </h3>
-                    <p className="text-sm text-slate-500 mb-4 text-justify leading-relaxed">{t.aiDesc}</p>
+                    <p className="text-sm font-semibold text-slate-700 mb-2">{t.aiSubtitle}</p>
+                    <p className="text-sm text-slate-500 mb-4 text-justify leading-relaxed">
+                        {t.aiDesc}
+                        <span className="text-red-500 font-medium">{t.aiWarning}</span>
+                    </p>
                     <div className="space-y-3">
                         {tokensPkgList.map((pkg) => renderPriceCard(pkg))}
                     </div>
