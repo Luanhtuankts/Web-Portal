@@ -12,7 +12,7 @@ import {
 // ==============================================================================
 // 1. CẤU HÌNH BẬT/TẮT CHẾ ĐỘ XEM THỬ (MOCK MODE FOR CANVAS PREVIEW)
 // ==============================================================================
-const IS_PREVIEW_MOCK_MODE = false;
+const IS_PREVIEW_MOCK_MODE = true;
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
@@ -48,7 +48,7 @@ const loadScript = (src, id) => {
 const PRIMARY_COLOR = "#0063A3";
 const BG_COLOR = "#fdfbf7"; // Nền sáng mặc định
 
-// TỪ ĐIỂN ĐA NGÔN NGỮ (TRANSLATIONS) ĐÃ CẬP NHẬT CÁC LƯU Ý VÀ TIÊU ĐỀ MỚI
+// TỪ ĐIỂN ĐA NGÔN NGỮ (TRANSLATIONS) ĐÃ CẬP NHẬT CÁC LƯU Ý
 const TRANSLATIONS = {
   VN: {
     login: "Đăng nhập",
@@ -80,12 +80,12 @@ const TRANSLATIONS = {
     
     // Bản dịch chuyên biệt cho Bảng giá
     liteSubtitle: "Chế độ Lite - đăng ký 1 lần sử dụng vĩnh viễn",
-    liteDesc: "Mở khóa chế độ dành riêng cho chức năng dựng mặt bằng khối 3D từ ảnh 2D. ",
-    liteWarning: "(Lưu ý: chế độ này chỉ dựng được những đối tượng kết cấu không gian như trần, tường, sàn v.v... không bao gồm đồ nội thất và các cấu kiện phức tạp khác. Giới hạn của plugin có thể sẽ được mở rộng trong tương lai, bạn hãy theo dõi và cân nhắc kỹ trước khi đăng ký sử dụng dịch vụ.)",
+    liteDesc: "Mở khóa chế độ dành riêng cho chức năng dựng mặt bằng khối 3D từ ảnh 2D. (Lưu ý: chế độ này chỉ dựng được những đối tượng kết cấu không gian như trần, tường, sàn v.v... không bao gồm đồ nội thất và các cấu kiện phức tạp khác. Giới hạn của plugin có thể sẽ được mở rộng trong tương lai, bạn hãy theo dõi và cân nhắc kỹ trước khi đăng ký sử dụng dịch vụ.)",
     
     aiSubtitle: "Chế độ AI - tính tiền theo số lượng Token sử dụng",
-    aiDesc: "Sở hữu khả năng dựng model 3D theo yêu cầu, từ mặt bằng không gian đến đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng mô hình 3D (ví dụ: 1 lượt gọi vẽ model sẽ mất từ 6.000 đến 8.000 Token tùy thuộc vào độ phức tạp). ",
-    aiWarning: "(Lưu ý: hiện tại AI chỉ đang dựng được đồ nội thất ghép tấm, liền tường như tủ, giá, khung, kệ v.v.. AI chưa triển khai được các dạng đồ rời, bàn ghế chi tiết hay các dạng model phức tạp khác, hãy xem kỹ các video hướng dẫn và cân nhắc trước khi sử dụng dịch vụ.)",
+    aiDesc: "Sở hữu khả năng dựng model 3D theo yêu cầu, từ mặt bằng không gian đến đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng mô hình 3D (ví dụ: 1 lượt gọi vẽ model sẽ mất từ 6.000 đến 8.000 Token tùy thuộc vào độ phức tạp). (Lưu ý: hiện tại AI chỉ đang dựng được đồ nội thất ghép tấm, liền tường như tủ, giá, khung, kệ v.v.. AI chưa triển khai được các dạng đồ rời, bàn ghế chi tiết hay các dạng model phức tạp khác, hãy xem kỹ các video hướng dẫn và cân nhắc trước khi sử dụng dịch vụ.)",
+
+    versionWarning: " Plugin chạy trên SketchUp 2024 trở lên, chưa hỗ trợ các phiên bản cũ hơn.",
 
     pkgLiteValue: "Phiên bản Trọn đời",
     pkgLiteLabel: "Đăng ký 1 lần sẽ được update và sử dụng vĩnh viễn",
@@ -128,12 +128,12 @@ const TRANSLATIONS = {
 
     // Bản dịch chuyên biệt cho Bảng giá
     liteSubtitle: "Lite Mode - subscribe once, use forever",
-    liteDesc: "Unlock the dedicated mode for generating 3D block floor plans from 2D images. ",
-    liteWarning: "(Note: This mode only generates spatial structural objects such as ceilings, walls, floors, etc., and does not include furniture or other complex components. The plugin's capabilities may be expanded in the future. Please follow updates and consider carefully before subscribing.)",
+    liteDesc: "Unlock the dedicated mode for generating 3D block floor plans from 2D images. (Note: This mode only generates spatial structural objects such as ceilings, walls, floors, etc., and does not include furniture or other complex components. The plugin's capabilities may be expanded in the future. Please follow updates and consider carefully before subscribing.)",
     
     aiSubtitle: "AI Mode - pay per Token usage",
-    aiDesc: "Gain the ability to generate on-demand 3D models, from spatial floor plans to furniture and beyond. Costs are calculated based on the Tokens consumed per AI 3D modeling request (e.g., a single request costs 6,000 to 8,000 Tokens depending on complexity). ",
-    aiWarning: "(Note: Currently, the AI only generates panel-based, built-in furniture such as cabinets, shelves, frames, racks, etc. It cannot yet generate loose furniture, detailed chairs/tables, or other complex models. Please watch the tutorial videos carefully and consider before using the service.)",
+    aiDesc: "Gain the ability to generate on-demand 3D models, from spatial floor plans to furniture and beyond. Costs are calculated based on the Tokens consumed per AI 3D modeling request (e.g., a single request costs 6,000 to 8,000 Tokens depending on complexity). (Note: Currently, the AI only generates panel-based, built-in furniture such as cabinets, shelves, frames, racks, etc. It cannot yet generate loose furniture, detailed chairs/tables, or other complex models. Please watch the tutorial videos carefully and consider before using the service.)",
+
+    versionWarning: " The plugin runs on SketchUp 2024 or later; older versions are not currently supported.",
 
     pkgLiteValue: "Lifetime License",
     pkgLiteLabel: "Subscribe once for lifetime updates and usage",
@@ -283,7 +283,7 @@ const HeroSection = ({ t, handleDownloadMain }) => (
   </div>
 );
 
-// GIAO DIỆN BẢNG GIÁ
+// GIAO DIỆN BẢNG GIÁ ĐÃ CẬP NHẬT CHÚ THÍCH PHIÊN BẢN CHỈ HIỆN Ở MỤC LITE
 const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSelectedPkg, setShowPayment, paypalSuccess, profile, getVietQRUrl, setPaypalSuccess, showToast, paypalSdkReady }) => {
   const litePkg = paymentMethod === 'VND' ? LITE_PKG_VND : LITE_PKG_USD;
   const tokensPkgList = paymentMethod === 'VND' ? PACKAGES_VND : PACKAGES_USD;
@@ -344,7 +344,7 @@ const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSe
                     <p className="text-sm font-semibold text-slate-700 mb-2">{t.liteSubtitle}</p>
                     <p className="text-sm text-slate-500 mb-4 text-justify leading-relaxed">
                         {t.liteDesc} 
-                        <span className="text-red-500 font-medium">{t.liteWarning}</span>
+                        <span className="text-red-500 font-bold">{t.versionWarning}</span>
                     </p>
                     {renderPriceCard(litePkg)}
                 </div>
@@ -357,7 +357,6 @@ const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSe
                     <p className="text-sm font-semibold text-slate-700 mb-2">{t.aiSubtitle}</p>
                     <p className="text-sm text-slate-500 mb-4 text-justify leading-relaxed">
                         {t.aiDesc}
-                        <span className="text-red-500 font-medium">{t.aiWarning}</span>
                     </p>
                     <div className="space-y-3">
                         {tokensPkgList.map((pkg) => renderPriceCard(pkg))}
