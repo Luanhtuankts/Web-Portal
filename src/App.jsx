@@ -85,7 +85,7 @@ const TRANSLATIONS = {
     aiSubtitle: "Chế độ AI - tính tiền theo số lượng Token sử dụng",
     aiDesc: "Sở hữu khả năng dựng model 3D theo yêu cầu, từ mặt bằng không gian đến đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng mô hình 3D (ví dụ: 1 lượt gọi vẽ model sẽ mất từ 6.000 đến 8.000 Token tùy thuộc vào độ phức tạp). (Lưu ý: hiện tại AI chỉ đang dựng được đồ nội thất ghép tấm, liền tường như tủ, giá, khung, kệ v.v.. AI chưa triển khai được các dạng đồ rời, bàn ghế chi tiết hay các dạng model phức tạp khác, hãy xem kỹ các video hướng dẫn và cân nhắc trước khi sử dụng dịch vụ.)",
 
-    versionWarning: " Plugin chạy trên SketchUp 2024 trở lên, chưa hỗ trợ các phiên bản cũ hơn.",
+    versionWarning: " Lưu ý: Để hệ thống nhận diện chính xác nhất, vui lòng sử dụng một công cụ AI tạo ảnh bất kỳ kèm theo prompt được cung cấp để chuyển đổi ảnh mặt bằng về định dạng tiêu chuẩn trước khi tải lên.",
 
     pkgLiteValue: "Phiên bản Trọn đời",
     pkgLiteLabel: "Đăng ký 1 lần sẽ được update và sử dụng vĩnh viễn",
@@ -133,7 +133,7 @@ const TRANSLATIONS = {
     aiSubtitle: "AI Mode - pay per Token usage",
     aiDesc: "Gain the ability to generate on-demand 3D models, from spatial floor plans to furniture and beyond. Costs are calculated based on the Tokens consumed per AI 3D modeling request (e.g., a single request costs 6,000 to 8,000 Tokens depending on complexity). (Note: Currently, the AI only generates panel-based, built-in furniture such as cabinets, shelves, frames, racks, etc. It cannot yet generate loose furniture, detailed chairs/tables, or other complex models. Please watch the tutorial videos carefully and consider before using the service.)",
 
-    versionWarning: " The plugin runs on SketchUp 2024 or later; older versions are not currently supported.",
+    versionWarning: " Note: For the most accurate system recognition, please process your floor plan image through any AI image generator using the provided prompt to convert it into the standard format before uploading.",
 
     pkgLiteValue: "Lifetime License",
     pkgLiteLabel: "Subscribe once for lifetime updates and usage",
