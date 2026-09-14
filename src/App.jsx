@@ -6,13 +6,14 @@ import {
   Box, User, CheckCircle2, X, Star, PlayCircle, LibraryBig,
   Facebook, MessageCircle, Globe, Plus, Menu, ArrowRight, ArrowLeft, BookOpen,
   Mic, Image as ImageIcon, Send, History, LayoutTemplate, ScanEye,
-  MoreVertical, Eye, EyeOff, Key, AlertTriangle
+  MoreVertical, Eye, EyeOff, Key, AlertTriangle, Sparkles, Home
 } from 'lucide-react';
+import { ShowcaseSection, InteractiveGuideSection } from './GuideAndShowcase';
 
 // ==============================================================================
 // 1. CẤU HÌNH BẬT/TẮT CHẾ ĐỘ XEM THỬ (MOCK MODE FOR CANVAS PREVIEW)
 // ==============================================================================
-const IS_PREVIEW_MOCK_MODE = false;
+const IS_PREVIEW_MOCK_MODE = true;
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
@@ -48,20 +49,17 @@ const loadScript = (src, id) => {
 const PRIMARY_COLOR = "#0063A3";
 const BG_COLOR = "#fdfbf7"; // Nền sáng mặc định
 
-// TỪ ĐIỂN ĐA NGÔN NGỮ (TRANSLATIONS) ĐÃ CẬP NHẬT CÁC LƯU Ý
+// TỪ ĐIỂN ĐA NGÔN NGỮ (TRANSLATIONS)
 const TRANSLATIONS = {
   VN: {
     login: "Đăng nhập",
     logout: "Đăng xuất",
-    credits: "OpenSkp-AI Token",
     licenseKey: "License Key",
     copyKey: "Sao chép Key",
     copyKeyBtn: "Copy Key Ngay",
-    buyCredits: "Mua thêm Token",
     heroTitle: "Xin chào, Kiến trúc sư!",
     heroSubtitle: "\"Bạn là nhà thiết kế - hãy để AI dựng hình cho bạn.\"",
-    downloadMain: "OpenSkp-AI",
-    downloadLite: "OpenSkp-Lite",
+    downloadMain: "Tải OpenSkp",
     guide: "Hướng dẫn",
     backHome: "Quay lại Trang chủ",
     footerRights: "© 2026 OpenSkp. Bảo lưu mọi quyền.",
@@ -75,25 +73,15 @@ const TRANSLATIONS = {
     paymentScan: "Quét mã để thanh toán tự động",
     paymentSuccess: "Thanh toán thành công!",
     paymentSuccessMsg: "Vui lòng gửi mã này cho Admin qua Zalo/Facebook.",
-    paymentCardDesc: "Thẻ Tín dụng / Ghi nợ",
+    paymentCardDesc: "Thẻ Tín dụng / Ghi nợ quốc tế",
     loginToView: "Vui lòng đăng nhập...",
     
-    // Bản dịch chuyên biệt cho Bảng giá
-    liteSubtitle: "Chế độ Lite - đăng ký 1 lần sử dụng vĩnh viễn",
-    liteDesc: "Mở khóa chế độ dành riêng cho chức năng dựng mặt bằng khối 3D từ ảnh 2D. (Lưu ý: chế độ này chỉ dựng được những đối tượng kết cấu không gian như trần, tường, sàn v.v... không bao gồm đồ nội thất và các cấu kiện phức tạp khác. Giới hạn của plugin có thể sẽ được mở rộng trong tương lai, bạn hãy theo dõi và cân nhắc kỹ trước khi đăng ký sử dụng dịch vụ.)",
-    
-    aiSubtitle: "Chế độ AI - tính tiền theo số lượng Token sử dụng",
-    aiDesc: "Sở hữu khả năng dựng model 3D theo yêu cầu, từ mặt bằng không gian đến đồ nội thất và nhiều hơn thế nữa. Hệ thống tính chi phí dựa trên số Token tiêu thụ cho 1 lượt gọi AI dựng mô hình 3D (ví dụ: 1 lượt gọi vẽ model sẽ mất từ 6.000 đến 8.000 Token tùy thuộc vào độ phức tạp). (Lưu ý: hiện tại AI chỉ đang dựng được đồ nội thất ghép tấm, liền tường như tủ, giá, khung, kệ v.v.. AI chưa triển khai được các dạng đồ rời, bàn ghế chi tiết hay các dạng model phức tạp khác, hãy xem kỹ các video hướng dẫn và cân nhắc trước khi sử dụng dịch vụ.)",
+    paymentSubtitle: "Cầu nối điều phối trong SketchUp kết nối AI ngoài",
+    licenseDesc: "OpenSkp đóng vai trò là cầu nối điều phối thông minh trực tiếp trong SketchUp, kết nối và đồng bộ linh hoạt với các mô hình AI bên ngoài. Hệ thống hỗ trợ dựng không gian 3D tự động từ ảnh mặt bằng 2D và điều phối tạo dựng các cấu kiện mô hình 3D hoàn chỉnh.",
+    paymentNotice: "Lưu ý: Hệ thống thanh toán có thể thay đổi, chỉ áp dụng cơ chế sử dụng vĩnh viễn với các đăng ký trong giai đoạn đầu phát triển Plugin.",
+    pkgLifetimeTitle: "Phiên bản Trọn đời",
+    pkgLifetimeSubtitle: "Mua đứt 1 lần, sử dụng vĩnh viễn",
 
-    versionWarning: " Lưu ý: Để hệ thống nhận diện chính xác nhất, vui lòng sử dụng một công cụ AI tạo ảnh bất kỳ kèm theo prompt được cung cấp để chuyển đổi ảnh mặt bằng về định dạng tiêu chuẩn trước khi tải lên.",
-
-    pkgLiteValue: "Phiên bản Trọn đời",
-    pkgLiteLabel: "Đăng ký 1 lần sẽ được update và sử dụng vĩnh viễn",
-    pkgBasic: "Cơ bản",
-    pkgPopular: "Phổ biến (Tặng 5%)",
-    pkgAdvanced: "Nâng cao (Tặng 10%)",
-    pkgPro: "Siêu hời (Tặng 15%)",
-    selectedBadge: "ĐANG CHỌN",
     statusActivated: "Đã kích hoạt",
     statusInactive: "Chưa kích hoạt",
     pricingPricing: "Bảng giá"
@@ -101,15 +89,12 @@ const TRANSLATIONS = {
   EN: {
     login: "Log in",
     logout: "Log out",
-    credits: "OpenSkp-AI Token",
     licenseKey: "License Key",
     copyKey: "Copy Key",
     copyKeyBtn: "Copy Key Now",
-    buyCredits: "Buy Tokens",
     heroTitle: "Hello, Architect!",
-    heroSubtitle: "You are the designer - let AI do the modeling for you.",
-    downloadMain: "OpenSkp-AI",
-    downloadLite: "OpenSkp-Lite",
+    heroSubtitle: "\"You are the designer - let AI do the modeling for you.\"",
+    downloadMain: "Download OpenSkp",
     guide: "Guide",
     backHome: "Back to Home",
     footerRights: "© 2026 OpenSkp. All rights reserved.",
@@ -123,25 +108,15 @@ const TRANSLATIONS = {
     paymentScan: "Scan QR to pay automatically",
     paymentSuccess: "Payment Successful!",
     paymentSuccessMsg: "Please send this code to Admin via Zalo/Facebook.",
-    paymentCardDesc: "Debit or Credit Card",
+    paymentCardDesc: "International Debit or Credit Card",
     loginToView: "Please login...",
 
-    // Bản dịch chuyên biệt cho Bảng giá
-    liteSubtitle: "Lite Mode - subscribe once, use forever",
-    liteDesc: "Unlock the dedicated mode for generating 3D block floor plans from 2D images. (Note: This mode only generates spatial structural objects such as ceilings, walls, floors, etc., and does not include furniture or other complex components. The plugin's capabilities may be expanded in the future. Please follow updates and consider carefully before subscribing.)",
-    
-    aiSubtitle: "AI Mode - pay per Token usage",
-    aiDesc: "Gain the ability to generate on-demand 3D models, from spatial floor plans to furniture and beyond. Costs are calculated based on the Tokens consumed per AI 3D modeling request (e.g., a single request costs 6,000 to 8,000 Tokens depending on complexity). (Note: Currently, the AI only generates panel-based, built-in furniture such as cabinets, shelves, frames, racks, etc. It cannot yet generate loose furniture, detailed chairs/tables, or other complex models. Please watch the tutorial videos carefully and consider before using the service.)",
+    paymentSubtitle: "Intelligent coordination bridge in SketchUp connecting external AI",
+    licenseDesc: "OpenSkp serves as an intelligent coordination bridge directly inside SketchUp, seamlessly connecting with external AI models. It automates 3D spatial generation from 2D floor plans and coordinates full 3D model component creation.",
+    paymentNotice: "Note: The payment system is subject to change; lifetime usage is only applicable to registrations during the initial development phase of the Plugin.",
+    pkgLifetimeTitle: "Lifetime License",
+    pkgLifetimeSubtitle: "Pay once, use forever",
 
-    versionWarning: " Note: For the most accurate system recognition, please process your floor plan image through any AI image generator using the provided prompt to convert it into the standard format before uploading.",
-
-    pkgLiteValue: "Lifetime License",
-    pkgLiteLabel: "Subscribe once for lifetime updates and usage",
-    pkgBasic: "Basic",
-    pkgPopular: "Popular (+5%)",
-    pkgAdvanced: "Advanced (+10%)",
-    pkgPro: "Best Value (+15%)",
-    selectedBadge: "SELECTED",
     statusActivated: "Activated",
     statusInactive: "Inactive",
     pricingPricing: "Pricing"
@@ -149,31 +124,18 @@ const TRANSLATIONS = {
 };
 
 const MOCK_SESSION_DATA = { user: { email: 'architect_test@openskp.com', id: 'mock-user-uuid-12345' } };
-const MOCK_PROFILE_DATA = { wallet_balance: 150000, lite: false, license_key: 'OPENSKP-V2-PREVIEW-ACTIVE', is_active: true, hardware_id: 'HWID-SKETCHUP-CLIENT-9999' };
+const MOCK_PROFILE_DATA = { license_key: 'OPENSKP-V2-PREVIEW-ACTIVE', is_active: true, hardware_id: 'HWID-SKETCHUP-CLIENT-9999' };
 
 const ZALO_LINK = import.meta.env.VITE_ZALO_LINK || "";
 const FACEBOOK_LINK = import.meta.env.VITE_FACEBOOK_LINK || "";
 const DRIVE_DOWNLOAD_LINK = import.meta.env.VITE_DRIVE_DOWNLOAD_LINK || "";
-const DRIVE_LITE_DOWNLOAD_LINK = import.meta.env.VITE_DRIVE_LITE_DOWNLOAD_LINK || "";
 
 const BANK_ID = import.meta.env.VITE_BANK_ID || ""; 
 const BANK_ACCOUNT = import.meta.env.VITE_BANK_ACCOUNT || ""; 
 const ACCOUNT_NAME = import.meta.env.VITE_BANK_ACCOUNT_NAME || ""; 
 
-const LITE_PKG_VND = { id: 'lite_vnd', price: 200000, value: 'Phiên bản Trọn đời', label: 'Mua đứt 1 lần, sử dụng vĩnh viễn', isLite: true };
-const LITE_PKG_USD = { id: 'lite_usd', price: 10, value: 'Lifetime License', label: 'Pay once, use forever', isLite: true };
-
-const PACKAGES_VND = [
-  { id: 1, price: 50000, value: 50000, label: "Cơ bản", currency: 'VND' },
-  { id: 2, price: 100000, value: 105000, label: "Phổ biến (Tặng 5%)", currency: 'VND' },
-  { id: 3, price: 200000, value: 220000, label: "Nâng cao (Tặng 10%)", currency: 'VND' },
-  { id: 4, price: 500000, value: 575000, label: "Siêu hời (Tặng 15%)", currency: 'VND' },
-];
-
-const PACKAGES_USD = [
-  { id: 'usd_3', price: 8, value: 220000, label: "Advanced (+10%)", currency: 'USD' },
-  { id: 'usd_4', price: 20, value: 575000, label: "Pro (+15%)", currency: 'USD' },
-];
+const OPENSKP_PRICE_VND = 200000;
+const OPENSKP_PRICE_USD = 10;
 
 const PayPalButtonContainer = ({ price, value, onSuccess, onError }) => {
   const containerRef = useRef(null);
@@ -249,14 +211,14 @@ const BackgroundDecorations = () => (
   </div>
 );
 
-// HIỂN THỊ CHỈ 1 NÚT TẢI OPENSKP-AI TRÊN MÀN HÌNH CHÍNH THEO YÊU CẦU
-const HeroSection = ({ t, handleDownloadMain }) => (
-  <div className="flex flex-col items-center text-center mb-24 mt-6 animate-fade-in px-4 relative z-20">
+// HIỂN THỊ NÚT TẢI OPENSKP VÀ NÚT HƯỚNG DẪN TRỰC QUAN
+const HeroSection = ({ t, handleDownloadMain, currentView, setCurrentView }) => (
+  <div className="flex flex-col items-center text-center mb-12 mt-6 animate-fade-in px-4 relative z-20">
       <div className="relative z-0 -mb-0.5 pointer-events-none select-none">
           <img 
               src="/robot-drawing.png" 
               alt="Robot Architect" 
-              className="w-60 sm:w-[24rem] h-auto object-contain"
+              className="w-52 sm:w-[22rem] h-auto object-contain"
               onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = "https://placehold.co/300x300/fdfbf7/0063A3?text=Robot+PNG";
@@ -274,167 +236,169 @@ const HeroSection = ({ t, handleDownloadMain }) => (
       <div className="flex flex-col sm:flex-row gap-4 mt-8 mb-1 relative z-20">
           <button 
               onClick={handleDownloadMain}
-              className="px-8 py-3 rounded-xl text-white text-lg shadow-xl hover:translate-y-[-2px] hover:opacity-90 transition flex items-center justify-center gap-2 font-bold"
+              className="px-8 py-3.5 rounded-xl text-white text-lg shadow-xl hover:translate-y-[-2px] hover:opacity-90 transition flex items-center justify-center gap-2 font-bold"
               style={{ backgroundColor: PRIMARY_COLOR }}
           >
               <Download size={20} /> {t.downloadMain}
+          </button>
+          <button 
+              onClick={() => {
+                const nextView = currentView === 'guide' ? 'home' : 'guide';
+                setCurrentView(nextView);
+                if (nextView === 'guide') {
+                  setTimeout(() => {
+                    document.getElementById('guide-section')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                } else {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+              className="px-8 py-3.5 rounded-xl text-lg shadow-xl hover:translate-y-[-2px] bg-white border-2 hover:bg-slate-50 transition flex items-center justify-center gap-2 font-bold"
+              style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
+          >
+              {currentView === 'guide' ? (
+                <>
+                  <Home size={20} /> {t.backHome}
+                </>
+              ) : (
+                <>
+                  <BookOpen size={20} /> {t.guide}
+                </>
+              )}
           </button>
       </div>
   </div>
 );
 
-// GIAO DIỆN BẢNG GIÁ ĐÃ CẬP NHẬT CHÚ THÍCH PHIÊN BẢN CHỈ HIỆN Ở MỤC LITE
-const PaymentModal = ({ t, paymentMethod, handleSwitchMethod, selectedPkg, setSelectedPkg, setShowPayment, paypalSuccess, profile, getVietQRUrl, setPaypalSuccess, showToast, paypalSdkReady }) => {
-  const litePkg = paymentMethod === 'VND' ? LITE_PKG_VND : LITE_PKG_USD;
-  const tokensPkgList = paymentMethod === 'VND' ? PACKAGES_VND : PACKAGES_USD;
-
-  const renderPriceCard = (pkg) => {
-      const isSelected = selectedPkg.id === pkg.id;
-      
-      let label = pkg.label;
-      if (pkg.id === 'lite_vnd' || pkg.id === 'lite_usd') label = t.pkgLiteLabel;
-      else if (pkg.id === 1) label = t.pkgBasic;
-      else if (pkg.id === 2) label = t.pkgPopular;
-      else if (pkg.id === 3 || pkg.id === 'usd_3') label = t.pkgAdvanced;
-      else if (pkg.id === 4 || pkg.id === 'usd_4') label = t.pkgPro;
-
-      let valueDisplay = pkg.isLite ? t.pkgLiteValue : `${pkg.value.toLocaleString('vi-VN')} Token`;
-
-      return (
-        <div
-            key={pkg.id} onClick={() => setSelectedPkg(pkg)}
-            className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-center group
-                ${isSelected ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-slate-200 bg-white hover:border-blue-300'}`}
-        >
-            {isSelected && (
-                <span className="absolute -top-2.5 -right-2 bg-blue-500 text-white text-[10px] font-normal px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3"/> {t.selectedBadge}
-                </span>
-            )}
-            <div className="flex items-center gap-4">
-                <div className={`p-2.5 rounded-lg ${isSelected ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
-                    {pkg.isLite ? <Star className="w-6 h-6" /> : <Zap className="w-6 h-6" />}
-                </div>
-                <div>
-                    <div className="font-normal text-slate-700 text-base">
-                        {valueDisplay}
-                    </div>
-                    <div className="text-xs font-normal text-slate-500">{label}</div>
-                </div>
-            </div>
-            <div className="text-blue-600 font-bold font-mono text-lg">
-                {paymentMethod === 'USD' ? '$' : ''}{pkg.price.toLocaleString('vi-VN')}{paymentMethod === 'VND' ? ' đ' : ''}
-            </div>
-        </div>
-      );
-  };
-
+// GIAO DIỆN BẢNG GIÁ (ĐƯA VỀ CÙNG 1 Ô: TIÊU ĐỀ - NỘI DUNG - QR - TỔNG THANH TOÁN - 200.000Đ - VND USD - LƯU Ý)
+const PaymentModal = ({ 
+  t, 
+  paymentMethod, 
+  handleSwitchMethod, 
+  setShowPayment, 
+  paypalSuccess, 
+  profile, 
+  getVietQRUrl, 
+  setPaypalSuccess, 
+  showToast, 
+  paypalSdkReady 
+}) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden relative max-h-[92vh] flex flex-col">
             
-            {/* --- SELECTION AREA --- */}
-            <div className="w-full md:w-3/5 flex flex-col border-r border-slate-200 bg-slate-50 p-6 overflow-y-auto custom-scrollbar">
+            {/* Nút đóng X góc trên */}
+            <button 
+              onClick={() => setShowPayment(false)} 
+              className="absolute top-4 right-4 p-1.5 hover:bg-slate-100 rounded-full transition text-slate-400 hover:text-slate-600 z-10"
+              title="Đóng"
+            >
+                <X className="w-5 h-5"/>
+            </button>
+
+            <div className="p-6 sm:p-7 flex flex-col items-center text-center overflow-y-auto custom-scrollbar">
                 
-                {/* PHẦN OPENSKP-LITE */}
-                <div className="mb-8">
-                    <h3 className="text-2xl font-bold font-sans mb-1 text-slate-800 tracking-tight flex items-center gap-2">
-                        OpenSkp-Lite
-                    </h3>
-                    <p className="text-sm font-semibold text-slate-700 mb-2">{t.liteSubtitle}</p>
-                    <p className="text-sm text-slate-500 mb-4 text-justify leading-relaxed">
-                        {t.liteDesc} 
-                        <span className="text-red-500 font-bold">{t.versionWarning}</span>
-                    </p>
-                    {renderPriceCard(litePkg)}
-                </div>
+                {/* 1. TIÊU ĐỀ */}
+                <h3 className="text-2xl font-bold font-sans text-slate-800 tracking-tight mb-1">
+                    OpenSkp
+                </h3>
+                <p className="text-xs font-semibold text-slate-600 mb-3">{t.paymentSubtitle}</p>
 
-                {/* PHẦN OPENSKP-AI */}
-                <div>
-                     <h3 className="text-2xl font-bold font-sans mb-1 text-slate-800 tracking-tight flex items-center gap-2">
-                         OpenSkp-AI
-                    </h3>
-                    <p className="text-sm font-semibold text-slate-700 mb-2">{t.aiSubtitle}</p>
-                    <p className="text-sm text-slate-500 mb-4 text-justify leading-relaxed">
-                        {t.aiDesc}
-                    </p>
-                    <div className="space-y-3">
-                        {tokensPkgList.map((pkg) => renderPriceCard(pkg))}
-                    </div>
-                </div>
-            </div>
+                {/* 2. NỘI DUNG */}
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed text-justify mb-5 px-1">
+                    {t.licenseDesc}
+                </p>
 
-            {/* --- CHECKOUT AREA --- */}
-            <div className="w-full md:w-2/5 flex flex-col relative bg-white overflow-y-auto custom-scrollbar">
-                <button onClick={() => setShowPayment(false)} className="absolute top-4 right-4 p-1 hover:bg-slate-100 rounded-full transition text-slate-500 z-10">
-                    <X className="w-6 h-6"/>
-                </button>
-
-                <div className="px-6 pt-12 pb-6 flex flex-col items-center justify-start min-h-full text-center">
-                    <div className="w-full flex bg-slate-100 p-1 rounded-xl mb-6 font-sans shrink-0">
-                        <button onClick={() => handleSwitchMethod('VND')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${paymentMethod === 'VND' ? 'bg-white shadow text-slate-800' : 'text-slate-500'}`}>
-                            {t.paymentVND}
-                        </button>
-                        <button onClick={() => handleSwitchMethod('USD')} className={`flex-1 py-2 rounded-lg text-sm font-bold transition ${paymentMethod === 'USD' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}>
-                            {t.paymentUSD}
-                        </button>
-                    </div>
-
-                    {paypalSuccess ? (
-                        <div className="animate-fade-in w-full">
-                            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4"><CheckCircle2 className="w-10 h-10" /></div>
-                            <h3 className="text-xl font-bold text-slate-800">{t.paymentSuccess}</h3>
-                            <div className="bg-slate-100 p-3 rounded-lg font-mono text-sm border border-slate-200 my-4 select-all text-slate-700">{paypalSuccess}</div>
-                            <h5 className="text-slate-500 text-xs">{t.paymentSuccessMsg}</h5>
+                {/* 3. QR (hoặc PayPal nếu chọn USD) */}
+                {paypalSuccess ? (
+                    <div className="animate-fade-in w-full my-2">
+                        <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <CheckCircle2 className="w-8 h-8" />
                         </div>
-                    ) : (
-                        <div className="w-full">
-                            <h5 className="text-slate-500 text-sm mb-4">{t.paymentTotal} <span className="text-2xl font-bold text-slate-800 block mt-1">{selectedPkg.price.toLocaleString('vi-VN')} {paymentMethod === 'VND' ? 'đ' : '$'}</span></h5>
-                            {paymentMethod === 'VND' ? (
-                                <div className="bg-white p-2 border border-slate-200 rounded-xl shadow-sm inline-block">
-                                    {profile ? (
-                                        <img src={getVietQRUrl()} alt="VietQR" className="w-48 h-48 object-contain animate-fade-in" />
-                                    ) : (
-                                        <div className="w-48 h-48 flex items-center justify-center text-xs text-gray-400 bg-gray-50 rounded">
-                                            <Loader2 className="animate-spin mr-2" /> {t.loginToView}
-                                        </div>
-                                    )}
-                                    <h5 className="text-[10px] text-slate-400 mt-2">{t.paymentScan}</h5>
-                                </div>
-                            ) : (
-                                <div className="w-full px-4 mt-4 relative z-0">
-                                    {(IS_PREVIEW_MOCK_MODE || paypalSdkReady) ? (
-                                        <PayPalButtonContainer 
-                                            price={selectedPkg.price}
-                                            value={selectedPkg.value}
-                                            onSuccess={(orderId) => {
-                                                setPaypalSuccess(orderId);
-                                                showToast("Thanh toán PayPal thành công!", "success");
-                                            }}
-                                            onError={() => {
-                                                showToast("Giao dịch thất bại / Payment Failed", "error");
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-12 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-slate-100">
-                                            <Loader2 className="animate-spin mr-2 w-4 h-4" /> Đang kết nối PayPal...
-                                        </div>
-                                    )}
-                                    <div className="bg-blue-50 p-3 rounded-lg text-[10px] text-blue-800 mt-4 border border-blue-100">
-                                        ℹ️ {t.paymentCardDesc}
+                        <h3 className="text-lg font-bold text-slate-800">{t.paymentSuccess}</h3>
+                        <div className="bg-slate-100 p-2.5 rounded-lg font-mono text-xs border border-slate-200 my-3 select-all text-slate-700">
+                            {paypalSuccess}
+                        </div>
+                        <h5 className="text-slate-500 text-xs">{t.paymentSuccessMsg}</h5>
+                    </div>
+                ) : (
+                    <>
+                        {paymentMethod === 'VND' ? (
+                            <div className="bg-white p-2.5 border border-slate-200 rounded-xl shadow-xs inline-block mb-3">
+                                {profile ? (
+                                    <img src={getVietQRUrl()} alt="VietQR" className="w-44 h-44 object-contain animate-fade-in mx-auto" />
+                                ) : (
+                                    <div className="w-44 h-44 flex items-center justify-center text-xs text-gray-400 bg-gray-50 rounded">
+                                        <Loader2 className="animate-spin mr-2" /> {t.loginToView}
                                     </div>
+                                )}
+                                <h5 className="text-[10px] text-slate-400 mt-1.5">{t.paymentScan}</h5>
+                            </div>
+                        ) : (
+                            <div className="w-full max-w-xs px-2 my-3 relative z-0">
+                                {(IS_PREVIEW_MOCK_MODE || paypalSdkReady) ? (
+                                    <PayPalButtonContainer 
+                                        price={OPENSKP_PRICE_USD}
+                                        value={"OpenSkp Lifetime License"}
+                                        onSuccess={(orderId) => {
+                                            setPaypalSuccess(orderId);
+                                            showToast("Thanh toán PayPal thành công!", "success");
+                                        }}
+                                        onError={() => {
+                                            showToast("Giao dịch thất bại / Payment Failed", "error");
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="w-full h-12 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                                        <Loader2 className="animate-spin mr-2 w-4 h-4" /> Đang kết nối PayPal...
+                                    </div>
+                                )}
+                                <div className="bg-blue-50 p-2 rounded-lg text-[10px] text-blue-800 mt-2 border border-blue-100 text-center">
+                                    ℹ️ {t.paymentCardDesc}
                                 </div>
-                            )}
+                            </div>
+                        )}
+
+                        {/* 4. TỔNG THANH TOÁN */}
+                        <div className="text-xs text-slate-500 font-medium mt-1">
+                            {t.paymentTotal}
                         </div>
-                    )}
-                </div>
+
+                        {/* 5. 200.000Đ */}
+                        <div className="text-2xl font-bold font-mono text-[#0063A3] mt-0.5 mb-3">
+                            {paymentMethod === 'USD' ? `$${OPENSKP_PRICE_USD}` : `${OPENSKP_PRICE_VND.toLocaleString('vi-VN')} đ`}
+                        </div>
+
+                        {/* 6. VND USD */}
+                        <div className="w-48 flex bg-slate-100 p-1 rounded-xl mb-4 font-sans shrink-0">
+                            <button 
+                                onClick={() => handleSwitchMethod('VND')} 
+                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${paymentMethod === 'VND' ? 'bg-white shadow text-slate-800' : 'text-slate-500'}`}
+                            >
+                                {t.paymentVND}
+                            </button>
+                            <button 
+                                onClick={() => handleSwitchMethod('USD')} 
+                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${paymentMethod === 'USD' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                            >
+                                {t.paymentUSD}
+                            </button>
+                        </div>
+
+                        {/* 7. LƯU Ý ... */}
+                        <div className="text-xs text-red-500 font-medium text-justify px-2 leading-relaxed border-t border-slate-100 pt-3">
+                            {t.paymentNotice}
+                        </div>
+                    </>
+                )}
+
             </div>
         </div>
     </div>
   );
 };
 
-const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoogle, language, setLanguage, keyCopySuccess, copyToClipboard, handleResetHWID, loading }) => {
+const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoogle, language, setLanguage, keyCopySuccess, copyToClipboard, handleResetHWID, loading, onOpenGuide }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navTextStyle = {
@@ -448,46 +412,31 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
   const renderUserDashboard = () => (
       <div className="flex items-center bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 animate-fade-in text-slate-800">
           
-          {/* CỘT 1: Token */}
-          <div className="flex items-center gap-2 pl-2">
-              <div className="text-right">
-                  <div className="text-[10px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-0.5">{t.credits}</div>
-                  <div className="text-base font-bold leading-none" style={{ color: PRIMARY_COLOR }}>
-                      <span>{Number(profile?.wallet_balance || 0).toLocaleString('vi-VN')}</span>
-                  </div>
+          {/* CỘT: Trạng thái Bản quyền */}
+          <div className="flex flex-col justify-center items-start px-2.5 whitespace-nowrap">
+              <div className="text-[9px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-1">
+                {language === 'VN' ? 'Trạng thái' : 'Status'}
               </div>
-              <button 
-                  onClick={(e) => { e.stopPropagation(); handleTopup(); setIsMobileMenuOpen(false); }} 
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow hover:scale-105 transition shrink-0" 
-                  style={{ backgroundColor: PRIMARY_COLOR }}
-              >
-                  <Plus size={16} strokeWidth={2} />
-              </button>
+              <div className={`text-[10px] font-bold uppercase leading-none ${(profile?.is_active || profile?.lite) ? 'text-emerald-600' : 'text-slate-400'}`}>
+                   {(profile?.is_active || profile?.lite) ? t.statusActivated : t.statusInactive}
+              </div>
           </div>
 
           {/* VÁCH NGĂN DỌC */}
-          <div className="w-px h-8 bg-slate-200 mx-2.5"></div>
+          <div className="w-px h-8 bg-slate-200 mx-1"></div>
 
-          {/* CỘT 2: Trạng thái OpenSkp-Lite */}
-          <div className="flex flex-col justify-center items-start pr-1 w-[110px] whitespace-nowrap">
-              <div className="text-[9px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-1">OpenSkp-Lite</div>
-              <div className={`text-[10px] font-bold uppercase leading-none ${profile?.lite ? 'text-blue-600' : 'text-slate-400'}`}>
-                   {profile?.lite ? t.statusActivated : t.statusInactive}
-              </div>
-          </div>
-
-          {/* CỘT 3: License Key */}
+          {/* CỘT: License Key */}
           <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-lg border border-slate-200 ml-1">
-                  <div className="flex flex-col items-start">
+              <div className="flex flex-col items-start">
                   <span className="text-[9px] font-bold text-slate-400 uppercase leading-none">{t.licenseKey}</span>
                   <input 
                     type="text" 
                     readOnly 
                     value={profile?.license_key || 'Đang tạo mã...'} 
-                    className="text-xs font-mono font-bold text-slate-700 leading-tight bg-transparent outline-none border-none w-24 cursor-default"
+                    className="text-xs font-mono font-bold text-slate-700 leading-tight bg-transparent outline-none border-none w-28 cursor-default"
                   />
-                  </div>
-                  <button 
+              </div>
+              <button 
                   onClick={(e) => {
                       e.stopPropagation();
                       if(profile?.license_key){
@@ -495,9 +444,10 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
                       }
                   }} 
                   className="text-slate-400 hover:text-blue-600 transition p-0.5 hover:bg-white rounded-md shrink-0"
-                  >
+                  title={t.copyKey}
+              >
                   {keyCopySuccess ? <CheckCircle2 size={14} className="text-green-600"/> : <Copy size={14} />}
-                  </button>
+              </button>
           </div>
       </div>
   );
@@ -512,7 +462,7 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
                 </div>
                 <div className="hidden md:flex items-center gap-5 pt-1">
                     <button onClick={handleTopup} className="text-sm hover:opacity-80 transition hover:scale-105" style={navTextStyle}>{t.pricingPricing}</button>
-                    <a href="https://www.youtube.com/@OpenSkp" target="_blank" rel="noreferrer" className="text-sm hover:opacity-80 transition hover:scale-105" style={navTextStyle}>{t.guide}</a>
+                    <button onClick={onOpenGuide} className="text-sm hover:opacity-80 transition hover:scale-105 font-medium" style={navTextStyle}>{t.guide}</button>
                 </div>
             </div>
 
@@ -574,7 +524,7 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
                 <div className="flex flex-col py-4 gap-4 items-center">
                     <div className="w-full flex flex-col items-center gap-2 border-b border-gray-50 pb-4">
                       <button onClick={() => { handleTopup(); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{t.pricingPricing}</button>
-                      <a href="https://www.youtube.com/@OpenSkp" target="_blank" rel="noreferrer" onClick={() => setIsMobileMenuOpen(false)} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{t.guide}</a>
+                      <button onClick={() => { setIsMobileMenuOpen(false); if (onOpenGuide) onOpenGuide(); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base font-medium" style={navTextStyle}>{t.guide}</button>
                     </div>
                     <div className="flex flex-col items-center gap-3 w-full px-4">
                         {session ? (
@@ -632,12 +582,12 @@ export default function App() {
   const [keyCopySuccess, setKeyCopySuccess] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('VND');
-  const [selectedPkg, setSelectedPkg] = useState(PACKAGES_VND[0]);
   const [paypalSuccess, setPaypalSuccess] = useState(null);
   
   const [supabaseReady, setSupabaseReady] = useState(false);
   const [paypalSdkReady, setPaypalSdkReady] = useState(false);
   const [mockResetCount, setMockResetCount] = useState(0);
+  const [currentView, setCurrentView] = useState('home'); // 'home' | 'guide'
 
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const [confirmModal, setConfirmModal] = useState({ show: false, message: '', onConfirm: null });
@@ -748,18 +698,9 @@ export default function App() {
               const oldLite = latestProfileRef.current?.lite || false;
               const newLite = verifiedData.lite || false;
 
-              if (newLite && !oldLite) {
+              if ((newLite && !oldLite) || (verifiedData?.is_active && !latestProfileRef.current?.is_active)) {
                 if (showPayment) setShowPayment(false);
-                showToast(`🎉 Kích hoạt thành công! Tài khoản của bạn đã được nâng cấp lên gói LITE.`, "success");
-              } 
-              else if (newBalance > oldBalance) {
-                const addedAmount = newBalance - oldBalance;
-                if (showPayment && paymentMethod === 'VND') {
-                   setShowPayment(false);
-                   setTimeout(() => showToast(`Nạp tiền thành công! Tài khoản của bạn đã được cộng thêm ${addedAmount.toLocaleString('vi-VN')} VNĐ.`, "success"), 500);
-                } else {
-                   showToast(`Tài khoản đã được tự động cộng thêm ${addedAmount.toLocaleString('vi-VN')} VNĐ từ hệ thống!`, "success");
-                }
+                showToast(`🎉 Kích hoạt thành công! Bản quyền OpenSkp của bạn đã sẵn sàng sử dụng.`, "success");
               }
             }
           } catch (e) {
@@ -886,20 +827,11 @@ export default function App() {
     showToast("Đã đăng xuất tài khoản.", "info");
   };
 
-  // 2 HÀM TẢI XUỐNG DẪN LINK ĐỘC LẬP TỪ BIẾN MÔI TRƯỜNG
   const handleDownloadMain = () => { 
     if (DRIVE_DOWNLOAD_LINK) {
       window.open(DRIVE_DOWNLOAD_LINK, '_blank'); 
     } else {
-      showToast("Đường dẫn tải plugin OpenSkp-AI hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_DOWNLOAD_LINK)", "error");
-    }
-  };
-
-  const handleDownloadLite = () => {
-    if (DRIVE_LITE_DOWNLOAD_LINK) {
-      window.open(DRIVE_LITE_DOWNLOAD_LINK, '_blank');
-    } else {
-      showToast("Đường dẫn tải plugin OpenSkp-Lite hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_LITE_DOWNLOAD_LINK)", "error");
+      showToast("Đường dẫn tải plugin OpenSkp hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_DOWNLOAD_LINK)", "error");
     }
   };
 
@@ -907,34 +839,24 @@ export default function App() {
     if (!session) return showToast("Vui lòng đăng nhập để xem bảng giá và thanh toán", "error");
     setShowPayment(true);
     setPaymentMethod('VND');
-    setSelectedPkg(LITE_PKG_VND); 
     setPaypalSuccess(null);
   };
 
   const handleSwitchMethod = (method) => {
     setPaymentMethod(method);
     setPaypalSuccess(null);
-    if (selectedPkg.isLite) {
-        setSelectedPkg(method === 'VND' ? LITE_PKG_VND : LITE_PKG_USD);
-    } else {
-        setSelectedPkg(method === 'VND' ? PACKAGES_VND[0] : PACKAGES_USD[0]);
-    }
   };
 
   const getVietQRUrl = () => {
-    if (!profile || !selectedPkg) return "";
+    if (!profile) return "";
     const key = profile.license_key || 'UNKNOWN';
     const shortKey = key.split('-').pop() || key; 
-    
-    let DESCRIPTION = `OPENSKP ${shortKey}`;
-    if (selectedPkg.isLite) {
-      DESCRIPTION = `OPENSKP LITE ${shortKey}`;
-    }
+    const DESCRIPTION = `OPENSKP ${shortKey}`;
 
     if (!BANK_ID || !BANK_ACCOUNT) {
       return "https://placehold.co/300x300/fdfbf7/0063A3?text=VietQR+Simulated";
     }
-    return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${selectedPkg.price}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
+    return `https://img.vietqr.io/image/${BANK_ID}-${BANK_ACCOUNT}-compact2.png?amount=${OPENSKP_PRICE_VND}&addInfo=${encodeURIComponent(DESCRIPTION)}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
   };
 
   const copyToClipboard = async (text, isKey = false) => {
@@ -1033,8 +955,6 @@ export default function App() {
             t={t} 
             paymentMethod={paymentMethod} 
             handleSwitchMethod={handleSwitchMethod} 
-            selectedPkg={selectedPkg} 
-            setSelectedPkg={setSelectedPkg} 
             setShowPayment={setShowPayment} 
             paypalSuccess={paypalSuccess} 
             profile={profile} 
@@ -1058,10 +978,47 @@ export default function App() {
           copyToClipboard={copyToClipboard}
           handleResetHWID={handleResetHWID}
           loading={loading}
+          onOpenGuide={() => {
+            setCurrentView('guide');
+            setTimeout(() => {
+              document.getElementById('guide-section')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          }}
       />
       
-      <main className="flex-grow w-full relative z-10 flex flex-col items-center justify-center">
-          <HeroSection t={t} handleDownloadMain={handleDownloadMain} />
+      <main className="flex-grow w-full relative z-10 flex flex-col items-center justify-start pb-16">
+          <HeroSection 
+            t={t} 
+            handleDownloadMain={handleDownloadMain} 
+            currentView={currentView}
+            setCurrentView={setCurrentView}
+          />
+
+          {currentView === 'home' ? (
+            <ShowcaseSection 
+              t={t} 
+              PRIMARY_COLOR={PRIMARY_COLOR} 
+              onOpenGuide={() => {
+                setCurrentView('guide');
+                setTimeout(() => {
+                  document.getElementById('guide-section')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
+            />
+          ) : (
+            <InteractiveGuideSection 
+              t={t} 
+              PRIMARY_COLOR={PRIMARY_COLOR} 
+              profile={profile} 
+              session={session} 
+              copyToClipboard={copyToClipboard} 
+              keyCopySuccess={keyCopySuccess}
+              onBackHome={() => {
+                setCurrentView('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          )}
       </main>
       
       <footer className="mt-auto border-t border-slate-200 bg-white/60 backdrop-blur-sm py-8 relative z-10">

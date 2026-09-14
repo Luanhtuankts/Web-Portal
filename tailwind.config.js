@@ -13,6 +13,7 @@ export default {
           'sans-serif'
         ],
         serif: [
+          'Crimson Pro',
           'Georgia',
           'Cambria',
           'Times New Roman',
