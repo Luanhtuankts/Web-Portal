@@ -1848,23 +1848,19 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
         // Di chuột sang ô nhập liệu OpenSkp trong SketchUp
         await moveMouse('step4-openskp-input', 800, { x: 620, y: 505 });
-        setIsOpenskpFocused(true); // Con trỏ nháy |
-        await sleep(350);
-
-        // Hiển thị popup Ctrl + V chữ đen nền trắng ngay dưới chuột CHẬM RÃI, RÕ RÀNG
+        // Nhấp chuột vào ô nhập liệu: Hiện nháy |, popup Ctrl-V hiện dưới chuột, mã Ruby tự động điền (không cần click)
+        setIsOpenskpFocused(true);
         setShowCtrlVPopup(true);
-        await sleep(850);
+        await sleep(350);
 
         // Tự động hiển thị mã Ruby trong ô nhập liệu
         setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 2000, depth: 400)");
-        await sleep(750);
-
-        // Ẩn popup Ctrl+V
-        setShowCtrlVPopup(false);
         await sleep(300);
+        setShowCtrlVPopup(false);
+        await sleep(200);
 
         // Di chuột sang nút Send của OpenSkp và click gửi
-        await moveMouse('step4-openskp-send-btn', 400, { x: 740, y: 505 });
+        await moveMouse('step4-openskp-send-btn', 350, { x: 740, y: 505 });
         await clickMouse();
 
         setIsOpenskpFocused(false);
@@ -1929,23 +1925,19 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
         // Di chuột sang ô nhập liệu OpenSkp
         await moveMouse('step4-openskp-input', 800, { x: 620, y: 505 });
-        setIsOpenskpFocused(true); // Con trỏ nháy |
+        // Nhấp chuột vào ô nhập liệu: Hiện nháy |, popup Ctrl-V hiện dưới chuột, mã Ruby tự động điền (không cần click)
+        setIsOpenskpFocused(true);
+        setShowCtrlVPopup(true);
         await sleep(350);
 
-        // Hiển thị popup Ctrl + V chữ đen nền trắng ngay dưới chuột CHẬM RÃI, RÕ RÀNG
-        setShowCtrlVPopup(true);
-        await sleep(850);
-
-        // Tự động hiển thị mã Ruby mới trong ô nhập liệu
+        // Tự động hiển thị mã Ruby trong ô nhập liệu
         setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 3000, depth: 400)");
-        await sleep(750);
-
-        // Ẩn popup Ctrl+V
-        setShowCtrlVPopup(false);
         await sleep(300);
+        setShowCtrlVPopup(false);
+        await sleep(200);
 
         // Di chuột sang nút Send OpenSkp
-        await moveMouse('step4-openskp-send-btn', 400, { x: 740, y: 505 });
+        await moveMouse('step4-openskp-send-btn', 350, { x: 740, y: 505 });
         await clickMouse();
 
         setIsOpenskpFocused(false);
@@ -2187,8 +2179,18 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 )}
               </div>
 
-              {/* Chat Input Bar OpenSkp */}
+              {/* Chat Input Bar OpenSkp - POPUP CTRL-V HIỂN THỊ DƯỚI CHUỘT (KHÔNG CẦN CLICK) */}
               <div className="p-3 border-t border-slate-200/60 bg-white/90 shrink-0 relative">
+                {/* Popup Ctrl - V xuất hiện ngay bên dưới vị trí chuột để mô phỏng phím tắt */}
+                {showCtrlVPopup && (
+                  <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-slate-900/90 backdrop-blur-xs text-white border border-slate-700 shadow-xl rounded-md py-1 px-2.5 z-30 animate-bubble-in flex items-center gap-1.5 pointer-events-none select-none">
+                    <svg className="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span className="font-mono text-[11px] font-bold tracking-wider text-slate-100">Ctrl + V</span>
+                  </div>
+                )}
+
                 <div className="relative flex items-center w-full bg-white border border-gray-200 rounded-2xl shadow-sm px-2 py-1">
                   <span className="p-1 text-gray-400 shrink-0">
                     <ImageIcon size={16} />
@@ -2598,16 +2600,6 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
               strokeLinecap="round" 
             />
           </svg>
-
-          {/* Popup Ctrl + V: CHỮ ĐEN NỀN TRẮNG NẰM TRỰC TIẾP DƯỚI MŨI CON TRỎ CHUỘT */}
-          {showCtrlVPopup && (
-            <div className="absolute top-6 left-1 bg-white text-slate-900 border border-slate-300 shadow-xl rounded-md py-1 px-2.5 z-50 animate-bubble-in flex items-center gap-1.5 whitespace-nowrap">
-              <svg className="w-3.5 h-3.5 text-[#0063A3] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              <span className="font-mono text-[11px] font-bold tracking-wider text-slate-900">Ctrl + V</span>
-            </div>
-          )}
         </div>
       </div>
 
