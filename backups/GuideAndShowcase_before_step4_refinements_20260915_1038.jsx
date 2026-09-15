@@ -1682,9 +1682,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   const [showCtrlVPopup, setShowCtrlVPopup] = useState(false);
   const [openskpInput, setOpenskpInput] = useState("");
   const [openskpSent, setOpenskpSent] = useState(false);
-  const [openskpCompleted1, setOpenskpCompleted1] = useState(false);
   const [openskp2Sent, setOpenskp2Sent] = useState(false);
-  const [openskpCompleted2, setOpenskpCompleted2] = useState(false);
 
   // Trạng thái Viewport 3D
   const [isViewportPlaying, setIsViewportPlaying] = useState(false);
@@ -1723,7 +1721,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   // Cuộn mượt mà cho OpenSkp
   useEffect(() => {
     if (!openskpChatRef.current) return;
-    if (!openskpSent && !openskp2Sent && !openskpCompleted1 && !openskpCompleted2) {
+    if (!openskpSent && !openskp2Sent) {
       openskpChatRef.current.scrollTop = 0;
       return;
     }
@@ -1736,7 +1734,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
       }
     }, 60);
     return () => clearTimeout(scrollTimer);
-  }, [openskpSent, openskp2Sent, openskpCompleted1, openskpCompleted2]);
+  }, [openskpSent, openskp2Sent]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -1787,9 +1785,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setShowCtrlVPopup(false);
         setOpenskpInput("");
         setOpenskpSent(false);
-        setOpenskpCompleted1(false);
         setOpenskp2Sent(false);
-        setOpenskpCompleted2(false);
 
         if (videoRef.current) {
           videoRef.current.pause();
@@ -1848,18 +1844,21 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
         // Di chuột sang ô nhập liệu OpenSkp trong SketchUp
         await moveMouse('step4-openskp-input', 800, { x: 620, y: 505 });
-        // Nhấp chuột vào ô nhập liệu: Hiện nháy |, popup Ctrl-V hiện dưới chuột, mã Ruby tự động điền (không cần click)
+        await clickMouse();
         setIsOpenskpFocused(true);
         setShowCtrlVPopup(true);
         await sleep(350);
 
-        // Tự động hiển thị mã Ruby trong ô nhập liệu
-        setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 2000, depth: 400)");
-        await sleep(300);
-        setShowCtrlVPopup(false);
-        await sleep(200);
+        // Di chuột lên popup Ctrl - V ngay dưới chuột và click
+        await moveMouse('step4-openskp-ctrlv-btn', 250, { x: 605, y: 475 });
+        await sleep(150);
+        await clickMouse();
 
-        // Di chuột sang nút Send của OpenSkp và click gửi
+        setShowCtrlVPopup(false);
+        setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 2000, depth: 400)");
+        await sleep(500);
+
+        // Di chuột sang nút Send của OpenSkp
         await moveMouse('step4-openskp-send-btn', 350, { x: 740, y: 505 });
         await clickMouse();
 
@@ -1874,12 +1873,8 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
           videoRef.current.play().catch(() => {});
         }
 
-        // ĐỢI ĐÚNG 1 GIÂY -> HIỆN BUBBLE "ĐÃ HOÀN THÀNH"
-        await sleep(1000);
-        setOpenskpCompleted1(true);
-
-        // Chờ mô hình ban đầu hiển thị trên viewport (~4 giây tiếp)
-        await sleep(4000);
+        // Chờ mô hình ban đầu hiển thị trên viewport (~5 giây)
+        await sleep(5000);
 
         // ==========================================
         // 3. LẦN 2: CHUỘT LẠI TRỎ SANG TRÌNH DUYỆT
@@ -1925,16 +1920,19 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
         // Di chuột sang ô nhập liệu OpenSkp
         await moveMouse('step4-openskp-input', 800, { x: 620, y: 505 });
-        // Nhấp chuột vào ô nhập liệu: Hiện nháy |, popup Ctrl-V hiện dưới chuột, mã Ruby tự động điền (không cần click)
+        await clickMouse();
         setIsOpenskpFocused(true);
         setShowCtrlVPopup(true);
         await sleep(350);
 
-        // Tự động hiển thị mã Ruby trong ô nhập liệu
-        setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 3000, depth: 400)");
-        await sleep(300);
+        // Di chuột lên popup Ctrl - V và click
+        await moveMouse('step4-openskp-ctrlv-btn', 250, { x: 605, y: 475 });
+        await sleep(150);
+        await clickMouse();
+
         setShowCtrlVPopup(false);
-        await sleep(200);
+        setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 3000, depth: 400)");
+        await sleep(500);
 
         // Di chuột sang nút Send OpenSkp
         await moveMouse('step4-openskp-send-btn', 350, { x: 740, y: 505 });
@@ -1946,10 +1944,6 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
         // Cập nhật Viewport 3D sang tủ cao 3m thêm 2 đợt
         setIsViewport2Ready(true);
-
-        // ĐỢI ĐÚNG 1 GIÂY -> HIỆN BUBBLE "ĐÃ HOÀN THÀNH"
-        await sleep(1000);
-        setOpenskpCompleted2(true);
 
         // Dừng 6 giây để người xem chiêm ngưỡng kết quả mô hình đã sửa đổi
         await sleep(6000);
@@ -1980,15 +1974,17 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         {/* ==================================================================== */}
         <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans h-[540px]">
           
-          {/* SketchUp Title Bar: ĐỒNG BỘ CHUẨN XÁM SÁNG GIỐNG STEP 1, 2, 3, 6 (KHÔNG BỊ LỖI ĐEN) */}
-          <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between text-xs select-none shrink-0">
+          {/* SketchUp Titlebar - Chuẩn h-9 */}
+          <div className="h-9 bg-[#1E293B] text-slate-300 px-3 flex items-center justify-between text-xs select-none shrink-0">
             <div className="flex items-center gap-2">
-              <img src="/sketchup-logo.svg" alt="SketchUp" className="w-4 h-4 object-contain shrink-0" />
-              <span className="font-sans text-[11px] text-slate-700 font-medium truncate">
-                Untitled - SketchUp Pro 2021 - 2026
-              </span>
+              <div className="w-4 h-4 bg-red-600 rounded flex items-center justify-center font-bold text-[10px] text-white">S</div>
+              <span className="font-medium text-slate-200 truncate">Untitled - SketchUp Pro 2021 - 2026</span>
             </div>
-            <WindowControls />
+            <div className="flex items-center gap-1.5">
+              <Minus className="w-3.5 h-3.5 text-slate-400 hover:text-white cursor-pointer" />
+              <Square className="w-3 h-3 text-slate-400 hover:text-white cursor-pointer" />
+              <X className="w-3.5 h-3.5 text-slate-400 hover:text-white cursor-pointer" />
+            </div>
           </div>
 
           {/* Menu Bar */}
@@ -2132,7 +2128,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 </div>
               </header>
 
-              {/* Chat Area Plugin: ĐỒNG BỘ 1 KIỂU BUBBLE HOÀN THÀNH */}
+              {/* Chat Area Plugin */}
               <div ref={openskpChatRef} className="flex-1 p-3 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex justify-start">
                   <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-slate-200 text-xs text-slate-700 max-w-sm leading-relaxed">
@@ -2149,16 +2145,6 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   </div>
                 )}
 
-                {/* Phản hồi hoàn thành lần 1 sau đúng 1s */}
-                {openskpCompleted1 && (
-                  <div className="flex justify-start animate-bubble-in">
-                    <div className="bg-white rounded-2xl rounded-bl-sm px-3.5 py-2 shadow-sm border border-slate-200 text-xs text-slate-800 leading-relaxed flex items-center gap-2">
-                      <Check size={14} className="text-emerald-600 shrink-0" />
-                      <span className="font-medium text-slate-800">Đã hoàn thành</span>
-                    </div>
-                  </div>
-                )}
-
                 {/* Tin nhắn lệnh lần 2 (Cập nhật cao 3m) */}
                 {openskp2Sent && (
                   <div className="flex justify-end animate-bubble-in">
@@ -2167,27 +2153,19 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                     </div>
                   </div>
                 )}
-
-                {/* Phản hồi hoàn thành lần 2 sau đúng 1s */}
-                {openskpCompleted2 && (
-                  <div className="flex justify-start animate-bubble-in">
-                    <div className="bg-white rounded-2xl rounded-bl-sm px-3.5 py-2 shadow-sm border border-slate-200 text-xs text-slate-800 leading-relaxed flex items-center gap-2">
-                      <Check size={14} className="text-emerald-600 shrink-0" />
-                      <span className="font-medium text-slate-800">Đã hoàn thành</span>
-                    </div>
-                  </div>
-                )}
               </div>
 
-              {/* Chat Input Bar OpenSkp - POPUP CTRL-V HIỂN THỊ DƯỚI CHUỘT (KHÔNG CẦN CLICK) */}
+              {/* Chat Input Bar OpenSkp - ĐỒNG BỘ KHOẢNG CÁCH, POPUP CTRL-V & NHÁY | */}
               <div className="p-3 border-t border-slate-200/60 bg-white/90 shrink-0 relative">
-                {/* Popup Ctrl - V xuất hiện ngay bên dưới vị trí chuột để mô phỏng phím tắt */}
                 {showCtrlVPopup && (
-                  <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-slate-900/90 backdrop-blur-xs text-white border border-slate-700 shadow-xl rounded-md py-1 px-2.5 z-30 animate-bubble-in flex items-center gap-1.5 pointer-events-none select-none">
-                    <svg className="w-3.5 h-3.5 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <span className="font-mono text-[11px] font-bold tracking-wider text-slate-100">Ctrl + V</span>
+                  <div className="absolute bottom-13 left-6 bg-white border border-slate-300 rounded-lg shadow-xl py-1 px-2.5 z-30 animate-bubble-in flex items-center gap-1.5 select-none">
+                    <button
+                      id="step4-openskp-ctrlv-btn"
+                      className="flex items-center gap-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded w-full text-left font-sans font-medium cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5 text-[#0063A3] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                      <span className="font-mono text-[11px] font-bold text-slate-800 tracking-wide">Ctrl - V</span>
+                    </button>
                   </div>
                 )}
 
@@ -2280,7 +2258,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
               <div className="flex items-center gap-1.5">
                 <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="3"/>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                 </svg>
                 <span className="font-normal text-slate-800">gemini.google.com/app</span>
               </div>
