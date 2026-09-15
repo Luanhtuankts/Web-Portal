@@ -1118,6 +1118,11 @@ const GeminiLeftRail = ({ width = "w-11" }) => (
       <GeminiColorfulLogo className="w-5 h-5" />
     </div>
 
+    {/* 2. Công tắc gạt (Toggle Switch) đơn sắc */}
+    <div className="w-5 h-3 rounded-full border border-slate-700 flex items-center px-0.5 cursor-pointer hover:border-slate-900 transition-colors" title="Toggle">
+      <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+    </div>
+
     {/* 3. Nút Cuộc trò chuyện mới (Bút / Edit) đơn sắc */}
     <div className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 cursor-pointer transition-colors" title="Cuộc trò chuyện mới">
       <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1497,7 +1502,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   </div>
                 ) : (
                   /* Cuộc hội thoại sau khi gửi prompt */
-                  <div className="space-y-4 animate-fade-in w-full px-3 sm:px-6 py-1">
+                  <div className="space-y-3 animate-fade-in w-full max-w-lg mx-auto py-1">
                     
                     {/* Tin nhắn từ User: Thumbnail file giống hệt lúc đính kèm */}
                     <div className="flex flex-col items-end gap-1.5 animate-fade-in">
