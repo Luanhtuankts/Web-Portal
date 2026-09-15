@@ -2629,7 +2629,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   // Chế độ khung trái: 'folder' hoặc 'sketchup'
   const [leftMode, setLeftMode] = useState('folder');
 
-  // Trạng thái chọn file trong Folder (Đồng bộ ô bao bằng nhau 100%)
+  // Trạng thái chọn file trong Folder (Đồng bộ 100% style Bước 3)
   const [txtSelected, setTxtSelected] = useState(false);
   const [imgSelected, setImgSelected] = useState(false);
 
@@ -2639,13 +2639,9 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   // Trạng thái hội thoại Gemini (Khung Trình duyệt bên phải)
   const [filesAttached, setFilesAttached] = useState(false);
   const [geminiPrompt, setGeminiPrompt] = useState("");
-  const [isGeminiFocused, setIsGeminiFocused] = useState(false);
   const [promptSent, setPromptSent] = useState(false);
   const [geminiThinking, setGeminiThinking] = useState(false);
   const [geminiConverted, setGeminiConverted] = useState(false);
-
-  // Tự động tăng chiều cao ô nhập liệu khi prompt dài
-  const isGeminiMultiLine = geminiPrompt.length > 22;
 
   // Hiệu ứng kéo mặt bằng đen trắng từ Gemini sang ô chat OpenSkp
   const [isDraggingBwImage, setIsDraggingBwImage] = useState(false);
@@ -2656,7 +2652,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   const [dimensionInput, setDimensionInput] = useState("");
   const [showDimensionPopup, setShowDimensionPopup] = useState(false); // Popup chữ đen nền trắng dưới chuột
   const [openskpSent, setOpenskpSent] = useState(false);
-  const [openskpCompleted, setOpenskpCompleted] = useState(false); // Phản hồi hoàn thành "Đã hoàn thành"
+  const [openskpCompleted, setOpenskpCompleted] = useState(false); // Phản hồi hoàn thành đồng bộ Bước 4
   const [isViewportPlaying, setIsViewportPlaying] = useState(false);
 
   const getCenterCoords = (elementId) => {
@@ -2746,7 +2742,6 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setIsDraggingBwImage(false);
         setFilesAttached(false);
         setGeminiPrompt("");
-        setIsGeminiFocused(false);
         setPromptSent(false);
         setGeminiThinking(false);
         setGeminiConverted(false);
@@ -2783,19 +2778,14 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setIsDraggingFiles(true);
         await moveMouse('step6-gemini-input-box', 1000, { x: 900, y: 505 });
 
-        // Thả chuột tại ô chat Gemini -> Hiện thumbnail to rõ nét như Bước 4
+        // Thả chuột tại ô chat Gemini -> Hiện đính kèm
         setIsDraggingFiles(false);
         setFilesAttached(true);
         setTxtSelected(false);
         setImgSelected(false);
-        await sleep(450);
-
-        // Kích hoạt con trỏ nháy | trong ô nhập liệu Gemini
-        setIsGeminiFocused(true);
-        await sleep(250);
+        await sleep(400);
 
         // 3. Gõ câu lệnh: "Chuyển mặt bằng về đen trắng theo prompt đính kèm"
-        // Ô nhập liệu tự động tăng chiều cao hiển thị hết prompt khi dài
         const promptTarget = "Chuyển mặt bằng về đen trắng theo prompt đính kèm";
         for (let i = 1; i <= promptTarget.length; i++) {
           if (isCancelled) return;
@@ -2807,7 +2797,6 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         // Di chuyển chuột đến nút Send của Gemini
         await moveMouse('step6-gemini-send-btn', 380, { x: 980, y: 505 });
         await clickMouse();
-        setIsGeminiFocused(false);
 
         // Gemini gửi tin nhắn & bắt đầu xử lý
         setPromptSent(true);
@@ -2877,7 +2866,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         // Video chạy trong khoảng ~8.5 giây thì hoàn thành
         await sleep(8500);
 
-        // Hiển thị bubble "Đã hoàn thành" kèm icon tích xanh đồng bộ Bước 4
+        // Hiển thị bubble Đã hoàn thành kèm icon tích xanh đồng bộ Bước 4
         setOpenskpCompleted(true);
 
         // Dừng thêm 2.5 giây để người xem chiêm ngưỡng không gian 3D hoàn chỉnh
@@ -2917,7 +2906,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         {/* ==================================================================== */}
         <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px] relative">
           
-          {/* TRƯỜNG HỢP 1: CỬA SỔ FOLDER DOWNLOADS (PHASE 1 & 2 - CÁC Ô BAO BẰNG NHAU 100%) */}
+          {/* TRƯỜNG HỢP 1: CỬA SỔ FOLDER DOWNLOADS (PHASE 1 & 2 - ĐỒNG BỘ 100% BƯỚC 3) */}
           <div 
             className={`absolute inset-0 flex flex-col transition-all duration-500 bg-white ${
               leftMode === 'folder' 
@@ -2960,22 +2949,22 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
               </div>
             </div>
 
-            {/* Vùng xem File: CÁC Ô BAO BẰNG NHAU HOÀN TOÀN (w-28 h-24) */}
+            {/* Vùng xem File: ĐỒNG BỘ 100% STYLE VỚI BƯỚC 1 & BƯỚC 3 */}
             <div className="p-4 flex-1 bg-white flex flex-col justify-start relative">
-              <div className="flex flex-wrap items-start gap-3 pt-2">
+              <div className="flex flex-wrap items-start gap-2.5 pt-2">
                 
                 {/* File 1: OpenSkp.rar */}
-                <div className="w-28 h-24 p-1.5 rounded-lg border border-transparent flex flex-col items-center justify-start text-center">
-                  <img src="/icon-rar-clean.png" alt="OpenSkp.rar" className="w-12 h-12 object-contain drop-shadow-xs shrink-0" />
-                  <span className="font-medium text-slate-800 text-[11px] mt-1.5 line-clamp-2 max-w-full leading-tight">
+                <div className="w-24 p-1.5 border border-transparent flex flex-col items-center text-center">
+                  <img src="/icon-rar-clean.png" alt="OpenSkp.rar" className="w-12 h-12 object-contain drop-shadow-xs" />
+                  <span className="font-medium text-slate-800 text-[11px] mt-1.5 truncate max-w-full">
                     OpenSkp.rar
                   </span>
                 </div>
 
-                {/* File 2: Prompt – Generate a floor plan image.txt (Ô bao bằng nhau) */}
+                {/* File 2: Prompt – Generate a floor plan image.txt (Select giống Bước 3) */}
                 <div 
                   id="step6-folder-prompt-item"
-                  className={`w-28 h-24 p-1.5 rounded-lg border flex flex-col items-center justify-start text-center transition-all ${
+                  className={`w-28 p-1.5 border flex flex-col items-center text-center transition-all ${
                     isDraggingFiles
                       ? 'border-[#0063A3] bg-[#0063A3]/10 opacity-50'
                       : txtSelected
@@ -2983,18 +2972,18 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                       : 'border-transparent hover:border-slate-300'
                   }`}
                 >
-                  <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 drop-shadow-xs shrink-0">
+                  <div className="w-12 h-12 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 drop-shadow-xs">
                     <DocTextIcon className="w-7 h-7" />
                   </div>
                   <span className="font-medium text-slate-800 text-[11px] mt-1.5 line-clamp-2 max-w-full leading-tight">
-                    Prompt...plan.txt
+                    Prompt – Generate a floor plan image.txt
                   </span>
                 </div>
 
-                {/* File 3: Mat_bang_mau.png (Ô bao bằng nhau 100% với File 2) */}
+                {/* File 3: Mat_bang_mau.png (Select giống Bước 3) */}
                 <div 
                   id="step6-folder-color-image-item"
-                  className={`w-28 h-24 p-1.5 rounded-lg border flex flex-col items-center justify-start text-center transition-all ${
+                  className={`w-24 p-1.5 border flex flex-col items-center text-center transition-all ${
                     isDraggingFiles
                       ? 'border-[#0063A3] bg-[#0063A3]/10 opacity-50'
                       : imgSelected
@@ -3002,10 +2991,10 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                       : 'border-transparent hover:border-slate-300'
                   }`}
                 >
-                  <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 shadow-xs bg-slate-100 shrink-0">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-200 shadow-xs bg-slate-100">
                     <img src="/floorplan-color.png" alt="Mặt bằng màu" className="w-full h-full object-cover" />
                   </div>
-                  <span className="font-medium text-slate-800 text-[11px] mt-1.5 line-clamp-2 max-w-full leading-tight">
+                  <span className="font-medium text-slate-800 text-[11px] mt-1.5 truncate max-w-full">
                     Mat_bang_mau.png
                   </span>
                 </div>
@@ -3163,7 +3152,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   </div>
                 </header>
 
-                {/* Chat Area Plugin: THUMBNAIL TO RÕ NÉT TRONG KHUNG CHAT & ĐÃ HOÀN THÀNH */}
+                {/* Chat Area Plugin: ĐỒNG BỘ 1 KIỂU BUBBLE HOÀN THÀNH */}
                 <div ref={openskpChatRef} className="flex-1 p-3 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   <div className="flex justify-start">
                     <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-slate-200 text-xs text-slate-700 max-w-sm leading-relaxed">
@@ -3171,19 +3160,12 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                     </div>
                   </div>
 
-                  {/* Bubble gửi: THUMBNAIL TO RÕ NÉT NẰM TRONG KHUNG CHAT */}
+                  {/* Bubble gửi: CHỈ HIỂN THỊ ẢNH VÀ 9000 */}
                   {openskpSent && (
                     <div className="flex justify-end animate-bubble-in">
-                      <div className="bg-[#0063A3] text-white rounded-2xl rounded-br-xs p-2.5 shadow-sm max-w-[92%] space-y-2 flex flex-col items-end">
-                        <img 
-                          src="/floorplan-bw.jpg" 
-                          alt="Mặt bằng đen trắng" 
-                          className="w-48 h-32 object-cover rounded-xl border border-white/30 shadow-xs block bg-white" 
-                        />
-                        <div className="flex items-center gap-1.5 pr-1">
-                          <span className="text-[10.5px] text-blue-100 font-sans">Kích thước:</span>
-                          <span className="font-mono text-xs font-bold text-white tracking-wide">9000</span>
-                        </div>
+                      <div className="bg-[#0063A3] text-white rounded-2xl rounded-br-xs p-2 shadow-sm max-w-[90%] space-y-1.5 flex flex-col items-end">
+                        <img src="/floorplan-bw.jpg" alt="Mặt bằng" className="w-28 h-20 object-cover rounded-lg border border-white/20 block" />
+                        <span className="font-mono text-xs font-semibold pr-1">9000</span>
                       </div>
                     </div>
                   )}
@@ -3198,12 +3180,12 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                     </div>
                   )}
 
-                  {/* Bubble phản hồi hoàn thành: CHỈ CẦN GHI "Đã hoàn thành" */}
+                  {/* Bubble phản hồi hoàn thành: ĐỒNG BỘ 1 KIỂU VỚI BƯỚC 4 */}
                   {openskpCompleted && (
                     <div className="flex justify-start animate-bubble-in">
                       <div className="bg-white rounded-2xl rounded-bl-sm px-3.5 py-2 shadow-sm border border-slate-200 text-xs text-slate-800 leading-relaxed flex items-center gap-2">
                         <Check size={14} className="text-emerald-600 shrink-0" />
-                        <span className="font-medium text-slate-800">Đã hoàn thành</span>
+                        <span className="font-medium text-slate-800">Đã hoàn thành dựng không gian 3D</span>
                       </div>
                     </div>
                   )}
@@ -3212,19 +3194,14 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 {/* Input Plugin */}
                 <div className="p-3 border-t border-slate-200/60 bg-white/90 shrink-0 relative">
                   
-                  {/* THUMBNAIL ẢNH MẶT BẰNG ĐEN TRẮNG TO RÕ NÉT: TẮT ĐI KHI NHẤN GỬI */}
+                  {/* THUMBNAIL ẢNH MẶT BẰNG ĐEN TRẮNG: TẮT ĐI KHI NHẤN GỬI */}
                   {showThumbnail && (
                     <div className="mb-2 px-1 flex items-center gap-2 animate-bubble-in">
-                      <div className="relative bg-white border border-slate-200 rounded-xl p-1.5 flex items-center gap-2 shadow-xs">
-                        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-slate-700 text-white rounded-full text-[8px] flex items-center justify-center leading-none shadow-xs cursor-pointer">
-                          ✕
-                        </span>
-                        <img src="/floorplan-bw.jpg" alt="Preview B&W" className="w-16 h-12 object-cover rounded-lg border border-slate-200 shadow-2xs" />
-                        <div className="flex flex-col pr-2">
-                          <span className="text-[10px] text-slate-700 font-semibold leading-tight">Mat_bang_BW.jpg</span>
-                          <span className="text-[9px] text-slate-400 font-mono">Mặt bằng đen trắng</span>
-                        </div>
+                      <div className="relative">
+                        <img src="/floorplan-bw.jpg" alt="Preview B&W" className="w-10 h-7 object-cover rounded border border-slate-300 shadow-xs" />
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-slate-700 text-white rounded-full text-[7px] flex items-center justify-center">✕</span>
                       </div>
+                      <span className="text-[10px] text-slate-600 font-medium">Mat_bang_BW.jpg</span>
                     </div>
                   )}
 
@@ -3339,19 +3316,15 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
             >
               <div ref={geminiChatRef} className="flex-1 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 
-                {/* Tin nhắn gửi kèm cả 2 file: Prompt.txt và Mat_bang_mau.png (THUMBNAIL TO RÕ NÉT) */}
+                {/* Tin nhắn gửi kèm cả 2 file: Prompt.txt và Mat_bang_mau.png */}
                 {promptSent && (
                   <div className="flex flex-col items-end gap-1.5 animate-bubble-in">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-white border border-slate-200 rounded-lg p-1.5 flex flex-col items-center justify-center shadow-2xs w-20">
-                        <DocTextIcon className="w-7 h-7 object-contain" />
-                        <span className="text-[8.5px] font-medium text-slate-700 mt-0.5 truncate max-w-full text-center">
-                          Prompt.txt
-                        </span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="bg-white border border-slate-200 rounded px-2 py-1 flex items-center gap-1 text-[10.5px] shadow-2xs">
+                        <DocTextIcon className="w-3 h-3 text-slate-600" />
+                        <span className="font-medium text-slate-700 truncate max-w-[100px]">Prompt...plan.txt</span>
                       </div>
-                      <div className="bg-white border border-slate-200 rounded-xl p-1.5 shadow-2xs">
-                        <img src="/floorplan-color.png" alt="Mặt bằng màu" className="w-32 h-20 object-cover rounded-lg border border-slate-200" />
-                      </div>
+                      <img src="/floorplan-color.png" alt="Mặt bằng màu" className="w-16 h-12 object-cover rounded border border-slate-300 shadow-xs" />
                     </div>
                     <div className="bg-white text-slate-800 px-3.5 py-2 rounded-2xl rounded-tr-xs text-xs font-medium shadow-xs border border-slate-200/80 max-w-[90%] leading-relaxed">
                       Chuyển mặt bằng về đen trắng theo prompt đính kèm
@@ -3400,131 +3373,52 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
               </div>
 
-              {/* Vùng nhập liệu Gemini: THUMBNAIL TO NHƯ BƯỚC 4 & TỰ ĐỘNG TĂNG CHIỀU CAO */}
-              <div className="shrink-0 flex flex-col justify-end">
-                {/* Thumbnail to rõ nét bên trên thanh chat trước khi gửi (ĐỒNG BỘ BƯỚC 4) */}
-                {filesAttached && !promptSent && (
-                  <div className="px-1 mb-2 flex items-center gap-2.5 animate-bubble-in">
-                    {/* File 1: Prompt.txt */}
-                    <div className="relative bg-white border border-slate-200 rounded-xl p-1.5 flex flex-col items-center justify-center shadow-xs w-20">
-                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-slate-700 text-white rounded-full text-[8px] flex items-center justify-center leading-none shadow-xs cursor-pointer">
-                        ✕
-                      </span>
-                      <div className="w-12 h-14 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600">
-                        <DocTextIcon className="w-7 h-7" />
-                      </div>
-                      <span className="text-[9px] font-medium text-slate-700 mt-1 truncate max-w-full text-center leading-tight">
-                        Prompt.txt
-                      </span>
+              {/* Vùng nhập liệu Gemini */}
+              <div className="p-1 shrink-0">
+                {filesAttached && (
+                  <div className="px-2 pb-2 flex items-center gap-2 animate-bubble-in">
+                    <div className="bg-white border border-slate-200 rounded px-2 py-1 flex items-center gap-1.5 text-[10.5px] shadow-2xs">
+                      <DocTextIcon className="w-3 h-3 text-slate-600" />
+                      <span className="font-medium text-slate-700 truncate max-w-[90px]">Prompt...image.txt</span>
                     </div>
-
-                    {/* File 2: Mat_bang_mau.png - THUMBNAIL TO NHƯ BƯỚC 4 */}
-                    <div className="relative bg-white border border-slate-200 rounded-xl p-1.5 flex flex-col items-center justify-center shadow-xs w-24">
-                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-slate-700 text-white rounded-full text-[8px] flex items-center justify-center leading-none shadow-xs cursor-pointer">
-                        ✕
-                      </span>
-                      <img src="/floorplan-color.png" alt="Mặt bằng màu" className="w-20 h-14 object-cover rounded-lg border border-slate-200" />
-                      <span className="text-[9px] font-medium text-slate-700 mt-1 truncate max-w-full text-center leading-tight">
-                        Mat_bang_mau.png
-                      </span>
+                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded p-1 text-[10.5px] shadow-2xs">
+                      <img src="/floorplan-color.png" alt="preview" className="w-5 h-4 object-cover rounded" />
+                      <span className="font-medium text-slate-700 truncate max-w-[80px]">Mat_bang_mau.png</span>
                     </div>
                   </div>
                 )}
 
-                {/* Thanh nhập liệu Gemini: TỰ ĐỘNG XUỐNG DÒNG VÀ TĂNG CHIỀU CAO HIỂN THỊ HẾT PROMPT */}
-                <div 
-                  className={`border border-slate-200/90 bg-white shadow-xs relative shrink-0 transition-all duration-200 ${
-                    isGeminiMultiLine
-                      ? 'min-h-[66px] rounded-2xl p-2.5 flex flex-col justify-between gap-1.5'
-                      : 'h-11 rounded-full px-4 flex items-center justify-between'
-                  }`}
-                >
-                  {isGeminiMultiLine ? (
-                    <>
-                      <div className="flex items-start gap-2 w-full">
-                        <span 
-                          id="step6-gemini-attach-btn" 
-                          className="text-xl text-slate-500 font-light select-none leading-none cursor-pointer hover:text-slate-700 transition-colors pt-0.5 shrink-0"
-                          title="Thêm tệp"
-                        >
-                          +
-                        </span>
-                        <div 
-                          id="step6-gemini-input-box"
-                          className="flex-1 text-xs text-slate-800 font-sans cursor-text whitespace-pre-wrap break-words leading-relaxed min-h-[34px]"
-                        >
-                          <span>{geminiPrompt}</span>
-                          {isGeminiFocused && (
-                            <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] ml-0.5 animate-pulse align-middle" />
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-end gap-2.5 self-end shrink-0">
-                        <div className="flex items-center gap-0.5 text-xs text-slate-700 font-medium">
-                          <span>Flash</span>
-                          <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                        </div>
-                        <button 
-                          id="step6-gemini-send-btn"
-                          className="w-7 h-7 rounded-full bg-[#0063A3] text-white flex items-center justify-center shadow-xs cursor-pointer hover:bg-blue-700 transition-colors shrink-0"
-                          title="Gửi"
-                        >
-                          <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" /></svg>
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <span 
-                        id="step6-gemini-attach-btn" 
-                        className="text-xl text-slate-500 font-light pr-2 select-none leading-none cursor-pointer hover:text-slate-700 transition-colors"
-                        title="Thêm tệp"
+                <div className="rounded-full border border-slate-200/90 px-3 py-1.5 bg-white flex items-center justify-between shadow-xs relative">
+                  <span className="text-xl text-slate-500 font-light pr-2 pl-0.5 select-none leading-none cursor-pointer hover:text-slate-700 transition-colors" title="Thêm tệp">+</span>
+                  <input 
+                    id="step6-gemini-input-box"
+                    type="text" 
+                    readOnly 
+                    value={geminiPrompt} 
+                    placeholder={filesAttached ? "" : "Hỏi Gemini"} 
+                    className="flex-1 bg-transparent text-xs text-slate-800 placeholder-slate-500 outline-none border-none cursor-default font-sans min-w-0"
+                  />
+                  <div className="flex items-center gap-2 shrink-0 select-none pl-1.5">
+                    <div className="flex items-center gap-0.5 text-[11px] text-slate-700 font-medium">
+                      <span>Flash</span>
+                      <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                    {geminiPrompt ? (
+                      <button 
+                        id="step6-gemini-send-btn"
+                        className="w-6 h-6 rounded-full bg-[#1a73e8] text-white flex items-center justify-center shadow-xs shrink-0 hover:bg-blue-600 transition-colors"
+                        title="Gửi"
                       >
-                        +
-                      </span>
-                      <div 
-                        id="step6-gemini-input-box"
-                        className="flex-1 flex items-center bg-transparent text-xs text-slate-800 font-sans min-w-0 h-full cursor-text overflow-hidden"
-                      >
-                        {geminiPrompt ? (
-                          <div className="flex items-center truncate">
-                            <span>{geminiPrompt}</span>
-                            {isGeminiFocused && (
-                              <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] ml-0.5 animate-pulse shrink-0" />
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex items-center text-slate-400">
-                            {isGeminiFocused && (
-                              <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] mr-0.5 animate-pulse shrink-0" />
-                            )}
-                            <span>{filesAttached ? "" : "Hỏi Gemini"}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0 select-none pl-2 h-full">
-                        <div className="flex items-center gap-0.5 text-xs text-slate-700 font-medium">
-                          <span>Flash</span>
-                          <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                        </div>
-                        <div className="w-7 h-7 flex items-center justify-center shrink-0">
-                          {geminiPrompt ? (
-                            <button 
-                              id="step6-gemini-send-btn"
-                              className="w-7 h-7 rounded-full bg-[#0063A3] text-white flex items-center justify-center shadow-xs cursor-pointer hover:bg-blue-700 transition-colors shrink-0"
-                              title="Gửi"
-                            >
-                              <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" /></svg>
-                            </button>
-                          ) : (
-                            <span className="w-7 h-7 flex items-center justify-center cursor-pointer text-slate-500 hover:text-slate-700 shrink-0">
-                              <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" />
+                        </svg>
+                      </button>
+                    ) : (
+                      <svg className="w-4 h-4 text-slate-600 shrink-0 cursor-pointer hover:text-black transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+                      </svg>
+                    )}
+                  </div>
                 </div>
               </div>
 
