@@ -1652,8 +1652,8 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 };
 
 export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
-  const videoRef = useRef(null);
   const containerRef = useRef(null);
+  const videoRef = useRef(null);
   const geminiChatRef = useRef(null);
   const openskpChatRef = useRef(null);
 
@@ -1662,7 +1662,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   const [cursorDuration, setCursorDuration] = useState(0);
   const [isClicking, setIsClicking] = useState(false);
 
-  // Trạng thái hội thoại Gemini (Lần 1: Dựng tủ theo ảnh)
+  // Trạng thái hội thoại Gemini (Khung Trình duyệt bên phải)
   const [cabinetAttached, setCabinetAttached] = useState(false);
   const [geminiPrompt, setGeminiPrompt] = useState("");
   const [isGeminiFocused, setIsGeminiFocused] = useState(false);
@@ -1671,22 +1671,12 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   const [geminiResponded, setGeminiResponded] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
 
-  // Trạng thái hội thoại Gemini (Lần 2: Cho cao lên 3m và thêm 2 đợt)
-  const [geminiPrompt2Sent, setGeminiPrompt2Sent] = useState(false);
-  const [gemini2Thinking, setGemini2Thinking] = useState(false);
-  const [gemini2Responded, setGemini2Responded] = useState(false);
-  const [code2Copied, setCode2Copied] = useState(false);
-
   // Trạng thái hội thoại OpenSkp trong SketchUp (bên trái)
   const [isOpenskpFocused, setIsOpenskpFocused] = useState(false);
   const [showCtrlVPopup, setShowCtrlVPopup] = useState(false);
   const [openskpInput, setOpenskpInput] = useState("");
   const [openskpSent, setOpenskpSent] = useState(false);
-  const [openskp2Sent, setOpenskp2Sent] = useState(false);
-
-  // Trạng thái Viewport 3D
   const [isViewportPlaying, setIsViewportPlaying] = useState(false);
-  const [isViewport2Ready, setIsViewport2Ready] = useState(false);
 
   const getCenterCoords = (elementId) => {
     if (!containerRef.current) return null;
@@ -1700,10 +1690,9 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
     };
   };
 
-  // Cuộn mượt mà không nháy giật khi có tin nhắn Gemini
   useEffect(() => {
     if (!geminiChatRef.current) return;
-    if (!cabinetSent && !geminiThinking && !geminiResponded && !geminiPrompt2Sent && !gemini2Thinking && !gemini2Responded) {
+    if (!cabinetSent && !geminiThinking && !geminiResponded) {
       geminiChatRef.current.scrollTop = 0;
       return;
     }
@@ -1716,12 +1705,11 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
       }
     }, 60);
     return () => clearTimeout(scrollTimer);
-  }, [cabinetSent, geminiThinking, geminiResponded, geminiPrompt2Sent, gemini2Thinking, gemini2Responded]);
+  }, [cabinetSent, geminiThinking, geminiResponded]);
 
-  // Cuộn mượt mà cho OpenSkp
   useEffect(() => {
     if (!openskpChatRef.current) return;
-    if (!openskpSent && !openskp2Sent) {
+    if (!openskpSent) {
       openskpChatRef.current.scrollTop = 0;
       return;
     }
@@ -1734,7 +1722,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
       }
     }, 60);
     return () => clearTimeout(scrollTimer);
-  }, [openskpSent, openskp2Sent]);
+  }, [openskpSent]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -1765,11 +1753,8 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
     const runLoop = async () => {
       while (!isCancelled) {
-        // ==========================================
-        // 1. RESET TOÀN BỘ TRẠNG THÁI CHO VÒNG LẶP MỚI
-        // ==========================================
+        // Reset trạng thái
         setIsViewportPlaying(false);
-        setIsViewport2Ready(false);
         setCabinetAttached(false);
         setGeminiPrompt("");
         setIsGeminiFocused(false);
@@ -1777,30 +1762,22 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setGeminiThinking(false);
         setGeminiResponded(false);
         setCodeCopied(false);
-        setGeminiPrompt2Sent(false);
-        setGemini2Thinking(false);
-        setGemini2Responded(false);
-        setCode2Copied(false);
         setIsOpenskpFocused(false);
         setShowCtrlVPopup(false);
         setOpenskpInput("");
         setOpenskpSent(false);
-        setOpenskp2Sent(false);
-
         if (videoRef.current) {
           videoRef.current.pause();
           videoRef.current.currentTime = 6.0;
         }
 
-        // ==========================================
-        // 2. LẦN 1: GỬI ẢNH TỦ MẪU + "dựng cái tủ này"
-        // ==========================================
+        // 1. Chuột di chuyển tới nút thêm tệp (+) trong ô chat Gemini
         await moveMouse('step4-gemini-attach-btn', 0, { x: 880, y: 505 });
         await sleep(600);
 
-        // Click thêm tệp ảnh tủ mẫu
+        // Click thêm tệp
         await clickMouse();
-        setCabinetAttached(true);
+        setCabinetAttached(true); // Gắn ảnh tủ mẫu
         await sleep(400);
 
         // Di chuột vào ô nhập liệu Gemini & kích hoạt nháy |
@@ -1809,16 +1786,16 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setIsGeminiFocused(true);
         await sleep(250);
 
-        // Gõ lời nhắc "dựng cái tủ này" từng chữ chậm rãi
-        const prompt1Target = "dựng cái tủ này";
-        for (let i = 1; i <= prompt1Target.length; i++) {
+        // 2. Gõ lời nhắc "dựng cái tủ này" từng chữ chậm rãi
+        const promptTarget = "dựng cái tủ này";
+        for (let i = 1; i <= promptTarget.length; i++) {
           if (isCancelled) return;
-          setGeminiPrompt(prompt1Target.slice(0, i));
+          setGeminiPrompt(promptTarget.slice(0, i));
           await sleep(140);
         }
         await sleep(550);
 
-        // Di chuột sang nút Send của Gemini
+        // 3. Di chuột sang nút Send của Gemini
         await moveMouse('step4-gemini-send-btn', 400, { x: 1040, y: 505 });
         await clickMouse();
         setIsGeminiFocused(false);
@@ -1828,25 +1805,25 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setGeminiPrompt("");
         setGeminiThinking(true);
 
-        // Chuột giữ tự nhiên gần ô chat
+        // Chuột ở lại tự nhiên gần ô chat
         await sleep(1500);
 
-        // Gemini trả lời mã Ruby lần 1
+        // 4. Gemini phản hồi khối mã Ruby nền trắng
         setGeminiThinking(false);
         setGeminiResponded(true);
         await sleep(700);
 
-        // Di chuột sao chép mã Ruby 1
+        // 5. Di chuột trực tiếp lên nút Sao chép
         await moveMouse('step4-gemini-copy-code-btn', 500, { x: 1030, y: 380 });
         await clickMouse();
         setCodeCopied(true);
         await sleep(500);
 
-        // Di chuột sang ô nhập liệu OpenSkp trong SketchUp
+        // 6. Di chuột sang ô nhập liệu OpenSkp (SketchUp bên trái)
         await moveMouse('step4-openskp-input', 800, { x: 620, y: 505 });
-        await clickMouse();
-        setIsOpenskpFocused(true);
-        setShowCtrlVPopup(true);
+        await clickMouse(); // Click vào ô nhập liệu
+        setIsOpenskpFocused(true); // Hiển thị nháy |
+        setShowCtrlVPopup(true); // Hiển thị popup "Ctrl - V" trực tiếp dưới chuột
         await sleep(350);
 
         // Di chuột lên popup Ctrl - V ngay dưới chuột và click
@@ -1858,7 +1835,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 2000, depth: 400)");
         await sleep(500);
 
-        // Di chuột sang nút Send của OpenSkp
+        // 7. Di chuột sang nút Send của OpenSkp
         await moveMouse('step4-openskp-send-btn', 350, { x: 740, y: 505 });
         await clickMouse();
 
@@ -1866,93 +1843,25 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setOpenskpSent(true);
         setOpenskpInput("");
 
-        // Chạy video dựng hình 3D lần 1 trên Viewport SketchUp
+        // Chạy video dựng hình 3D trên Viewport SketchUp
         setIsViewportPlaying(true);
         if (videoRef.current) {
           videoRef.current.currentTime = 0;
           videoRef.current.play().catch(() => {});
         }
 
-        // Chờ mô hình ban đầu hiển thị trên viewport (~5 giây)
-        await sleep(5000);
+        // Chuột nhấn gửi xong KHÔNG đưa ra góc, đứng yên tại nút gửi
+        // Video chạy đến hết (~11 giây)
+        await sleep(11000);
 
-        // ==========================================
-        // 3. LẦN 2: CHUỘT LẠI TRỎ SANG TRÌNH DUYỆT
-        // NHẮN "Cho cao lên 3m và thêm 2 đợt"
-        // TỰ ĐỘNG XUỐNG DÒNG & TĂNG CHIỀU CAO Ô NHẬP LIỆU
-        // ==========================================
-        await moveMouse('step4-gemini-input-box', 700, { x: 920, y: 505 });
-        await clickMouse();
-        setIsGeminiFocused(true); // Kích hoạt nháy |
-        await sleep(250);
-
-        // Gõ từng chữ "Cho cao lên 3m và thêm 2 đợt" (tự động xuống dòng và tăng chiều cao ô)
-        const prompt2Target = "Cho cao lên 3m và thêm 2 đợt";
-        for (let i = 1; i <= prompt2Target.length; i++) {
-          if (isCancelled) return;
-          setGeminiPrompt(prompt2Target.slice(0, i));
-          await sleep(120);
-        }
-        await sleep(650);
-
-        // Di chuột sang nút Send của Gemini
-        await moveMouse('step4-gemini-send-btn', 400, { x: 1040, y: 515 });
-        await clickMouse();
-        setIsGeminiFocused(false);
-
-        setGeminiPrompt2Sent(true);
-        setGeminiPrompt("");
-        setGemini2Thinking(true);
-
-        // Chuột giữ tự nhiên tại vị trí gửi
-        await sleep(1500);
-
-        // Gemini trả lời mã Ruby cập nhật (cao 3000, 6 đợt)
-        setGemini2Thinking(false);
-        setGemini2Responded(true);
-        await sleep(700);
-
-        // Di chuột sao chép khối mã mới
-        await moveMouse('step4-gemini-copy-code-btn-2', 500, { x: 1030, y: 440 });
-        await clickMouse();
-        setCode2Copied(true);
-        await sleep(500);
-
-        // Di chuột sang ô nhập liệu OpenSkp
-        await moveMouse('step4-openskp-input', 800, { x: 620, y: 505 });
-        await clickMouse();
-        setIsOpenskpFocused(true);
-        setShowCtrlVPopup(true);
-        await sleep(350);
-
-        // Di chuột lên popup Ctrl - V và click
-        await moveMouse('step4-openskp-ctrlv-btn', 250, { x: 605, y: 475 });
-        await sleep(150);
-        await clickMouse();
-
-        setShowCtrlVPopup(false);
-        setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 3000, depth: 400)");
-        await sleep(500);
-
-        // Di chuột sang nút Send OpenSkp
-        await moveMouse('step4-openskp-send-btn', 350, { x: 740, y: 505 });
-        await clickMouse();
-
-        setIsOpenskpFocused(false);
-        setOpenskp2Sent(true);
-        setOpenskpInput("");
-
-        // Cập nhật Viewport 3D sang tủ cao 3m thêm 2 đợt
-        setIsViewport2Ready(true);
-
-        // Dừng 6 giây để người xem chiêm ngưỡng kết quả mô hình đã sửa đổi
-        await sleep(6000);
+        // Dừng 3 giây để người xem chiêm ngưỡng
+        await sleep(3000);
       }
     };
 
     const initialTimer = setTimeout(() => {
       if (!isCancelled) runLoop();
-    }, 1200);
+    }, 200);
 
     return () => {
       isCancelled = true;
@@ -1960,31 +1869,24 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
     };
   }, []);
 
-  const isGeminiMultiLine = geminiPrompt.length > 15;
-
   return (
-    <div 
-      ref={containerRef}
-      className="w-full relative select-none"
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch min-h-[540px]">
+    <div ref={containerRef} className="relative select-none">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* ==================================================================== */}
-        {/* KHUNG TRÁI: SKETCHUP PRO 2021 - 2026 VÀ UI PLUGIN OPENSKP             */}
+        {/* KHUNG TRÁI: SKETCHUP PRO 2021-2026 VỚI VIEWPORT (2/3) & UI PLUGIN (1/3) */}
         {/* ==================================================================== */}
-        <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans h-[540px]">
+        <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
-          {/* SketchUp Titlebar - Chuẩn h-9 */}
-          <div className="h-9 bg-[#1E293B] text-slate-300 px-3 flex items-center justify-between text-xs select-none shrink-0">
+          {/* Title Bar SketchUp: Chuẩn Sketchup 21-26 & h-9 */}
+          <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-600 rounded flex items-center justify-center font-bold text-[10px] text-white">S</div>
-              <span className="font-medium text-slate-200 truncate">Untitled - SketchUp Pro 2021 - 2026</span>
+              <img src="/sketchup-logo.svg" alt="SketchUp" className="w-4 h-4 object-contain shrink-0" />
+              <span className="font-sans text-[11px] text-slate-700 font-medium">
+                Untitled - SketchUp Pro 2021 - 2026
+              </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Minus className="w-3.5 h-3.5 text-slate-400 hover:text-white cursor-pointer" />
-              <Square className="w-3 h-3 text-slate-400 hover:text-white cursor-pointer" />
-              <X className="w-3.5 h-3.5 text-slate-400 hover:text-white cursor-pointer" />
-            </div>
+            <WindowControls />
           </div>
 
           {/* Menu Bar */}
@@ -2053,32 +1955,21 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
             
             {/* Viewport 3D chính */}
             <div className="flex-1 bg-white relative overflow-hidden flex items-center justify-center">
-              {/* Ảnh tủ ban đầu */}
               <img 
                 src="/sketchup-cabinet-viewport-ready.jpg" 
                 alt="SketchUp Viewport Ready" 
                 className={`absolute top-0 left-0 h-full w-full object-cover transition-opacity duration-300 ${
-                  isViewportPlaying || isViewport2Ready ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                  isViewportPlaying ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 }`}
               />
 
-              {/* Video dựng hình lần 1 */}
               <video 
                 ref={videoRef}
                 src="/210226.mp4" 
                 muted 
                 playsInline 
                 className={`absolute top-0 left-0 h-full w-full object-cover transition-opacity duration-300 ${
-                  isViewportPlaying && !isViewport2Ready ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                }`}
-              />
-
-              {/* Ảnh tủ cập nhật cao 3m và thêm 2 đợt sau yêu cầu lần 2 */}
-              <img 
-                src="/sketchup-cabinet-step5-ready.jpg" 
-                alt="SketchUp Viewport 3m Ready" 
-                className={`absolute top-0 left-0 h-full w-full object-cover transition-opacity duration-500 ${
-                  isViewport2Ready ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                  isViewportPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
               />
             </div>
@@ -2129,27 +2020,17 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
               </header>
 
               {/* Chat Area Plugin */}
-              <div ref={openskpChatRef} className="flex-1 p-3 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div ref={openskpChatRef} className="flex-1 p-4 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex justify-start">
                   <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-slate-200 text-xs text-slate-700 max-w-sm leading-relaxed">
                     Xin chào! Bạn cần vẽ gì hôm nay.
                   </div>
                 </div>
 
-                {/* Tin nhắn lệnh lần 1 */}
                 {openskpSent && (
-                  <div className="flex justify-end animate-bubble-in">
+                  <div className="flex justify-end animate-fade-in">
                     <div className="bg-[#0063A3] text-white rounded-2xl rounded-br-xs px-3.5 py-2 shadow-xs font-mono text-[11px] leading-relaxed max-w-[95%] break-all">
                       cabinet = OpenSkp::Cabinet.new(width: 900, height: 2000, depth: 400)
-                    </div>
-                  </div>
-                )}
-
-                {/* Tin nhắn lệnh lần 2 (Cập nhật cao 3m) */}
-                {openskp2Sent && (
-                  <div className="flex justify-end animate-bubble-in">
-                    <div className="bg-[#0063A3] text-white rounded-2xl rounded-br-xs px-3.5 py-2 shadow-xs font-mono text-[11px] leading-relaxed max-w-[95%] break-all">
-                      cabinet = OpenSkp::Cabinet.new(width: 900, height: 3000, depth: 400)
                     </div>
                   </div>
                 )}
@@ -2211,7 +2092,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         </div>
 
         {/* ==================================================================== */}
-        {/* KHUNG PHẢI: TRÌNH DUYỆT GOOGLE CHROME - GEMINI                        */}
+        {/* KHUNG PHẢI: TRÌNH DUYỆT GOOGLE CHROME - GEMINI (ĐỒNG BỘ CHUẨN STEP 2 & 3) */}
         {/* ==================================================================== */}
         <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
@@ -2305,9 +2186,10 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   </div>
                 </div>
 
-                {/* 2. TIN NHẮN BƯỚC 4 (LẦN 1): GỬI ẢNH TỦ MẪU VỚI THUMBNAIL TO */}
+                {/* 2. TIN NHẮN BƯỚC 4: GỬI ẢNH TỦ MẪU VỚI THUMBNAIL TO */}
                 {cabinetSent && (
-                  <div className="flex flex-col items-end gap-1.5 animate-bubble-in">
+                  <div className="flex flex-col items-end gap-1.5 animate-fade-in">
+                    {/* Thumbnail to rõ nét theo yêu cầu */}
                     <div className="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-xs w-28">
                       <img src="/cabinet-sample.jpg" alt="Tủ mẫu" width={96} height={112} className="w-24 h-28 object-contain rounded-lg shrink-0" loading="eager" />
                       <span className="text-[9.5px] font-medium text-slate-700 mt-1 truncate max-w-full text-center">
@@ -2320,7 +2202,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   </div>
                 )}
 
-                {/* Gemini đang suy nghĩ (Lần 1) */}
+                {/* Gemini đang suy nghĩ */}
                 {geminiThinking && (
                   <div className="flex items-start gap-2 animate-bubble-in">
                     <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
@@ -2333,7 +2215,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   </div>
                 )}
 
-                {/* Gemini trả lời mã Ruby lần 1 */}
+                {/* 3. GEMINI TRẢ LỜI: MÃ RUBY NỀN TRẮNG + ICON SAO CHÉP */}
                 {geminiResponded && (
                   <div className="flex items-start gap-2 animate-bubble-in">
                     <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
@@ -2344,7 +2226,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                         Dưới đây là mã Ruby dựng hoàn chỉnh chiếc tủ theo ảnh đính kèm:
                       </div>
 
-                      {/* Khối code Ruby 1 */}
+                      {/* Khối code Ruby: NỀN TRẮNG + ICON SAO CHÉP */}
                       <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs font-mono text-[11px] text-slate-800 relative">
                         <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 text-[9.5px] font-sans">
                           <span className="font-bold text-slate-500 tracking-wider">RUBY (OPENSKP)</span>
@@ -2368,68 +2250,11 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   </div>
                 )}
 
-                {/* 3. TIN NHẮN BƯỚC 4 (LẦN 2): "Cho cao lên 3m và thêm 2 đợt" */}
-                {geminiPrompt2Sent && (
-                  <div className="flex flex-col items-end gap-1.5 animate-bubble-in">
-                    <div className="bg-white text-slate-800 px-3.5 py-2 rounded-2xl rounded-tr-xs text-xs font-medium shadow-xs border border-slate-200/80 leading-relaxed">
-                      Cho cao lên 3m và thêm 2 đợt
-                    </div>
-                  </div>
-                )}
-
-                {/* Gemini đang suy nghĩ (Lần 2) */}
-                {gemini2Thinking && (
-                  <div className="flex items-start gap-2 animate-bubble-in">
-                    <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
-                      <GeminiColorfulLogo className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="bg-white px-3 py-2 rounded-2xl shadow-xs border border-slate-200 text-xs text-slate-500 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#0063A3] animate-pulse" />
-                      <span className="text-xs">Đang cập nhật chiều cao 3000mm và thêm 2 đợt ngăn...</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Gemini trả lời mã Ruby lần 2 (Cập nhật 3000mm, 6 đợt) */}
-                {gemini2Responded && (
-                  <div className="flex items-start gap-2 animate-bubble-in">
-                    <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
-                      <GeminiColorfulLogo className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="space-y-2 flex-1 max-w-[95%]">
-                      <div className="bg-white rounded-2xl rounded-tl-xs p-2.5 text-slate-800 text-xs leading-relaxed shadow-xs border border-slate-200/80 font-sans">
-                        Tôi đã cập nhật tủ cao lên 3000mm và thêm 2 đợt ngăn (tổng cộng 6 đợt):
-                      </div>
-
-                      {/* Khối code Ruby 2 */}
-                      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-xs font-mono text-[11px] text-slate-800 relative">
-                        <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-100 text-[9.5px] font-sans">
-                          <span className="font-bold text-slate-500 tracking-wider">RUBY (OPENSKP)</span>
-                          <button 
-                            id="step4-gemini-copy-code-btn-2"
-                            className="p-1 rounded text-slate-500 hover:text-[#0063A3] hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
-                            title="Sao chép"
-                          >
-                            {code2Copied ? (
-                              <Check size={14} className="text-emerald-600" />
-                            ) : (
-                              <Copy size={14} />
-                            )}
-                          </button>
-                        </div>
-                        <code className="text-slate-800 block whitespace-pre-wrap leading-relaxed font-semibold">
-                          cabinet = OpenSkp::Cabinet.new(width: 900, height: 3000, depth: 400)
-                        </code>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
               </div>
 
               {/* Ô Chat Gemini */}
               <div className="shrink-0 flex flex-col justify-end">
-                {/* Thumbnail to rõ nét bên trên thanh chat trước khi gửi (Lần 1) */}
+                {/* Thumbnail to rõ nét bên trên thanh chat trước khi gửi */}
                 {cabinetAttached && !cabinetSent && (
                   <div className="px-1 mb-2 flex items-center gap-2 animate-fade-in">
                     <div className="relative bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-xs w-28">
@@ -2444,39 +2269,42 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   </div>
                 )}
 
-                {/* Thanh nhập liệu Gemini: TỰ ĐỘNG XUỐNG DÒNG VÀ TĂNG CHIỀU CAO KHI DÀI */}
-                <div 
-                  className={`border border-slate-200/90 bg-white shadow-xs relative shrink-0 transition-all duration-200 ${
-                    isGeminiMultiLine
-                      ? 'min-h-[66px] rounded-2xl p-2.5 flex flex-col justify-between gap-1.5'
-                      : 'h-11 rounded-full px-4 flex items-center justify-between'
-                  }`}
-                >
-                  {isGeminiMultiLine ? (
-                    <>
-                      <div className="flex items-start gap-2 w-full">
-                        <span 
-                          id="step4-gemini-attach-btn" 
-                          className="text-xl text-slate-500 font-light select-none leading-none cursor-pointer hover:text-slate-700 transition-colors pt-0.5 shrink-0"
-                          title="Thêm tệp"
-                        >
-                          +
-                        </span>
-                        <div 
-                          id="step4-gemini-input-box"
-                          className="flex-1 text-xs text-slate-800 font-sans cursor-text whitespace-pre-wrap break-words leading-relaxed min-h-[34px]"
-                        >
-                          <span>{geminiPrompt}</span>
-                          {isGeminiFocused && (
-                            <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] ml-0.5 animate-pulse align-middle" />
-                          )}
-                        </div>
+                {/* Thanh nhập liệu Gemini cố định h-11 */}
+                <div className="h-11 rounded-full border border-slate-200/90 transition-colors px-4 bg-white flex items-center justify-between shadow-xs relative shrink-0">
+                  <span 
+                    id="step4-gemini-attach-btn" 
+                    className="text-xl text-slate-500 font-light pr-2 select-none leading-none cursor-pointer hover:text-slate-700 transition-colors"
+                    title="Thêm tệp"
+                  >
+                    +
+                  </span>
+                  <div 
+                    id="step4-gemini-input-box"
+                    className="flex-1 flex items-center bg-transparent text-xs text-slate-800 font-sans min-w-0 h-full cursor-text overflow-hidden"
+                  >
+                    {geminiPrompt ? (
+                      <div className="flex items-center truncate">
+                        <span>{geminiPrompt}</span>
+                        {isGeminiFocused && (
+                          <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] ml-0.5 animate-pulse shrink-0" />
+                        )}
                       </div>
-                      <div className="flex items-center justify-end gap-2.5 self-end shrink-0">
-                        <div className="flex items-center gap-0.5 text-xs text-slate-700 font-medium">
-                          <span>Flash</span>
-                          <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                        </div>
+                    ) : (
+                      <div className="flex items-center text-slate-400">
+                        {isGeminiFocused && (
+                          <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] mr-0.5 animate-pulse shrink-0" />
+                        )}
+                        <span>{cabinetAttached ? "" : "Hỏi Gemini"}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0 select-none pl-2 h-full">
+                    <div className="flex items-center gap-0.5 text-xs text-slate-700 font-medium">
+                      <span>Flash</span>
+                      <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                    <div className="w-7 h-7 flex items-center justify-center shrink-0">
+                      {geminiPrompt ? (
                         <button 
                           id="step4-gemini-send-btn"
                           className="w-7 h-7 rounded-full bg-[#0063A3] text-white flex items-center justify-center shadow-xs cursor-pointer hover:bg-blue-700 transition-colors shrink-0"
@@ -2484,60 +2312,13 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                         >
                           <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" /></svg>
                         </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <span 
-                        id="step4-gemini-attach-btn" 
-                        className="text-xl text-slate-500 font-light pr-2 select-none leading-none cursor-pointer hover:text-slate-700 transition-colors"
-                        title="Thêm tệp"
-                      >
-                        +
-                      </span>
-                      <div 
-                        id="step4-gemini-input-box"
-                        className="flex-1 flex items-center bg-transparent text-xs text-slate-800 font-sans min-w-0 h-full cursor-text overflow-hidden"
-                      >
-                        {geminiPrompt ? (
-                          <div className="flex items-center truncate">
-                            <span>{geminiPrompt}</span>
-                            {isGeminiFocused && (
-                              <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] ml-0.5 animate-pulse shrink-0" />
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex items-center text-slate-400">
-                            {isGeminiFocused && (
-                              <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] mr-0.5 animate-pulse shrink-0" />
-                            )}
-                            <span>{cabinetAttached ? "" : "Hỏi Gemini"}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0 select-none pl-2 h-full">
-                        <div className="flex items-center gap-0.5 text-xs text-slate-700 font-medium">
-                          <span>Flash</span>
-                          <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                        </div>
-                        <div className="w-7 h-7 flex items-center justify-center shrink-0">
-                          {geminiPrompt ? (
-                            <button 
-                              id="step4-gemini-send-btn"
-                              className="w-7 h-7 rounded-full bg-[#0063A3] text-white flex items-center justify-center shadow-xs cursor-pointer hover:bg-blue-700 transition-colors shrink-0"
-                              title="Gửi"
-                            >
-                              <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" /></svg>
-                            </button>
-                          ) : (
-                            <span className="w-7 h-7 flex items-center justify-center cursor-pointer text-slate-500 hover:text-slate-700 shrink-0">
-                              <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                      ) : (
+                        <span className="w-7 h-7 flex items-center justify-center cursor-pointer text-slate-500 hover:text-slate-700 shrink-0">
+                          <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
