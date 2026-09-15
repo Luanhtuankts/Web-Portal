@@ -2648,11 +2648,9 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
   // Trạng thái hội thoại OpenSkp trong SketchUp
   const [showThumbnail, setShowThumbnail] = useState(false); // Thumbnail trên input: tắt khi gửi
-  const [isOpenskpFocused, setIsOpenskpFocused] = useState(false);
   const [dimensionInput, setDimensionInput] = useState("");
-  const [showDimensionPopup, setShowDimensionPopup] = useState(false); // Popup chữ đen nền trắng dưới chuột
+  const [showDimensionPopup, setShowDimensionPopup] = useState(false); // Popup 1 dòng text đơn giản màu trắng dưới chuột
   const [openskpSent, setOpenskpSent] = useState(false);
-  const [openskpCompleted, setOpenskpCompleted] = useState(false); // Phản hồi hoàn thành đồng bộ Bước 4
   const [isViewportPlaying, setIsViewportPlaying] = useState(false);
 
   const getCenterCoords = (elementId) => {
@@ -2667,7 +2665,6 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
     };
   };
 
-  // Cuộn mượt mà không nháy giật khi có tin nhắn Gemini
   useEffect(() => {
     if (!geminiChatRef.current) return;
     if (!promptSent && !geminiThinking && !geminiConverted) {
@@ -2685,10 +2682,9 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
     return () => clearTimeout(scrollTimer);
   }, [promptSent, geminiThinking, geminiConverted]);
 
-  // Cuộn mượt mà cho OpenSkp
   useEffect(() => {
     if (!openskpChatRef.current) return;
-    if (!openskpSent && !openskpCompleted) {
+    if (!openskpSent) {
       openskpChatRef.current.scrollTop = 0;
       return;
     }
@@ -2701,196 +2697,314 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
       }
     }, 60);
     return () => clearTimeout(scrollTimer);
-  }, [openskpSent, openskpCompleted]);
+  }, [openskpSent, showThumbnail]);
 
   useEffect(() => {
+    let timer = null;
+    let typeTimer = null;
     let isCancelled = false;
 
-    const sleep = (ms) => new Promise(resolve => {
+    const runLoop = (isLooping = false) => {
       if (isCancelled) return;
-      setTimeout(() => {
-        if (!isCancelled) resolve();
-      }, ms);
-    });
 
-    const moveMouse = async (elId, duration = 800, fallback = { x: 180, y: 180 }) => {
-      if (isCancelled) return false;
-      const coords = getCenterCoords(elId) || fallback;
-      setCursorDuration(duration);
-      setCursorPos(coords);
-      await sleep(duration + 50);
-      return true;
-    };
-
-    const clickMouse = async () => {
-      if (isCancelled) return;
-      setIsClicking(true);
-      await sleep(180);
+      // 0. Reset về trạng thái ban đầu của Bước 6
+      setLeftMode('folder');
+      setTxtSelected(false);
+      setImgSelected(false);
+      setIsDraggingFiles(false);
+      setIsDraggingBwImage(false);
+      setFilesAttached(false);
+      setGeminiPrompt("");
+      setPromptSent(false);
+      setGeminiThinking(false);
+      setGeminiConverted(false);
+      setShowThumbnail(false);
+      setDimensionInput("");
+      setShowDimensionPopup(false);
+      setOpenskpSent(false);
+      setIsViewportPlaying(false);
       setIsClicking(false);
-      await sleep(100);
-    };
 
-    const runLoop = async () => {
-      while (!isCancelled) {
-        // ==========================================
-        // 0. RESET TOÀN BỘ TRẠNG THÁI CHO VÒNG LẶP MỚI
-        // ==========================================
-        setLeftMode('folder');
-        setTxtSelected(false);
-        setImgSelected(false);
-        setIsDraggingFiles(false);
-        setIsDraggingBwImage(false);
-        setFilesAttached(false);
-        setGeminiPrompt("");
-        setPromptSent(false);
-        setGeminiThinking(false);
-        setGeminiConverted(false);
-        setShowThumbnail(false);
-        setDimensionInput("");
-        setIsOpenskpFocused(false);
-        setShowDimensionPopup(false);
-        setOpenskpSent(false);
-        setOpenskpCompleted(false);
-        setIsViewportPlaying(false);
-        setIsClicking(false);
-
-        if (videoRef.current) {
-          videoRef.current.pause();
-          videoRef.current.currentTime = 0;
-        }
-
-        // Điểm xuất phát của chuột: Nằm tại file Prompt txt trong Folder Downloads
-        await moveMouse('step6-folder-prompt-item', 0, { x: 180, y: 180 });
-        await sleep(650);
-
-        // 1. Dừng tại file txt rồi chuột nhấp chọn file txt
-        await clickMouse();
-        setTxtSelected(true);
-        await sleep(400);
-
-        // Di chuyển chuột sang chọn tiếp file ảnh mặt bằng màu
-        await moveMouse('step6-folder-color-image-item', 400, { x: 290, y: 180 });
-        await clickMouse();
-        setImgSelected(true);
-        await sleep(350);
-
-        // 2. KÍCH HOẠT KÉO CẢ 2 FILE SANG TRÌNH DUYỆT GEMINI
-        setIsDraggingFiles(true);
-        await moveMouse('step6-gemini-input-box', 1000, { x: 900, y: 505 });
-
-        // Thả chuột tại ô chat Gemini -> Hiện đính kèm
-        setIsDraggingFiles(false);
-        setFilesAttached(true);
-        setTxtSelected(false);
-        setImgSelected(false);
-        await sleep(400);
-
-        // 3. Gõ câu lệnh: "Chuyển mặt bằng về đen trắng theo prompt đính kèm"
-        const promptTarget = "Chuyển mặt bằng về đen trắng theo prompt đính kèm";
-        for (let i = 1; i <= promptTarget.length; i++) {
-          if (isCancelled) return;
-          setGeminiPrompt(promptTarget.slice(0, i));
-          await sleep(55);
-        }
-        await sleep(500);
-
-        // Di chuyển chuột đến nút Send của Gemini
-        await moveMouse('step6-gemini-send-btn', 380, { x: 980, y: 505 });
-        await clickMouse();
-
-        // Gemini gửi tin nhắn & bắt đầu xử lý
-        setPromptSent(true);
-        setGeminiPrompt("");
-        setFilesAttached(false);
-        setGeminiThinking(true);
-
-        await sleep(1800);
-
-        // 4. Gemini convert thành mặt bằng đen trắng
-        setGeminiThinking(false);
-        setGeminiConverted(true);
-        await sleep(800);
-
-        // 5. Khung folder thu lại, khung SketchUp mở ra
-        setLeftMode('sketchup');
-        await sleep(650);
-
-        // 6. KÉO MẶT BẰNG ĐEN TRẮNG TỪ TRÌNH DUYỆT SANG Ô NHẬP LIỆU PLUGIN
-        await moveMouse('step6-gemini-bw-image', 600, { x: 920, y: 320 });
-        setIsClicking(true);
-        setIsDraggingBwImage(true);
-        await sleep(200);
-
-        // Chuột kéo ảnh mặt bằng đen trắng sang ô nhập liệu OpenSkp
-        await moveMouse('step6-openskp-input', 1050, { x: 645, y: 505 });
-        setIsClicking(false);
-        setIsDraggingBwImage(false);
-        setShowThumbnail(true);
-        setIsOpenskpFocused(true);
-        await sleep(450);
-
-        // 7. NHẬP TEXT 9000 VÀO Ô TEXT OPENSKP
-        const dimTarget = "9000";
-        for (let i = 1; i <= dimTarget.length; i++) {
-          if (isCancelled) return;
-          setDimensionInput(dimTarget.slice(0, i));
-          await sleep(95);
-        }
-        await sleep(350);
-
-        // 8. POPUP CHỮ ĐEN NỀN TRẮNG HIỂN THỊ DƯỚI CHUỘT CHẬM RÃI (2.5s) CHO NGƯỜI XEM DỄ QUAN SÁT
-        setShowDimensionPopup(true);
-        await sleep(2500);
-
-        // 9. Di chuột tới nút Send trên OpenSkp
-        await moveMouse('step6-openskp-send-btn', 380, { x: 745, y: 505 });
-        await clickMouse();
-
-        // KHI NHẤN GỬI THÌ PHẢI TẮT THUMBNAIL, POPUP VÀ TEXT INPUT
-        setShowThumbnail(false);
-        setShowDimensionPopup(false);
-        setIsOpenskpFocused(false);
-        setOpenskpSent(true);
-        setDimensionInput("");
-
-        // 10. Video động play (video 210226.3.mp4 dựng 3D từ 2D)
-        setIsViewportPlaying(true);
-        if (videoRef.current) {
-          videoRef.current.currentTime = 0;
-          videoRef.current.play().catch(() => {});
-        }
-
-        // Chuột di chuyển sang vị trí quan sát trên Viewport
-        await moveMouse('step6-viewport-rest-spot', 750, { x: 380, y: 460 });
-
-        // Video chạy trong khoảng ~8.5 giây thì hoàn thành
-        await sleep(8500);
-
-        // Hiển thị bubble Đã hoàn thành kèm icon tích xanh đồng bộ Bước 4
-        setOpenskpCompleted(true);
-
-        // Dừng thêm 2.5 giây để người xem chiêm ngưỡng không gian 3D hoàn chỉnh
-        await sleep(2500);
-
-        // ==============================================================
-        // LOOP CHUỘT KHÉP KÍN:
-        // Chuột lướt mượt mà từ Viewport quay về file trong Folder ban đầu
-        // ==============================================================
-        await moveMouse('step6-folder-prompt-item', 1100, { x: 180, y: 180 });
-        setLeftMode('folder');
-        setIsViewportPlaying(false);
-        if (videoRef.current) {
-          videoRef.current.pause();
-          videoRef.current.currentTime = 0;
-        }
-        await sleep(800);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
       }
+
+      // Điểm xuất phát của chuột: Nằm tại file Prompt txt trong Folder Downloads
+      const txtFilePos = getCenterCoords('step6-folder-prompt-item') || { x: 180, y: 180 };
+      if (!isLooping) {
+        setCursorDuration(0);
+        setCursorPos(txtFilePos);
+      }
+
+      // 1. Dừng 600ms tại file txt rồi chuột nhấp chọn file txt (đồng bộ Bước 3)
+      timer = setTimeout(() => {
+        if (isCancelled) return;
+        setIsClicking(true);
+        setTxtSelected(true); // Đã chọn file txt (border-[#0063A3] bg-[#0063A3]/10)
+
+        timer = setTimeout(() => {
+          if (isCancelled) return;
+          setIsClicking(false);
+
+          // Di chuyển chuột sang chọn tiếp file ảnh mặt bằng màu
+          const imgFilePos = getCenterCoords('step6-folder-color-image-item') || { x: 290, y: 180 };
+          setCursorDuration(400);
+          setCursorPos(imgFilePos);
+
+          timer = setTimeout(() => {
+            if (isCancelled) return;
+            setIsClicking(true);
+            setImgSelected(true); // Đã chọn cả 2 file
+
+            timer = setTimeout(() => {
+              if (isCancelled) return;
+
+              // 2. KÍCH HOẠT KÉO CẢ 2 FILE SANG TRÌNH DUYỆT GEMINI
+              setIsDraggingFiles(true);
+
+              const geminiInputPos = getCenterCoords('step6-gemini-input-box') || { x: 900, y: 505 };
+              setCursorDuration(1000);
+              setCursorPos(geminiInputPos);
+
+              timer = setTimeout(() => {
+                if (isCancelled) return;
+
+                // Thả chuột tại ô chat Gemini -> Hiện đính kèm
+                setIsDraggingFiles(false);
+                setFilesAttached(true);
+                setTxtSelected(false);
+                setImgSelected(false);
+                setIsClicking(false);
+
+                timer = setTimeout(() => {
+                  if (isCancelled) return;
+
+                  // 3. Gõ câu lệnh: "Chuyển mặt bằng về đen trắng theo promt đính kèm"
+                  const fullText = "Chuyển mặt bằng về đen trắng theo promt đính kèm";
+                  let charIndex = 0;
+
+                  typeTimer = setInterval(() => {
+                    if (isCancelled) {
+                      clearInterval(typeTimer);
+                      return;
+                    }
+                    charIndex++;
+                    setGeminiPrompt(fullText.slice(0, charIndex));
+
+                    if (charIndex >= fullText.length) {
+                      clearInterval(typeTimer);
+
+                      // Di chuyển chuột đến nút Send của Gemini
+                      timer = setTimeout(() => {
+                        if (isCancelled) return;
+                        const sendBtnPos = getCenterCoords('step6-gemini-send-btn') || { x: 980, y: 505 };
+                        setCursorDuration(350);
+                        setCursorPos(sendBtnPos);
+
+                        // Nhấn Send trên Gemini
+                        timer = setTimeout(() => {
+                          if (isCancelled) return;
+                          setIsClicking(true);
+
+                          timer = setTimeout(() => {
+                            if (isCancelled) return;
+                            setIsClicking(false);
+                            setPromptSent(true);
+                            setGeminiPrompt("");
+                            setFilesAttached(false);
+                            setGeminiThinking(true);
+
+                            // 4. Gemini suy nghĩ và convert thành mặt bằng đen trắng
+                            timer = setTimeout(() => {
+                              if (isCancelled) return;
+                              setGeminiThinking(false);
+                              setGeminiConverted(true);
+
+                              // 5. Khung folder thu lại, khung SketchUp mở ra
+                              timer = setTimeout(() => {
+                                if (isCancelled) return;
+                                setLeftMode('sketchup');
+
+                                // 6. KÉO MẶT BẰNG ĐEN TRẮNG TỪ TRÌNH DUYỆT SANG Ô NHẬP LIỆU PLUGIN (KHÔNG CẦN NHẤN TẢI ẢNH)
+                                timer = setTimeout(() => {
+                                  if (isCancelled) return;
+                                  const bwImagePos = getCenterCoords('step6-gemini-bw-image') || { x: 920, y: 320 };
+                                  setCursorDuration(600);
+                                  setCursorPos(bwImagePos);
+
+                                  timer = setTimeout(() => {
+                                    if (isCancelled) return;
+                                    // Chuột nhấn vào ảnh mặt bằng đen trắng và bắt đầu kéo
+                                    setIsClicking(true);
+                                    setIsDraggingBwImage(true);
+
+                                    // Chuột kéo ảnh mặt bằng đen trắng sang ô nhập liệu OpenSkp
+                                    timer = setTimeout(() => {
+                                      if (isCancelled) return;
+                                      const openskpInputPos = getCenterCoords('step6-openskp-input') || { x: 645, y: 505 };
+                                      setCursorDuration(1100);
+                                      setCursorPos(openskpInputPos);
+
+                                      timer = setTimeout(() => {
+                                        if (isCancelled) return;
+                                        // Thả ảnh vào ô nhập liệu OpenSkp -> Hiện thumbnail ảnh
+                                        setIsClicking(false);
+                                        setIsDraggingBwImage(false);
+                                        setShowThumbnail(true);
+
+                                        // 7. NHẬP TEXT 9000
+                                        timer = setTimeout(() => {
+                                          if (isCancelled) return;
+                                          setIsClicking(true); // Click vào ô text
+
+                                          timer = setTimeout(() => {
+                                            if (isCancelled) return;
+                                            setIsClicking(false);
+
+                                            // Gõ số 9000
+                                            const dimText = "9000";
+                                            let dIdx = 0;
+                                            const dTimer = setInterval(() => {
+                                              if (isCancelled) {
+                                                clearInterval(dTimer);
+                                                return;
+                                              }
+                                              dIdx++;
+                                              setDimensionInput(dimText.slice(0, dIdx));
+
+                                              if (dIdx >= dimText.length) {
+                                                clearInterval(dTimer);
+
+                                                // 8. POPUP VIẾT ĐƠN GIẢN 1 DÒNG TEXT, MÀU TRẮNG HIỆN BÊN DƯỚI CHUỘT
+                                                // HIỂN THỊ CHẬM RÃI (2.8 giây) CHO NGƯỜI XEM DỄ QUAN SÁT
+                                                timer = setTimeout(() => {
+                                                  if (isCancelled) return;
+                                                  setShowDimensionPopup(true);
+
+                                                  timer = setTimeout(() => {
+                                                    if (isCancelled) return;
+
+                                                    // 9. Di chuột tới nút Send trên OpenSkp
+                                                    const openskpSendPos = getCenterCoords('step6-openskp-send-btn') || { x: 745, y: 505 };
+                                                    setCursorDuration(380);
+                                                    setCursorPos(openskpSendPos);
+
+                                                    // Nhấn Send trên OpenSkp
+                                                    timer = setTimeout(() => {
+                                                      if (isCancelled) return;
+                                                      setIsClicking(true);
+
+                                                      timer = setTimeout(() => {
+                                                        if (isCancelled) return;
+                                                        setIsClicking(false);
+                                                        
+                                                        // KHI NHẤN GỬI THÌ PHẢI TẮT THUMBNAIL ĐI
+                                                        setShowThumbnail(false);
+                                                        setShowDimensionPopup(false);
+                                                        setOpenskpSent(true);
+                                                        setDimensionInput("");
+
+                                                        // 10. Video động play (video 210226.3.mp4 dựng 3D từ 2D)
+                                                        setIsViewportPlaying(true);
+                                                        if (videoRef.current) {
+                                                          videoRef.current.currentTime = 0;
+                                                          videoRef.current.play().catch(() => {});
+                                                        }
+
+                                                        // Chuột sang vị trí quan sát trên Viewport
+                                                        timer = setTimeout(() => {
+                                                          if (isCancelled) return;
+                                                          const restPos = getCenterCoords('step6-viewport-rest-spot') || { x: 380, y: 460 };
+                                                          setCursorDuration(750);
+                                                          setCursorPos(restPos);
+
+                                                          // Video chạy trong ~11 giây
+                                                          timer = setTimeout(() => {
+                                                            if (isCancelled) return;
+
+                                                            // Dừng 2.2 giây để người xem chiêm ngưỡng không gian 3D hoàn chỉnh
+                                                            timer = setTimeout(() => {
+                                                              if (isCancelled) return;
+
+                                                              // ==============================================================
+                                                              // LOOP CHUỘT KHÉP KÍN:
+                                                              // Chuột lướt mượt mà từ Viewport quay về file trong Folder ban đầu
+                                                              // ==============================================================
+                                                              const nextStartPos = getCenterCoords('step6-folder-prompt-item') || { x: 180, y: 180 };
+                                                              setCursorDuration(1200);
+                                                              setCursorPos(nextStartPos);
+
+                                                              timer = setTimeout(() => {
+                                                                if (isCancelled) return;
+
+                                                                // Thu khung SketchUp, mở lại khung Folder ban đầu
+                                                                setLeftMode('folder');
+                                                                setIsViewportPlaying(false);
+                                                                setOpenskpSent(false);
+                                                                setShowThumbnail(false);
+                                                                setDimensionInput("");
+                                                                setGeminiConverted(false);
+                                                                setGeminiThinking(false);
+                                                                setPromptSent(false);
+                                                                setFilesAttached(false);
+                                                                setGeminiPrompt("");
+                                                                setTxtSelected(false);
+                                                                setImgSelected(false);
+                                                                setIsDraggingFiles(false);
+                                                                setIsDraggingBwImage(false);
+
+                                                                if (videoRef.current) {
+                                                                  videoRef.current.pause();
+                                                                  videoRef.current.currentTime = 0;
+                                                                }
+
+                                                                // Dừng 600ms tại folder rồi chạy chu trình tiếp theo
+                                                                timer = setTimeout(() => {
+                                                                  if (isCancelled) return;
+                                                                  runLoop(true);
+                                                                }, 600);
+
+                                                              }, 1300);
+
+                                                            }, 2200);
+
+                                                          }, 11000);
+                                                        }, 500);
+
+                                                      }, 180);
+                                                    }, 380);
+                                                  }, 2800); // POPUP CHẬM RÃI: Giữ 2.8s cho người dùng quan sát
+                                                }, 250);
+                                              }
+                                            }, 75);
+                                          }, 180);
+                                        }, 220);
+                                      }, 1100);
+                                    }, 200);
+                                  }, 600);
+                                }, 450);
+                              }, 450);
+                            }, 1200);
+                          }, 180);
+                        }, 380);
+                      }, 350);
+                    }
+                  }, 40);
+                }, 180);
+              }, 1000);
+            }, 180);
+          }, 400);
+        }, 180);
+      }, 600);
     };
 
-    runLoop();
+    runLoop(false);
 
     return () => {
       isCancelled = true;
+      if (timer) clearTimeout(timer);
+      if (typeTimer) clearInterval(typeTimer);
     };
   }, []);
 
@@ -3012,12 +3126,12 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 : 'opacity-0 scale-95 pointer-events-none z-0'
             }`}
           >
-            {/* Title Bar SketchUp ĐỒNG BỘ 100% VỚI BƯỚC 2 & BƯỚC 4 */}
-            <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between text-xs select-none shrink-0">
+            {/* Title Bar SketchUp */}
+            <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
               <div className="flex items-center gap-2">
                 <img src="/sketchup-logo.svg" alt="SketchUp" className="w-4 h-4 object-contain shrink-0" />
                 <span className="font-sans text-[11px] text-slate-700 font-medium">
-                  Untitled - SketchUp Pro 2021 - 2026
+                  Untitled - SketchUp Pro 2021
                 </span>
               </div>
               <WindowControls />
@@ -3113,7 +3227,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 <div id="step6-viewport-rest-spot" className="absolute bottom-6 left-6 w-2 h-2 opacity-0 pointer-events-none" />
               </div>
 
-              {/* Mock UI Plugin: ĐỒNG BỘ 100% HEADER & PHONG CÁCH BƯỚC 2 & 4 */}
+              {/* Mock UI Plugin */}
               <div 
                 className="w-[260px] sm:w-[280px] border-l border-slate-300 bg-[#fdfbf7] flex flex-col justify-between shadow-lg relative shrink-0"
                 style={{
@@ -3122,81 +3236,56 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   isolation: 'isolate'
                 }}
               >
-                {/* Header Plugin chuẩn Bước 2 & Bước 4 */}
-                <header className="relative flex items-center justify-between p-2.5 border-b border-slate-200/60 bg-white/80 backdrop-blur-md shrink-0 h-12">
-                  <div className="flex items-center gap-1 z-10">
-                    <button className="text-slate-500 hover:text-slate-800 transition-colors p-1 rounded-md hover:bg-slate-100">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                      </svg>
-                    </button>
+                <div className="relative flex items-center p-2.5 border-b border-slate-200/60 bg-white/80 backdrop-blur-md shrink-0 h-12">
+                  <div className="flex items-center gap-1 z-10 text-slate-500">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                   </div>
-
-                  <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-1.5 text-[#0063A3] z-0">
-                    <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
-                      <path d='M12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-4 5h8c2.76 0 5 2.24 5 5v4c0 2.76-2.24 5-5 5H8c-2.76 0-5-2.24-5-5v-4c0-2.76 2.24-5 5-5zm1 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/>
-                      <path d='M5 23 Q 12 18, 19 23 H 5 z'/>
+                  <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-1 text-[#0063A3]">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-4 5h8c2.76 0 5 2.24 5 5v4c0 2.76-2.24 5-5 5H8c-2.76 0-5-2.24-5-5v-4c0-2.76 2.24-5 5-5zm1 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+                      <path d="M5 23 Q 12 18, 19 23 H 5 z"/>
                     </svg>
-                    <span 
-                      className="font-serif font-normal text-xl tracking-tight mt-1"
-                      style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR, fontWeight: 400 }}
-                    >
-                      OpenSkp
-                    </span>
+                    <span className="font-serif font-normal text-base text-[#0063A3]">OpenSkp</span>
                   </div>
-
-                  <div className="absolute right-[21px] top-0 bottom-0 w-6 flex items-center justify-center z-10">
-                    <span className="text-xs font-semibold text-slate-500 hover:text-[#0063A3] select-none cursor-pointer">
-                      EN
-                    </span>
+                  <div className="absolute right-[19px] top-0 bottom-0 w-6 flex items-center justify-center z-10">
+                    <span className="text-[11px] font-semibold text-slate-500">EN</span>
                   </div>
-                </header>
+                </div>
 
-                {/* Chat Area Plugin: ĐỒNG BỘ 1 KIỂU BUBBLE HOÀN THÀNH */}
-                <div ref={openskpChatRef} className="flex-1 p-3 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {/* Chat Area Plugin */}
+                <div ref={openskpChatRef} className="flex-1 p-3 overflow-y-auto space-y-2.5 font-sans text-xs">
                   <div className="flex justify-start">
-                    <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-slate-200 text-xs text-slate-700 max-w-sm leading-relaxed">
+                    <div className="bg-white rounded-2xl rounded-bl-xs p-3 shadow-xs border border-slate-200/80 text-slate-800 text-xs leading-relaxed max-w-[90%]">
                       Xin chào! Bạn cần vẽ gì hôm nay.
                     </div>
                   </div>
 
                   {/* Bubble gửi: CHỈ HIỂN THỊ ẢNH VÀ 9000 */}
                   {openskpSent && (
-                    <div className="flex justify-end animate-bubble-in">
-                      <div className="bg-[#0063A3] text-white rounded-2xl rounded-br-xs p-2 shadow-sm max-w-[90%] space-y-1.5 flex flex-col items-end">
+                    <div className="flex justify-end animate-fade-in">
+                      <div className="bg-[#0063A3] text-white rounded-2xl rounded-br-xs p-2 shadow-xs max-w-[90%] space-y-1 flex flex-col items-end">
                         <img src="/floorplan-bw.jpg" alt="Mặt bằng" className="w-28 h-20 object-cover rounded-lg border border-white/20 block" />
                         <span className="font-mono text-xs font-semibold pr-1">9000</span>
                       </div>
                     </div>
                   )}
 
-                  {/* Bubble thông báo trạng thái đang phân tích & dựng hình */}
-                  {openskpSent && !openskpCompleted && (
-                    <div className="flex justify-start animate-bubble-in">
-                      <div className="bg-white rounded-2xl rounded-bl-sm px-3.5 py-2 shadow-sm border border-slate-200 text-xs text-slate-800 leading-relaxed flex items-center gap-2 max-w-[90%]">
+                  {openskpSent && (
+                    <div className="flex justify-start animate-fade-in">
+                      <div className="bg-white rounded-2xl rounded-bl-xs px-3 py-2 shadow-xs border border-slate-200/80 text-slate-800 text-xs leading-relaxed flex items-center gap-2 max-w-[90%]">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                         <span className="font-medium text-emerald-700">Đang phân tích mặt bằng & dựng không gian 3D...</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Bubble phản hồi hoàn thành: ĐỒNG BỘ 1 KIỂU VỚI BƯỚC 4 */}
-                  {openskpCompleted && (
-                    <div className="flex justify-start animate-bubble-in">
-                      <div className="bg-white rounded-2xl rounded-bl-sm px-3.5 py-2 shadow-sm border border-slate-200 text-xs text-slate-800 leading-relaxed flex items-center gap-2">
-                        <Check size={14} className="text-emerald-600 shrink-0" />
-                        <span className="font-medium text-slate-800">Đã hoàn thành dựng không gian 3D</span>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Input Plugin */}
-                <div className="p-3 border-t border-slate-200/60 bg-white/90 shrink-0 relative">
+                <div className="p-3 border-t border-slate-200/60 bg-white/90 backdrop-blur-xs shrink-0 relative">
                   
                   {/* THUMBNAIL ẢNH MẶT BẰNG ĐEN TRẮNG: TẮT ĐI KHI NHẤN GỬI */}
                   {showThumbnail && (
-                    <div className="mb-2 px-1 flex items-center gap-2 animate-bubble-in">
+                    <div className="mb-2 px-1 flex items-center gap-2 animate-fade-in">
                       <div className="relative">
                         <img src="/floorplan-bw.jpg" alt="Preview B&W" className="w-10 h-7 object-cover rounded border border-slate-300 shadow-xs" />
                         <span className="absolute -top-1 -right-1 w-3 h-3 bg-slate-700 text-white rounded-full text-[7px] flex items-center justify-center">✕</span>
@@ -3205,37 +3294,24 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                     </div>
                   )}
 
-                  <div className="relative flex items-center w-full bg-white border border-gray-200 rounded-2xl shadow-sm px-2 py-1">
+                  <div className="relative flex items-center w-full bg-white border border-gray-200 rounded-2xl shadow-xs px-2 py-1">
                     <span className="p-1 text-gray-400 shrink-0">
-                      <ImageIcon size={16} />
+                      <ImageIcon size={15} />
                     </span>
-                    <div
+                    <input 
                       id="step6-openskp-input"
-                      className="flex-1 flex items-center bg-transparent text-xs py-1 px-1 text-slate-800 font-sans min-h-[24px] cursor-text overflow-hidden"
-                    >
-                      {dimensionInput ? (
-                        <div className="flex items-center font-mono text-[11px] text-slate-800 truncate">
-                          <span>{dimensionInput}</span>
-                          {isOpenskpFocused && (
-                            <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] ml-0.5 animate-pulse shrink-0" />
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center text-gray-400 text-xs">
-                          {isOpenskpFocused ? (
-                            <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] mr-1 animate-pulse" />
-                          ) : (
-                            <span>nhập yêu cầu</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                      type="text" 
+                      readOnly 
+                      value={dimensionInput}
+                      placeholder="nhập yêu cầu" 
+                      className="w-full bg-transparent text-xs font-mono text-slate-800 focus:outline-none placeholder-gray-400 select-none truncate px-1"
+                    />
                     <button 
                       id="step6-openskp-send-btn"
-                      className="m-0.5 p-1.5 rounded-full text-white bg-[#0063A3] shadow-sm shrink-0 cursor-pointer hover:bg-blue-700 transition-colors"
+                      className="m-0.5 w-6 h-6 rounded-full text-white bg-[#0063A3] flex items-center justify-center shrink-0 shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
                       title="Gửi"
                     >
-                      <Send size={12} />
+                      <Send size={11} />
                     </button>
                   </div>
                 </div>
@@ -3248,181 +3324,158 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         </div>
 
         {/* ==================================================================== */}
-        {/* KHUNG PHẢI: TRÌNH DUYỆT GOOGLE GEMINI - ĐỒNG BỘ 100% VỚI BƯỚC 4 */}
+        {/* KHUNG PHẢI: TRÌNH DUYỆT GOOGLE GEMINI */}
         {/* ==================================================================== */}
         <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
-          {/* Chrome Tab Bar: Đồng bộ Bước 4 */}
-          <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-2 flex items-end justify-between shrink-0 select-none pt-1">
+          {/* Chrome Tab Bar */}
+          <div className="h-9 bg-[#dee1e6] border-b border-gray-300/80 px-2 flex items-end justify-between shrink-0 select-none pt-1">
             <div className="flex items-end h-full">
-              {/* Tab 1: Google Gemini (Active) */}
-              <div className="h-[30px] bg-white rounded-t-lg px-2.5 flex items-center gap-1.5 shadow-xs border-t border-x border-gray-300/50">
+              <div className="h-[30px] bg-white rounded-t-lg px-2.5 flex items-center gap-1.5 shadow-xs">
                 <GeminiColorfulLogo className="w-3.5 h-3.5 shrink-0" />
                 <span className="font-sans text-[11px] text-slate-800 font-medium whitespace-nowrap">Google Gemini</span>
-                <span className="text-[10px] text-slate-400 hover:text-slate-700 ml-1 cursor-pointer">✕</span>
+                <span className="text-slate-500 hover:text-slate-700 ml-2 text-[10px] cursor-pointer leading-none">✕</span>
               </div>
-
-              {/* Tab 2: ChatGPT (Inactive - CHỈ ĐỂ BIỂU TƯỢNG) */}
               <div className="h-[30px] px-2 flex items-center justify-center text-slate-700 hover:bg-slate-200/50 rounded-t-lg cursor-pointer transition-colors" title="ChatGPT">
                 <ChatGPTLogo className="w-3.5 h-3.5 shrink-0" />
               </div>
-
-              {/* Dấu gạch dọc ngăn cách */}
               <div className="h-3.5 w-[1px] bg-slate-400/60 mx-0.5 self-center shrink-0" />
-
-              {/* Tab 3: Claude (Inactive - CHỈ ĐỂ BIỂU TƯỢNG) */}
               <div className="h-[30px] px-2 flex items-center justify-center text-slate-700 hover:bg-slate-200/50 rounded-t-lg cursor-pointer transition-colors" title="Claude">
                 <ClaudeLogo className="w-3.5 h-3.5 shrink-0" />
               </div>
-
-              {/* Dấu gạch dọc ngăn cách sau Claude */}
               <div className="h-3.5 w-[1px] bg-slate-400/60 mx-0.5 self-center shrink-0" />
             </div>
-
             <div className="self-center pb-1">
               <WindowControls />
             </div>
           </div>
 
-          {/* Chrome Omnibox: Đồng bộ gọn gàng Bước 4 */}
-          <div className="h-8 bg-white border-b border-gray-200 px-3 flex items-center gap-2.5 shrink-0">
-            <div className="flex items-center gap-2 text-slate-400 text-xs">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 19l-7-7 7-7"/></svg>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          {/* Chrome Omnibox */}
+          <div className="h-9 bg-white border-b border-gray-200 px-3 flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3 text-slate-700 text-xs">
+              <svg className="w-4 h-4 text-slate-700 hover:text-black cursor-pointer" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+              <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+              <svg className="w-3.5 h-3.5 text-slate-700 hover:text-black cursor-pointer" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l6.11-6.11"/></svg>
             </div>
-            <div className="flex-1 bg-[#f1f3f4] rounded-full px-2.5 py-1 text-[11px] text-slate-700 flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-                <span className="font-normal text-slate-800">gemini.google.com/app</span>
-              </div>
-              <div className="flex items-center gap-1 text-slate-400">
-                <svg className="w-3.5 h-3.5 text-[#0063A3]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              </div>
+            <div className="flex-1 bg-[#f1f3f4] rounded-full px-3 py-1 text-xs text-slate-800 flex items-center gap-2 truncate">
+              <svg className="w-3.5 h-3.5 text-slate-700 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="8" cy="8" r="2.5"/><line x1="2" y1="8" x2="5.5" y2="8"/><line x1="10.5" y1="8" x2="22" y2="8"/><circle cx="16" cy="16" r="2.5"/><line x1="2" y1="16" x2="13.5" y2="16"/><line x1="18.5" y1="16" x2="22" y2="16"/></svg>
+              <span className="font-sans text-[11px] text-slate-800 font-normal select-text">gemini.google.com/app?hl=vi</span>
             </div>
           </div>
 
-          {/* Vùng giao diện ứng dụng Gemini chuẩn với Left Rail */}
-          <div className="flex-1 flex overflow-hidden">
-            <GeminiLeftRail width="w-10" />
-
-            {/* Chat Canvas với gradient & khoảng cách đồng bộ */}
-            <div 
-              className="flex-1 p-3 flex flex-col justify-between overflow-hidden relative gap-3"
-              style={{ background: 'linear-gradient(180deg, #edf4fc 0%, #e2eef9 100%)' }}
-            >
-              <div ref={geminiChatRef} className="flex-1 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                
-                {/* Tin nhắn gửi kèm cả 2 file: Prompt.txt và Mat_bang_mau.png */}
-                {promptSent && (
-                  <div className="flex flex-col items-end gap-1.5 animate-bubble-in">
-                    <div className="flex items-center gap-1.5">
-                      <div className="bg-white border border-slate-200 rounded px-2 py-1 flex items-center gap-1 text-[10.5px] shadow-2xs">
-                        <DocTextIcon className="w-3 h-3 text-slate-600" />
-                        <span className="font-medium text-slate-700 truncate max-w-[100px]">Prompt...plan.txt</span>
-                      </div>
-                      <img src="/floorplan-color.png" alt="Mặt bằng màu" className="w-16 h-12 object-cover rounded border border-slate-300 shadow-xs" />
-                    </div>
-                    <div className="bg-white text-slate-800 px-3.5 py-2 rounded-2xl rounded-tr-xs text-xs font-medium shadow-xs border border-slate-200/80 max-w-[90%] leading-relaxed">
-                      Chuyển mặt bằng về đen trắng theo prompt đính kèm
-                    </div>
-                  </div>
-                )}
-
-                {/* Gemini đang suy nghĩ */}
-                {geminiThinking && (
-                  <div className="flex items-start gap-2 animate-bubble-in">
-                    <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
-                      <GeminiColorfulLogo className="w-4 h-4" />
-                    </div>
-                    <div className="bg-white px-3.5 py-2 rounded-2xl shadow-xs border border-slate-200 text-xs text-slate-500 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                      <span>Gemini đang xử lý và convert sang đen trắng...</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Gemini convert thành mặt bằng đen trắng: KÉO TRỰC TIẾP SANG SKETCHUP */}
-                {geminiConverted && (
-                  <div className="flex items-start gap-2 max-w-full animate-bubble-in">
-                    <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
-                      <GeminiColorfulLogo className="w-4 h-4" />
-                    </div>
-                    
-                    <div className="bg-white rounded-2xl p-2.5 shadow-md border border-slate-200/80 w-full space-y-2">
-                      <div className="flex items-center justify-between pb-1 border-b border-slate-100">
-                        <span className="text-[11px] font-semibold text-slate-700">Mặt bằng đen trắng chuẩn CAD</span>
-                        <span className="text-[9.5px] text-slate-400 font-mono">CAD 2D • 9000mm</span>
-                      </div>
-
-                      {/* VÙNG ẢNH MẶT BẰNG ĐEN TRẮNG ĐƯỢC CHUỘT KÉO TRỰC TIẾP */}
-                      <div 
-                        id="step6-gemini-bw-image"
-                        className={`rounded-xl overflow-hidden border border-slate-200 bg-white transition-opacity ${
-                          isDraggingBwImage ? 'opacity-40 ring-2 ring-[#0063A3]' : 'opacity-100'
-                        }`}
-                      >
-                        <img src="/floorplan-bw.jpg" alt="Mặt bằng đen trắng" className="w-full h-36 object-contain bg-white" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-
-              {/* Vùng nhập liệu Gemini */}
-              <div className="p-1 shrink-0">
-                {filesAttached && (
-                  <div className="px-2 pb-2 flex items-center gap-2 animate-bubble-in">
-                    <div className="bg-white border border-slate-200 rounded px-2 py-1 flex items-center gap-1.5 text-[10.5px] shadow-2xs">
+          {/* Gemini Chat Body */}
+          <div 
+            className="flex-1 flex flex-col justify-between overflow-hidden relative"
+            style={{ background: 'linear-gradient(180deg, #edf4fc 0%, #e2eef9 100%)' }}
+          >
+            <div ref={geminiChatRef} className="flex-1 p-3 overflow-y-auto space-y-3 font-sans">
+              
+              {/* Tin nhắn gửi kèm cả 2 file: Prompt.txt và Mat_bang_mau.png */}
+              {promptSent && (
+                <div className="flex flex-col items-end gap-1.5 animate-fade-in">
+                  <div className="flex items-center gap-1.5">
+                    <div className="bg-white border border-slate-200 rounded px-2 py-1 flex items-center gap-1 text-[10.5px] shadow-2xs">
                       <DocTextIcon className="w-3 h-3 text-slate-600" />
-                      <span className="font-medium text-slate-700 truncate max-w-[90px]">Prompt...image.txt</span>
+                      <span className="font-medium text-slate-700 truncate max-w-[100px]">Prompt...plan.txt</span>
                     </div>
-                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded p-1 text-[10.5px] shadow-2xs">
-                      <img src="/floorplan-color.png" alt="preview" className="w-5 h-4 object-cover rounded" />
-                      <span className="font-medium text-slate-700 truncate max-w-[80px]">Mat_bang_mau.png</span>
-                    </div>
+                    <img src="/floorplan-color.png" alt="Mặt bằng màu" className="w-16 h-12 object-cover rounded border border-slate-300 shadow-xs" />
                   </div>
-                )}
-
-                <div className="rounded-full border border-slate-200/90 px-3 py-1.5 bg-white flex items-center justify-between shadow-xs relative">
-                  <span className="text-xl text-slate-500 font-light pr-2 pl-0.5 select-none leading-none cursor-pointer hover:text-slate-700 transition-colors" title="Thêm tệp">+</span>
-                  <input 
-                    id="step6-gemini-input-box"
-                    type="text" 
-                    readOnly 
-                    value={geminiPrompt} 
-                    placeholder={filesAttached ? "" : "Hỏi Gemini"} 
-                    className="flex-1 bg-transparent text-xs text-slate-800 placeholder-slate-500 outline-none border-none cursor-default font-sans min-w-0"
-                  />
-                  <div className="flex items-center gap-2 shrink-0 select-none pl-1.5">
-                    <div className="flex items-center gap-0.5 text-[11px] text-slate-700 font-medium">
-                      <span>Flash</span>
-                      <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                    </div>
-                    {geminiPrompt ? (
-                      <button 
-                        id="step6-gemini-send-btn"
-                        className="w-6 h-6 rounded-full bg-[#1a73e8] text-white flex items-center justify-center shadow-xs shrink-0 hover:bg-blue-600 transition-colors"
-                        title="Gửi"
-                      >
-                        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" />
-                        </svg>
-                      </button>
-                    ) : (
-                      <svg className="w-4 h-4 text-slate-600 shrink-0 cursor-pointer hover:text-black transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-                      </svg>
-                    )}
+                  <div className="bg-white text-slate-800 px-3.5 py-2 rounded-2xl rounded-tr-xs text-xs font-medium shadow-xs border border-slate-200/80 max-w-[90%] leading-relaxed">
+                    Chuyển mặt bằng về đen trắng theo promt đính kèm
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Gemini đang suy nghĩ */}
+              {geminiThinking && (
+                <div className="flex items-start gap-2 animate-fade-in">
+                  <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
+                    <GeminiColorfulLogo className="w-4 h-4" />
+                  </div>
+                  <div className="bg-white px-3.5 py-2 rounded-2xl shadow-xs border border-slate-200 text-xs text-slate-500 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                    <span>Gemini đang xử lý và convert sang đen trắng...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Gemini convert thành mặt bằng đen trắng: KÉO TRỰC TIẾP SANG SKETCHUP */}
+              {geminiConverted && (
+                <div className="flex items-start gap-2 max-w-full animate-fade-in">
+                  <div className="w-7 h-7 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
+                    <GeminiColorfulLogo className="w-4 h-4" />
+                  </div>
+                  
+                  <div className="bg-white rounded-2xl p-2.5 shadow-md border border-slate-200/80 w-full space-y-2">
+                    <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                      <span className="text-[11px] font-semibold text-slate-700">Mặt bằng đen trắng chuẩn CAD</span>
+                      <span className="text-[9.5px] text-slate-400 font-mono">CAD 2D • 9000mm</span>
+                    </div>
+
+                    {/* VÙNG ẢNH MẶT BẰNG ĐEN TRẮNG ĐƯỢC CHUỘT KÉO TRỰC TIẾP */}
+                    <div 
+                      id="step6-gemini-bw-image"
+                      className={`rounded-xl overflow-hidden border border-slate-200 bg-white transition-opacity ${
+                        isDraggingBwImage ? 'opacity-40 ring-2 ring-[#0063A3]' : 'opacity-100'
+                      }`}
+                    >
+                      <img src="/floorplan-bw.jpg" alt="Mặt bằng đen trắng" className="w-full h-36 object-contain bg-white" />
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>
+
+            {/* Vùng nhập liệu Gemini */}
+            <div className="p-1 shrink-0">
+              {filesAttached && (
+                <div className="px-2 pb-2 flex items-center gap-2 animate-fade-in">
+                  <div className="bg-white border border-slate-200 rounded px-2 py-1 flex items-center gap-1.5 text-[10.5px] shadow-2xs">
+                    <DocTextIcon className="w-3 h-3 text-slate-600" />
+                    <span className="font-medium text-slate-700 truncate max-w-[90px]">Prompt...image.txt</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-white border border-slate-200 rounded p-1 text-[10.5px] shadow-2xs">
+                    <img src="/floorplan-color.png" alt="preview" className="w-5 h-4 object-cover rounded" />
+                    <span className="font-medium text-slate-700 truncate max-w-[80px]">Mat_bang_mau.png</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-full border border-slate-200/90 px-3 py-1.5 bg-white flex items-center justify-between shadow-xs relative">
+                <span className="text-xl text-slate-500 font-light pr-2 pl-0.5 select-none leading-none cursor-pointer hover:text-slate-700 transition-colors" title="Thêm tệp">+</span>
+                <input 
+                  id="step6-gemini-input-box"
+                  type="text" 
+                  readOnly 
+                  value={geminiPrompt} 
+                  placeholder={filesAttached ? "" : "Hỏi Gemini"} 
+                  className="flex-1 bg-transparent text-xs text-slate-800 placeholder-slate-500 outline-none border-none cursor-default font-sans min-w-0"
+                />
+                <div className="flex items-center gap-2 shrink-0 select-none pl-1.5">
+                  <div className="flex items-center gap-0.5 text-[11px] text-slate-700 font-medium">
+                    <span>Flash</span>
+                    <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                  </div>
+                  {geminiPrompt ? (
+                    <button 
+                      id="step6-gemini-send-btn"
+                      className="w-6 h-6 rounded-full bg-[#1a73e8] text-white flex items-center justify-center shadow-xs shrink-0 hover:bg-blue-600 transition-colors"
+                      title="Gửi"
+                    >
+                      <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <svg className="w-4 h-4 text-slate-600 shrink-0 cursor-pointer hover:text-black transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                  )}
+                </div>
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -3430,7 +3483,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
       </div>
 
       {/* ====================================================================== */}
-      {/* CON TRỎ CHUỘT THỰC TẾ: ĐỒNG BỘ 100% VỚI BƯỚC 3 & BƯỚC 4 */}
+      {/* CON TRỎ CHUỘT THỰC TẾ: ĐỒNG BỘ 100% VỚI BƯỚC 3 & BƯỚC 4 (BỎ HIỆU ỨNG TỎA) */}
       {/* ====================================================================== */}
       <div 
         className="hidden lg:block absolute z-50 pointer-events-none select-none"
@@ -3462,9 +3515,9 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
             />
           </svg>
 
-          {/* 1. HIỆU ỨNG KÉO 2 FILE TỪ FOLDER SANG GEMINI */}
+          {/* 1. HIỆU ỨNG KÉO 2 FILE TỪ FOLDER SANG GEMINI (GIỐNG BƯỚC 3) */}
           {isDraggingFiles && (
-            <div className="absolute left-3 top-3 flex items-center gap-1.5 bg-white border border-slate-300 shadow-xl rounded px-2 py-1 text-[11px] font-medium text-slate-800 whitespace-nowrap animate-bubble-in select-none pointer-events-none">
+            <div className="absolute left-3 top-3 flex items-center gap-1.5 bg-white border border-slate-300 shadow-xl rounded px-2 py-1 text-[11px] font-medium text-slate-800 whitespace-nowrap animate-fade-in">
               <DocTextIcon className="w-3.5 h-3.5 text-slate-600 shrink-0" />
               <span>Prompt.txt, Mat_bang.png</span>
             </div>
@@ -3472,18 +3525,17 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
           {/* 2. HIỆU ỨNG KÉO MẶT BẰNG ĐEN TRẮNG TỪ GEMINI SANG OPENSKP */}
           {isDraggingBwImage && (
-            <div className="absolute left-3 top-3 flex items-center gap-1.5 bg-white border border-slate-300 shadow-xl rounded px-2 py-1 text-[11px] font-medium text-slate-800 whitespace-nowrap animate-bubble-in select-none pointer-events-none">
+            <div className="absolute left-3 top-3 flex items-center gap-1.5 bg-white border border-slate-300 shadow-xl rounded px-2 py-1 text-[11px] font-medium text-slate-800 whitespace-nowrap animate-fade-in">
               <ImageIcon size={13} className="text-[#0063A3] shrink-0" />
               <span>Mat_bang_BW.jpg</span>
             </div>
           )}
 
-          {/* 3. POPUP CHỮ ĐEN NỀN TRẮNG GẮN TRỰC TIẾP DƯỚI MŨI CHUỘT (ĐỒNG BỘ 100% BƯỚC 4) */}
+          {/* 3. POPUP MÀU TRẮNG ĐƠN GIẢN 1 DÒNG TEXT HIỆN BÊN DƯỚI CHUỘT */}
           {showDimensionPopup && (
-            <div className="absolute top-6 left-1 bg-white text-slate-900 border border-slate-300 shadow-xl rounded-md py-1 px-2.5 z-50 animate-bubble-in flex items-center gap-1.5 whitespace-nowrap select-none pointer-events-none">
-              <span className="font-sans text-[11px] font-semibold text-slate-900">
-                Chiều rộng tổng thể mặt bằng (9000mm)
-              </span>
+            <div className="absolute top-7 left-2 bg-white text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded shadow-lg border border-slate-200 flex items-center gap-1.5 whitespace-nowrap z-50 animate-fade-in pointer-events-none select-none">
+              <span>Chiều rộng tổng thể mặt bằng (9000mm)</span>
+              <div className="absolute -top-1 left-3.5 w-2 h-2 bg-white border-t border-l border-slate-200 transform rotate-45" />
             </div>
           )}
         </div>
@@ -3494,6 +3546,9 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 };
 
 
+// ==============================================================================
+// 7. MÔ PHỎNG BƯỚC 6: HIỆU CHỈNH MODEL (BẢNG TÙY CHỌN OPENSKP MODEL INFO & TRẦN DẦM GỖ)
+// ==============================================================================
 export const Step6ModelEditWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
