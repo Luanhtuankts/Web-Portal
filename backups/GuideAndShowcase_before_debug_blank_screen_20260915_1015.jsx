@@ -1757,13 +1757,11 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setIsViewportPlaying(false);
         setCabinetAttached(false);
         setGeminiPrompt("");
-        setIsGeminiFocused(false);
         setCabinetSent(false);
         setGeminiThinking(false);
         setGeminiResponded(false);
         setCodeCopied(false);
-        setIsOpenskpFocused(false);
-        setShowCtrlVPopup(false);
+        setShowOpenSkpPasteMenu(false);
         setOpenskpInput("");
         setOpenskpSent(false);
         if (videoRef.current) {
@@ -1778,68 +1776,59 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         // Click thêm tệp
         await clickMouse();
         setCabinetAttached(true); // Gắn ảnh tủ mẫu
-        await sleep(400);
-
-        // Di chuột vào ô nhập liệu Gemini & kích hoạt nháy |
-        await moveMouse('step4-gemini-input-box', 350, { x: 920, y: 505 });
-        await clickMouse();
-        setIsGeminiFocused(true);
-        await sleep(250);
+        await sleep(500);
 
         // 2. Gõ lời nhắc "dựng cái tủ này" từng chữ chậm rãi
         const promptTarget = "dựng cái tủ này";
         for (let i = 1; i <= promptTarget.length; i++) {
           if (isCancelled) return;
           setGeminiPrompt(promptTarget.slice(0, i));
-          await sleep(140);
+          await sleep(150);
         }
-        await sleep(550);
+        await sleep(650);
 
         // 3. Di chuột sang nút Send của Gemini
-        await moveMouse('step4-gemini-send-btn', 400, { x: 1040, y: 505 });
+        await moveMouse('step4-gemini-send-btn', 450, { x: 1040, y: 505 });
         await clickMouse();
-        setIsGeminiFocused(false);
 
         setCabinetSent(true);
         setCabinetAttached(false);
         setGeminiPrompt("");
         setGeminiThinking(true);
 
-        // Chuột ở lại tự nhiên gần ô chat
+        // Chuột nhấn gửi xong KHÔNG đưa ra góc, ở lại tự nhiên gần ô chat
         await sleep(1500);
 
         // 4. Gemini phản hồi khối mã Ruby nền trắng
         setGeminiThinking(false);
         setGeminiResponded(true);
-        await sleep(700);
+        await sleep(600);
 
-        // 5. Di chuột trực tiếp lên nút Sao chép
-        await moveMouse('step4-gemini-copy-code-btn', 500, { x: 1030, y: 380 });
+        // 5. Di chuột trực tiếp lên nút "Sao chép mã"
+        await moveMouse('step4-gemini-copy-code-btn', 600, { x: 1030, y: 380 });
         await clickMouse();
         setCodeCopied(true);
         await sleep(500);
 
         // 6. Di chuột sang ô nhập liệu OpenSkp (SketchUp bên trái)
-        await moveMouse('step4-openskp-input', 800, { x: 620, y: 505 });
-        await clickMouse(); // Click vào ô nhập liệu
-        setIsOpenskpFocused(true); // Hiển thị nháy |
-        setShowCtrlVPopup(true); // Hiển thị popup "Ctrl - V" trực tiếp dưới chuột
-        await sleep(350);
+        await moveMouse('step4-openskp-input', 850, { x: 620, y: 505 });
+        await clickMouse();
+        setShowOpenSkpPasteMenu(true);
+        await sleep(200);
 
-        // Di chuột lên popup Ctrl - V ngay dưới chuột và click
-        await moveMouse('step4-openskp-ctrlv-btn', 250, { x: 605, y: 475 });
+        // Di chuột chính xác lên chữ Dán
+        await moveMouse('step4-openskp-paste-btn', 300, { x: 590, y: 470 });
         await sleep(150);
         await clickMouse();
 
-        setShowCtrlVPopup(false);
+        setShowOpenSkpPasteMenu(false);
         setOpenskpInput("cabinet = OpenSkp::Cabinet.new(width: 900, height: 2000, depth: 400)");
-        await sleep(500);
+        await sleep(400);
 
         // 7. Di chuột sang nút Send của OpenSkp
         await moveMouse('step4-openskp-send-btn', 350, { x: 740, y: 505 });
         await clickMouse();
 
-        setIsOpenskpFocused(false);
         setOpenskpSent(true);
         setOpenskpInput("");
 
@@ -2036,48 +2025,35 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 )}
               </div>
 
-              {/* Chat Input Bar OpenSkp - ĐỒNG BỘ KHOẢNG CÁCH, POPUP CTRL-V & NHÁY | */}
+              {/* Chat Input Bar OpenSkp - CHUẨN BƯỚC 2: CHỈ GHI "nhập yêu cầu" */}
               <div className="p-3 border-t border-slate-200/60 bg-white/90 shrink-0 relative">
-                {showCtrlVPopup && (
-                  <div className="absolute bottom-13 left-6 bg-white border border-slate-300 rounded-lg shadow-xl py-1 px-2.5 z-30 animate-bubble-in flex items-center gap-1.5 select-none">
+                {showOpenSkpPasteMenu && (
+                  <div className="absolute bottom-13 left-5 bg-white border border-slate-200 rounded-lg shadow-xl py-1 px-1 z-30 animate-fade-in">
                     <button
-                      id="step4-openskp-ctrlv-btn"
-                      className="flex items-center gap-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded w-full text-left font-sans font-medium cursor-pointer"
+                      id="step4-openskp-paste-btn"
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-100 rounded w-full text-left font-sans font-medium select-none cursor-pointer"
                     >
-                      <svg className="w-3.5 h-3.5 text-[#0063A3] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                      <span className="font-mono text-[11px] font-bold text-slate-800 tracking-wide">Ctrl - V</span>
+                      <svg className="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                      <span className="font-semibold text-slate-800">Dán</span>
                     </button>
                   </div>
                 )}
 
-                <div className="relative flex items-center w-full bg-white border border-gray-200 rounded-2xl shadow-sm px-2 py-1">
-                  <span className="p-1 text-gray-400 shrink-0">
+                <div className="relative flex items-center w-full bg-white border border-gray-200 rounded-2xl shadow-sm">
+                  <span className="p-2 text-gray-400">
                     <ImageIcon size={16} />
                   </span>
-                  <div
+                  <input
                     id="step4-openskp-input"
-                    className="flex-1 flex items-center bg-transparent text-xs py-1 px-1 text-slate-800 font-sans min-h-[24px] cursor-text overflow-hidden"
-                  >
-                    {openskpInput ? (
-                      <div className="flex items-center font-mono text-[11px] text-slate-800 truncate">
-                        <span>{openskpInput}</span>
-                        {isOpenskpFocused && (
-                          <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] ml-0.5 animate-pulse shrink-0" />
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-gray-400 text-xs">
-                        {isOpenskpFocused ? (
-                          <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] mr-1 animate-pulse" />
-                        ) : (
-                          <span>nhập yêu cầu</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                    type="text"
+                    readOnly
+                    placeholder="nhập yêu cầu"
+                    value={openskpInput}
+                    className="w-full bg-transparent text-xs py-2 px-1 focus:outline-none text-slate-800 placeholder-gray-400 font-sans"
+                  />
                   <button
                     id="step4-openskp-send-btn"
-                    className="m-0.5 p-1.5 rounded-full text-white bg-[#0063A3] shadow-sm shrink-0 cursor-pointer"
+                    className="m-1 p-1.5 rounded-full text-white bg-[#0063A3] shadow-sm shrink-0 cursor-pointer"
                     title="Gửi"
                   >
                     <Send size={12} />
