@@ -4094,15 +4094,9 @@ export const Step6ModelEditWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 };
 
 
-export const Step2LicenseWorkflow = ({ 
-  PRIMARY_COLOR = "#0063A3", 
-  profile = null,
-  copyToClipboard = null,
-  keyCopySuccess = false
-}) => {
+export const Step2LicenseWorkflow = ({ PRIMARY_COLOR = "#0063A3", profile = null }) => {
   const licenseContainerRef = useRef(null);
 
-  // Vị trí và trạng thái chuột
   const [cursorPos, setCursorPos] = useState({ x: 260, y: 140 });
   const [cursorDuration, setCursorDuration] = useState(0);
   const [isClicking, setIsClicking] = useState(false);
@@ -4127,103 +4121,143 @@ export const Step2LicenseWorkflow = ({
   };
 
   useEffect(() => {
+    let timer = null;
     let isCancelled = false;
 
-    const sleep = (ms) => new Promise(resolve => {
+    const runSimulationLoop = () => {
       if (isCancelled) return;
-      setTimeout(() => {
-        if (!isCancelled) resolve();
-      }, ms);
-    });
 
-    const moveMouse = async (elId, duration = 800, fallback = { x: 260, y: 140 }) => {
-      if (isCancelled) return false;
-      const coords = getCenterCoords(elId) || fallback;
-      setCursorDuration(duration);
-      setCursorPos(coords);
-      await sleep(duration + 50);
-      return true;
-    };
-
-    const clickMouse = async () => {
-      if (isCancelled) return;
-      setIsClicking(true);
-      await sleep(180);
+      const copyPos = getCenterCoords('sim-web-copy-btn') || { x: 260, y: 140 };
+      setCursorDuration(0);
+      setCursorPos(copyPos);
+      setWebCopied(false);
+      setSidebarOpen(false);
+      setShowPasteMenu(false);
+      setPastedKey("");
+      setIsKeyActive(false);
+      setBubbleShown(false);
       setIsClicking(false);
-      await sleep(100);
+
+      // 1. Dừng 600ms tại nút Copy rồi click
+      timer = setTimeout(() => {
+        if (isCancelled) return;
+        setIsClicking(true);
+
+        timer = setTimeout(() => {
+          if (isCancelled) return;
+          setIsClicking(false);
+          setWebCopied(true);
+
+          timer = setTimeout(() => {
+            if (isCancelled) return;
+            // 2. Di chuột sang nút Hamburger của Plugin
+            const hamburgerPos = getCenterCoords('sim-plugin-hamburger-btn') || { x: 550, y: 35 };
+            setCursorDuration(1000);
+            setCursorPos(hamburgerPos);
+
+            timer = setTimeout(() => {
+              if (isCancelled) return;
+              setIsClicking(true);
+
+              timer = setTimeout(() => {
+                if (isCancelled) return;
+                setIsClicking(false);
+                setSidebarOpen(true);
+
+                timer = setTimeout(() => {
+                  if (isCancelled) return;
+                  // 3. Di chuột đến ô nhập License Key
+                  const inputPos = getCenterCoords('sim-plugin-license-input') || { x: 620, y: 310 };
+                  setCursorDuration(800);
+                  setCursorPos(inputPos);
+
+                  timer = setTimeout(() => {
+                    if (isCancelled) return;
+                    setIsClicking(true);
+
+                    timer = setTimeout(() => {
+                      if (isCancelled) return;
+                      setIsClicking(false);
+                      setShowPasteMenu(true);
+
+                      timer = setTimeout(() => {
+                        if (isCancelled) return;
+                        const pastePos = getCenterCoords('sim-plugin-paste-btn') || { x: inputPos.x - 20, y: inputPos.y - 30 };
+                        setCursorDuration(350);
+                        setCursorPos(pastePos);
+
+                        timer = setTimeout(() => {
+                          if (isCancelled) return;
+                          setIsClicking(true);
+
+                          timer = setTimeout(() => {
+                            if (isCancelled) return;
+                            setIsClicking(false);
+                            setShowPasteMenu(false);
+                            setPastedKey("SKP-8829-X");
+                            setIsKeyActive(true);
+
+                            timer = setTimeout(() => {
+                              if (isCancelled) return;
+                              // 4. Di chuột tới nút đóng ✕
+                              const closePos = getCenterCoords('sim-plugin-close-btn') || { x: 740, y: 65 };
+                              setCursorDuration(750);
+                              setCursorPos(closePos);
+
+                              timer = setTimeout(() => {
+                                if (isCancelled) return;
+                                setIsClicking(true);
+
+                                timer = setTimeout(() => {
+                                  if (isCancelled) return;
+                                  setIsClicking(false);
+                                  setSidebarOpen(false);
+                                  setBubbleShown(true);
+
+                                  // Giữ kết quả 4.5 giây cho người xem theo dõi
+                                  timer = setTimeout(() => {
+                                    if (isCancelled) return;
+                                    
+                                    const nextCopyPos = getCenterCoords('sim-web-copy-btn') || { x: 260, y: 140 };
+                                    setCursorDuration(1200);
+                                    setCursorPos(nextCopyPos);
+
+                                    timer = setTimeout(() => {
+                                      if (isCancelled) return;
+
+                                      setBubbleShown(false);
+                                      setPastedKey("");
+                                      setWebCopied(false);
+                                      setIsKeyActive(false);
+
+                                      timer = setTimeout(() => {
+                                        if (isCancelled) return;
+                                        runSimulationLoop();
+                                      }, 600);
+
+                                    }, 1300);
+                                  }, 4500);
+                                }, 180);
+                              }, 850);
+                            }, 700);
+                          }, 180);
+                        }, 450);
+                      }, 350);
+                    }, 180);
+                  }, 900);
+                }, 400);
+              }, 180);
+            }, 1100);
+          }, 600);
+        }, 180);
+      }, 600);
     };
 
-    const runSimulationLoop = async () => {
-      while (!isCancelled) {
-        // Reset states
-        setSidebarOpen(false);
-        setShowPasteMenu(false);
-        setPastedKey("");
-        setIsKeyActive(false);
-        setBubbleShown(false);
-        setWebCopied(false);
-        setIsClicking(false);
-
-        // 1. Dừng tại nút Copy License Key trên web openskp.io
-        await moveMouse('sim-web-copy-btn', 0, { x: 340, y: 80 });
-        await sleep(700);
-
-        // Click copy
-        await clickMouse();
-        setWebCopied(true);
-        await sleep(600);
-
-        // 2. Di chuột sang nút Hamburger của Plugin OpenSkp
-        await moveMouse('sim-plugin-hamburger-btn', 1000, { x: 620, y: 35 });
-        await clickMouse();
-        setSidebarOpen(true);
-        await sleep(400);
-
-        // 3. Di chuột đến ô nhập License Key
-        await moveMouse('sim-plugin-license-input', 800, { x: 700, y: 310 });
-        await clickMouse();
-        setShowPasteMenu(true);
-        await sleep(350);
-
-        // Di chuột chọn "Dán (Paste)"
-        const inputPos = getCenterCoords('sim-plugin-license-input') || { x: 700, y: 310 };
-        setCursorDuration(350);
-        setCursorPos({ x: inputPos.x - 20, y: inputPos.y - 30 });
-        await sleep(400);
-        await clickMouse();
-
-        setShowPasteMenu(false);
-        setPastedKey("OPENSKPRKCQAUQ");
-        setIsKeyActive(true);
-        await sleep(600);
-
-        // 4. Di chuột tới nút đóng ✕ của Sidebar
-        await moveMouse('sim-plugin-close-btn', 750, { x: 780, y: 65 });
-        await clickMouse();
-        setSidebarOpen(false);
-        setBubbleShown(true);
-
-        // Giữ kết quả 4.5 giây cho người xem theo dõi
-        await sleep(4500);
-
-        // Di chuyển lại về nút copy trên web
-        await moveMouse('sim-web-copy-btn', 1100, { x: 340, y: 80 });
-        setBubbleShown(false);
-        setPastedKey("");
-        setWebCopied(false);
-        setIsKeyActive(false);
-        await sleep(800);
-      }
-    };
-
-    // Đợi 200ms để DOM ổn định rồi chạy loop
-    const initialTimer = setTimeout(() => {
-      if (!isCancelled) runSimulationLoop();
-    }, 200);
+    runSimulationLoop();
 
     return () => {
       isCancelled = true;
-      clearTimeout(initialTimer);
+      if (timer) clearTimeout(timer);
     };
   }, [profile]);
 
@@ -4232,187 +4266,90 @@ export const Step2LicenseWorkflow = ({
       ref={licenseContainerRef}
       className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch relative select-none"
     >
-      {/* CỘT 1: Cửa sổ Web Portal (h-[540px] đồng bộ chuẩn openskp.io clone) */}
-      <div className="lg:col-span-6 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
+      {/* CỘT 1: Cửa sổ Web Portal (h-[540px] đồng bộ chuẩn) */}
+      <div className="lg:col-span-5 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
         {/* Chrome Tab Bar */}
-        <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-2 flex items-end justify-between shrink-0 select-none pt-1">
+        <div className="h-9 bg-[#dee1e6] border-b border-gray-300/80 px-2 flex items-end justify-between shrink-0 select-none pt-1">
           <div className="flex items-end h-full">
-            <div className="h-[30px] bg-white rounded-t-lg px-3 flex items-center gap-2 shadow-xs border-t border-x border-gray-300/50">
-              <svg className="w-3.5 h-3.5 text-[#0063A3]" viewBox="0 0 24 24" fill="currentColor">
-                <path d='M12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-4 5h8c2.76 0 5 2.24 5 5v4c0 2.76-2.24 5-5 5H8c-2.76 0-5-2.24-5-5v-4c0-2.76 2.24-5 5-5zm1 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/>
-                <path d='M5 23 Q 12 18, 19 23 H 5 z'/>
-              </svg>
-              <span className="font-sans text-[11px] text-slate-800 font-medium whitespace-nowrap">openskp.io</span>
-              <span className="text-[10px] text-slate-400 hover:text-slate-700 ml-1 cursor-pointer">✕</span>
+            <div className="h-[30px] bg-white rounded-t-lg px-3 flex items-center gap-2 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-[#0063A3]" />
+              <span className="font-sans text-[11px] text-slate-800 font-medium whitespace-nowrap">OpenSkp Portal - License</span>
             </div>
-            <span className="text-slate-500 hover:text-slate-800 px-2 py-1 text-xs cursor-pointer">+</span>
           </div>
           <div className="self-center pb-1">
             <WindowControls />
           </div>
         </div>
 
-        {/* Chrome URL Bar (Đúng chuẩn yêu cầu: Không có icon ổ khóa) */}
-        <div className="h-8 bg-white border-b border-gray-200 px-3 flex items-center gap-2.5 shrink-0">
+        {/* URL Bar */}
+        <div className="h-8 bg-white border-b border-gray-200 px-3 flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-2 text-slate-400 text-xs">
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 19l-7-7 7-7"/></svg>
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
           </div>
-          <div className="flex-1 bg-[#f1f3f4] rounded-full px-3 py-1 text-[11.5px] text-slate-700 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-              <span className="font-normal text-slate-800">openskp.io</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <svg className="w-3.5 h-3.5 text-[#0063A3]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 text-slate-500">
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
-            <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-600 font-bold">A</div>
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+          <div className="flex-1 bg-[#f1f3f4] rounded-full px-3 py-0.5 text-[11px] text-slate-700 flex items-center gap-1.5">
+            <span className="text-slate-400">🔒</span>
+            <span>openskp.com/portal/license</span>
           </div>
         </div>
 
-        {/* Website Content (openskp.io clone chính xác theo ảnh) */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-white">
-          
-          {/* Header openskp.io */}
-          <div className="h-12 bg-white/95 border-b border-gray-200/80 px-3 flex items-center justify-between shrink-0 select-none">
-            {/* Logo bên trái (Bỏ Bảng giá, Hướng dẫn theo yêu cầu) */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <svg className="w-6 h-6 text-[#0063A3]" viewBox="0 0 24 24" fill="currentColor">
-                <path d='M12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm-4 5h8c2.76 0 5 2.24 5 5v4c0 2.76-2.24 5-5 5H8c-2.76 0-5-2.24-5-5v-4c0-2.76 2.24-5 5-5zm1 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'/>
-                <path d='M5 23 Q 12 18, 19 23 H 5 z'/>
-              </svg>
-              <span 
-                className="font-serif font-normal text-xl tracking-tight text-[#0063A3]"
-                style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
-              >
-                OpenSkp
-              </span>
+        {/* Portal Content */}
+        <div className="flex-1 p-6 bg-slate-50 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-semibold text-slate-800">Quản lý bản quyền thiết bị</h4>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Sao chép License Key từ tài khoản Web Portal của bạn để kích hoạt bản quyền thiết bị trong Plugin OpenSkp.
+              </p>
             </div>
 
-            {/* Cụm chức năng bên phải */}
-            <div className="flex items-center gap-2">
-              {/* Capsule Card */}
-              <div className="flex items-center bg-white border border-slate-200/90 rounded-xl px-2.5 py-1 shadow-2xs gap-2.5">
-                {/* 1. OPENSKP-AI TOKEN */}
-                <div className="flex flex-col items-start leading-none">
-                  <span className="text-[7.5px] font-bold text-slate-400 uppercase tracking-tight">OPENSKP-AI TOKEN</span>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <span className="text-xs font-bold text-[#0063A3] font-mono leading-none">0</span>
-                    <button 
-                      type="button" 
-                      className="w-3.5 h-3.5 rounded-full bg-[#0063A3] text-white flex items-center justify-center text-[10px] font-bold leading-none"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Trạng thái:</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                  Đã kích hoạt
+                </span>
+              </div>
 
-                <div className="w-px h-5 bg-slate-200 shrink-0" />
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Thiết bị đăng ký:</span>
+                <span className="font-mono text-slate-700 font-medium">PC-Workstation-01</span>
+              </div>
 
-                {/* 2. OPENSKP-LITE */}
-                <div className="flex flex-col items-start leading-none">
-                  <span className="text-[7.5px] font-bold text-slate-400 uppercase tracking-tight">OPENSKP-LITE</span>
-                  <span className="text-[9px] font-bold text-[#0063A3] uppercase mt-0.5 leading-none">ĐÃ KÍCH HOẠT</span>
-                </div>
-
-                <div className="w-px h-5 bg-slate-200 shrink-0" />
-
-                {/* 3. LICENSE KEY & COPY BUTTON */}
-                <div className="bg-slate-50 border border-slate-200/80 rounded px-1.5 py-0.5 flex items-center gap-1.5">
-                  <div className="flex flex-col items-start leading-none">
-                    <span className="text-[6.5px] font-bold text-slate-400 uppercase tracking-wider">LICENSE KEY</span>
-                    <span className="text-[9.5px] font-mono font-bold text-slate-800 tracking-wider mt-0.5 leading-none">
-                      OPENSKPRKCQAUQ
-                    </span>
-                  </div>
+              <div className="pt-2 border-t border-slate-100">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">LICENSE KEY</span>
+                <div className="mt-1 flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                  <span className="font-mono font-bold text-xs text-slate-800 tracking-wider">SKP-8829-X</span>
                   <button 
                     id="sim-web-copy-btn"
-                    className="p-1 text-slate-400 hover:text-[#0063A3] transition-colors rounded cursor-pointer shrink-0"
+                    className="text-[#0063A3] hover:text-blue-700 transition p-1 rounded hover:bg-blue-50 shrink-0 cursor-pointer flex items-center gap-1 text-[11px] font-medium"
                     title="Sao chép License Key"
                   >
                     {webCopied ? (
-                      <Check size={12} className="text-[#0063A3]" />
+                      <>
+                        <CheckCircle2 size={13} className="text-emerald-600" />
+                        <span className="text-emerald-600">Đã chép</span>
+                      </>
                     ) : (
-                      <Copy size={12} />
+                      <>
+                        <Copy size={13} />
+                        <span>Sao chép</span>
+                      </>
                     )}
                   </button>
                 </div>
               </div>
-
-              {/* User Circle */}
-              <div className="w-6 h-6 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-500 shrink-0">
-                <User size={12} />
-              </div>
-
-              {/* Language VN */}
-              <div className="h-6 px-1.5 rounded border border-slate-200 bg-white flex items-center gap-1 text-[9.5px] text-slate-600 font-medium shrink-0">
-                <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <span>VN</span>
-              </div>
             </div>
           </div>
 
-          {/* Hero Body của openskp.io */}
-          <div 
-            className="flex-1 flex flex-col items-center justify-center p-4 relative overflow-hidden select-none"
-            style={{
-              backgroundColor: '#fdfbf7',
-              backgroundImage: 'linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)',
-              backgroundSize: '16px 16px'
-            }}
-          >
-            {/* Ảnh Robot vẽ tranh ở giữa */}
-            <div className="relative pointer-events-none select-none -mb-1">
-              <img 
-                src="/robot-drawing.png" 
-                alt="Robot Architect" 
-                className="w-40 sm:w-48 h-auto object-contain mx-auto"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "/su-top-toolbar.png";
-                }}
-              />
-            </div>
-
-            {/* Tiêu đề Serif màu xanh thương hiệu */}
-            <h3 
-              className="text-xl sm:text-2xl font-serif text-[#0063A3] text-center font-normal leading-tight mt-1"
-              style={{ fontFamily: "'Crimson Pro', Georgia, serif" }}
-            >
-              Xin chào, Kiến trúc sư!
-            </h3>
-
-            {/* Câu trích dẫn */}
-            <p className="text-xs text-[#0063A3]/80 text-center font-serif italic mt-1 max-w-sm">
-              "Bạn là nhà thiết kế - hãy để AI dựng hình cho bạn."
-            </p>
-
-            {/* Nút bấm OpenSkp-AI đơn sắc xanh */}
-            <div className="mt-3">
-              <button 
-                type="button"
-                className="px-4 py-1.5 rounded-lg text-white text-xs font-medium flex items-center gap-1.5 shadow-sm transition hover:opacity-90"
-                style={{ backgroundColor: PRIMARY_COLOR }}
-              >
-                <Download size={13} />
-                <span>OpenSkp-AI</span>
-              </button>
-            </div>
+          <div className="text-[11px] text-slate-400 text-center">
+            Bản quyền cấp phép chính hãng bởi OpenSkp System
           </div>
-
         </div>
       </div>
 
       {/* CỘT 2: Mock UI Plugin (h-[540px] đồng bộ chuẩn) */}
-      <div className="lg:col-span-6 w-full h-[540px]">
+      <div className="lg:col-span-7 w-full h-[540px]">
         <MockPluginUI 
           showSidebar={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
