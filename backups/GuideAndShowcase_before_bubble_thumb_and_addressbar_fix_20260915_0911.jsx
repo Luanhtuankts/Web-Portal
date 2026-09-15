@@ -287,7 +287,8 @@ export const MockInstallWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
             {/* Thanh địa chỉ */}
             <div className="flex-1 bg-white border border-gray-300 rounded px-2.5 py-0.5 text-[10px] text-slate-600 flex items-center gap-1 shadow-xs truncate">
-              <span className="text-slate-700 font-medium text-[11px] truncate">This PC &gt; Downloads</span>
+              <span className="text-slate-400">📁 This PC &gt;</span>
+              <span className="font-semibold text-slate-800">Downloads</span>
             </div>
           </div>
 
@@ -1319,7 +1320,8 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
             {/* Thanh địa chỉ */}
             <div className="flex-1 bg-white border border-gray-300 rounded px-2.5 py-0.5 text-[10px] text-slate-600 flex items-center gap-1 shadow-xs truncate">
-              <span className="text-slate-700 font-medium text-[11px] truncate">This PC &gt; Downloads</span>
+              <span className="text-slate-400">📁 This PC &gt;</span>
+              <span className="font-semibold text-slate-800">Downloads</span>
             </div>
           </div>
 
@@ -1469,13 +1471,12 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   /* Cuộc hội thoại sau khi gửi prompt */
                   <div className="space-y-3 animate-fade-in w-full max-w-lg mx-auto py-1">
                     
-                    {/* Tin nhắn từ User: Thumbnail file giống hệt lúc đính kèm */}
-                    <div className="flex flex-col items-end gap-1.5 animate-fade-in">
-                      <div className="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-xs w-24">
-                        <DocTextIcon className="w-10 h-10 object-contain drop-shadow-2xs" />
-                        <span className="text-[10px] font-medium text-slate-700 mt-1 truncate max-w-full text-center leading-tight">
-                          Skill Openskp.txt
-                        </span>
+                    {/* Tin nhắn từ User */}
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-[11px] shadow-2xs">
+                        <DocTextIcon className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                        <span className="font-medium text-slate-700">Skill Openskp.txt</span>
+                        <span className="text-[#0063A3] text-[10px] ml-1">✓</span>
                       </div>
                       <div className="bg-white text-slate-800 px-4 py-2 rounded-2xl rounded-tr-xs text-xs font-medium shadow-xs border border-slate-200/80">
                         Đọc hiểu tài liệu này
@@ -2761,7 +2762,8 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 </span>
               </div>
               <div className="flex-1 bg-white border border-gray-300 rounded px-2.5 py-0.5 text-[10px] text-slate-600 flex items-center gap-1 shadow-xs truncate">
-                <span className="text-slate-700 font-medium text-[11px] truncate">This PC &gt; Downloads</span>
+                <span className="text-slate-400">📁 This PC &gt;</span>
+                <span className="font-semibold text-slate-800">Downloads</span>
               </div>
             </div>
 
