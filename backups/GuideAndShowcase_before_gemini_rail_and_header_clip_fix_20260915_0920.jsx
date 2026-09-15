@@ -1110,56 +1110,6 @@ const ClaudeLogo = ({ className = "w-3.5 h-3.5" }) => (
 );
 
 
-// Cụm thanh công cụ Left Rail đồng bộ của Google Gemini chuẩn theo ảnh thật
-const GeminiLeftRail = ({ width = "w-11" }) => (
-  <div className={`${width} bg-white/80 border-r border-slate-200/80 flex flex-col items-center py-3 gap-3 shrink-0 select-none`}>
-    {/* 1. Biểu tượng Gemini Sparkle */}
-    <div className="w-6 h-6 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity" title="Gemini">
-      <GeminiColorfulLogo className="w-5 h-5" />
-    </div>
-
-    {/* 2. Công tắc gạt (Toggle Switch) đơn sắc */}
-    <div className="w-5 h-3 rounded-full border border-slate-700 flex items-center px-0.5 cursor-pointer hover:border-slate-900 transition-colors" title="Toggle">
-      <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
-    </div>
-
-    {/* 3. Nút Cuộc trò chuyện mới (Bút / Edit) đơn sắc */}
-    <div className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 cursor-pointer transition-colors" title="Cuộc trò chuyện mới">
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 20h9" />
-        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-      </svg>
-    </div>
-
-    {/* 4. Biểu tượng Tìm kiếm (Search) đơn sắc */}
-    <div className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 cursor-pointer transition-colors" title="Tìm kiếm">
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="11" cy="11" r="7" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-      </svg>
-    </div>
-
-    {/* 5. Biểu tượng Hộp công cụ / Gems (Briefcase / Drawer) đơn sắc */}
-    <div className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 cursor-pointer transition-colors" title="Gems / Tiện ích">
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="6" width="18" height="14" rx="2.5" />
-        <path d="M3 11h18" />
-        <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-      </svg>
-    </div>
-
-    {/* 6. Biểu tượng 4 ô vuông (2x2 Apps Grid) đơn sắc */}
-    <div className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 cursor-pointer transition-colors" title="Ứng dụng">
-      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="4" width="6" height="6" rx="1.5" />
-        <rect x="14" y="4" width="6" height="6" rx="1.5" />
-        <rect x="4" y="14" width="6" height="6" rx="1.5" />
-        <rect x="14" y="14" width="6" height="6" rx="1.5" />
-      </svg>
-    </div>
-  </div>
-);
-
 // Icon tài liệu văn bản chuẩn Windows Text Document
 const DocTextIcon = ({ className = "w-12 h-12" }) => (
   <svg className={className} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1275,16 +1225,15 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         setFileAttached(true); // Hiển thị file chip ở TRÊN thanh nhập liệu
         await sleep(500);
 
-        // 3. Gõ lời nhắc "Đọc hiểu tài liệu này" chậm rãi rõ ràng
-        await sleep(400);
+        // 3. Gõ lời nhắc "Đọc hiểu tài liệu này"
         setPromptText("Đọc ");
-        await sleep(350);
+        await sleep(120);
         setPromptText("Đọc hiểu ");
-        await sleep(350);
+        await sleep(120);
         setPromptText("Đọc hiểu tài liệu ");
-        await sleep(400);
+        await sleep(120);
         setPromptText("Đọc hiểu tài liệu này");
-        await sleep(800);
+        await sleep(500);
 
         // 4. Di chuột tới nút Send tròn
         await moveMouse('gemini-step-send-btn', 550, { x: 790, y: 440 });
@@ -1480,7 +1429,23 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
           {/* Vùng giao diện ứng dụng Gemini (Gồm Left Rail và Chat Canvas nền xanh nhạt) */}
           <div className="flex-1 flex overflow-hidden">
             
-<GeminiLeftRail width="w-11" />
+            {/* Left Rail Gemini: Logo to hơn (w-7 h-7) */}
+            <div className="w-12 bg-white/70 border-r border-slate-200/70 flex flex-col items-center py-3 gap-3.5 shrink-0 select-none">
+              <GeminiColorfulLogo className="w-7 h-7" />
+              
+              {/* Công tắc chế độ */}
+              <div className="w-6 h-3.5 rounded-full border border-slate-700 flex items-center px-0.5 mt-1 cursor-pointer">
+                <div className="w-2 h-2 rounded-full bg-slate-700" />
+              </div>
+
+              {/* Nút Cuộc trò chuyện mới (bút chì tròn) */}
+              <div className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 cursor-pointer mt-1" title="Cuộc trò chuyện mới">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </div>
+            </div>
 
             {/* Chat Canvas (Nền chuyển sắc xanh da trời nhạt đúng theo ảnh chụp) */}
             <div 
@@ -2189,7 +2154,16 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
           {/* Vùng giao diện ứng dụng Gemini chuẩn Step 3 */}
           <div className="flex-1 flex overflow-hidden">
             
-<GeminiLeftRail width="w-10" />
+            {/* Left Rail Gemini chuẩn */}
+            <div className="w-10 bg-white/70 border-r border-slate-200/70 flex flex-col items-center py-2.5 gap-2.5 shrink-0 select-none">
+              <GeminiColorfulLogo className="w-5 h-5" />
+              <div className="w-5 h-3 rounded-full border border-slate-700 flex items-center px-0.5 mt-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+              </div>
+              <div className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-700 cursor-pointer mt-0.5">
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+              </div>
+            </div>
 
             {/* Chat Canvas với gradient chuẩn Step 3 */}
             <div 
@@ -4505,9 +4479,9 @@ export const InteractiveGuideSection = ({
       {/* NỘI DUNG TỪNG TRANG: CÙNG 1 CHIỀU DÀI CỐ ĐỊNH (h-[730px] min-h-[730px]) KHÔNG BỊ NHẢY HÌNH */}
       <div className="w-full">
         {activeStep === 1 && (
-          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-8 flex flex-col justify-between animate-fade-in min-h-[740px]">
+          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-10 flex flex-col justify-between animate-fade-in h-[730px] min-h-[730px] overflow-hidden">
             <div>
-              <div className="shrink-0 mb-3">
+              <div className="h-[90px] shrink-0 overflow-hidden">
                 <h2 
                   className="text-2xl sm:text-3xl font-serif font-normal leading-tight tracking-tight text-slate-800"
                   style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR, fontWeight: 400 }}
@@ -4526,9 +4500,9 @@ export const InteractiveGuideSection = ({
         )}
 
         {activeStep === 2 && (
-          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-8 flex flex-col justify-between animate-fade-in min-h-[740px]">
+          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-10 flex flex-col justify-between animate-fade-in h-[730px] min-h-[730px] overflow-hidden">
             <div>
-              <div className="shrink-0 mb-3">
+              <div className="h-[90px] shrink-0 overflow-hidden">
                 <h2 
                   className="text-2xl sm:text-3xl font-serif font-normal leading-tight tracking-tight text-slate-800"
                   style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR, fontWeight: 400 }}
@@ -4547,9 +4521,9 @@ export const InteractiveGuideSection = ({
         )}
 
         {activeStep === 3 && (
-          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-8 flex flex-col justify-between animate-fade-in min-h-[740px]">
+          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-10 flex flex-col justify-between animate-fade-in h-[730px] min-h-[730px] overflow-hidden">
             <div>
-              <div className="shrink-0 mb-3">
+              <div className="h-[90px] shrink-0 overflow-hidden">
                 <h2 
                   className="text-2xl sm:text-3xl font-serif font-normal leading-tight tracking-tight text-slate-800"
                   style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR, fontWeight: 400 }}
@@ -4568,9 +4542,9 @@ export const InteractiveGuideSection = ({
         )}
 
         {activeStep === 4 && (
-          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-8 flex flex-col justify-between animate-fade-in min-h-[740px]">
+          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-10 flex flex-col justify-between animate-fade-in h-[730px] min-h-[730px] overflow-hidden">
             <div>
-              <div className="shrink-0 mb-3">
+              <div className="h-[90px] shrink-0 overflow-hidden">
                 <h2 
                   className="text-2xl sm:text-3xl font-serif font-normal leading-tight tracking-tight text-slate-800"
                   style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR, fontWeight: 400 }}
@@ -4589,9 +4563,9 @@ export const InteractiveGuideSection = ({
         )}
 
         {activeStep === 5 && (
-          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-8 flex flex-col justify-between animate-fade-in min-h-[740px]">
+          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-10 flex flex-col justify-between animate-fade-in h-[730px] min-h-[730px] overflow-hidden">
             <div>
-              <div className="shrink-0 mb-3">
+              <div className="h-[90px] shrink-0 overflow-hidden">
                 <h2 
                   className="text-2xl sm:text-3xl font-serif font-normal leading-tight tracking-tight text-slate-800"
                   style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR, fontWeight: 400 }}
@@ -4610,9 +4584,9 @@ export const InteractiveGuideSection = ({
         )}
 
         {activeStep === 6 && (
-          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-8 flex flex-col justify-between animate-fade-in min-h-[740px]">
+          <div className="bg-white rounded-3xl shadow-lg ring-1 ring-slate-900/10 p-6 sm:p-10 flex flex-col justify-between animate-fade-in h-[730px] min-h-[730px] overflow-hidden">
             <div>
-              <div className="shrink-0 mb-3">
+              <div className="h-[90px] shrink-0 overflow-hidden">
                 <h2 
                   className="text-2xl sm:text-3xl font-serif font-normal leading-tight tracking-tight text-slate-800"
                   style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR, fontWeight: 400 }}
