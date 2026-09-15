@@ -248,7 +248,7 @@ export const MockInstallWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
           {/* Win 10 Title Bar: Cụm nút vuông to bằng X */}
-          <div className="h-9 bg-white border-b border-gray-200 px-3 flex items-center justify-between shrink-0">
+          <div className="h-8 bg-white border-b border-gray-200 px-3 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <Folder size={14} className="text-amber-500 fill-amber-500" />
               <span className="text-slate-700 font-medium text-[11px]">Downloads</span>
@@ -363,7 +363,7 @@ export const MockInstallWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
           {/* SketchUp Title Bar: Đồng bộ chuẩn Untitled - SketchUp Pro 2021 */}
-          <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
+          <div className="h-8 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between text-xs select-none shrink-0">
             <div className="flex items-center gap-2">
               <img src="/sketchup-logo.svg" alt="SketchUp" className="w-4 h-4 object-contain shrink-0" />
               <span className="font-sans text-[11px] text-slate-700 font-medium">
@@ -1158,109 +1158,131 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   };
 
   useEffect(() => {
+    let timer = null;
     let isCancelled = false;
 
-    const sleep = (ms) => new Promise(resolve => {
+    const runLoop = () => {
       if (isCancelled) return;
-      setTimeout(() => {
-        if (!isCancelled) resolve();
-      }, ms);
-    });
 
-    const moveMouse = async (elId, duration = 800, fallback = { x: 180, y: 180 }) => {
-      if (isCancelled) return false;
-      const coords = getCenterCoords(elId) || fallback;
-      setCursorDuration(duration);
-      setCursorPos(coords);
-      await sleep(duration + 50);
-      return true;
-    };
-
-    const clickMouse = async () => {
-      if (isCancelled) return;
-      setIsClicking(true);
-      await sleep(180);
+      // Reset các trạng thái
+      setIsDragging(false);
+      setIsDragOver(false);
+      setFileAttached(false);
+      setPromptText("");
+      setIsSubmitted(false);
+      setGeminiThinking(false);
+      setGeminiResponded(false);
       setIsClicking(false);
-      await sleep(100);
-    };
 
-    const runLoop = async () => {
-      while (!isCancelled) {
-        // Reset các trạng thái
-        setIsDragging(false);
-        setIsDragOver(false);
-        setFileAttached(false);
-        setPromptText("");
-        setIsSubmitted(false);
-        setGeminiThinking(false);
-        setGeminiResponded(false);
-        setIsClicking(false);
+      // Đặt chuột xuất phát trực tiếp từ vị trí file text
+      const txtPos = getCenterCoords('gemini-step-txt-item') || { x: 180, y: 180 };
+      setCursorDuration(0);
+      setCursorPos(txtPos);
 
-        // Đặt chuột xuất phát trực tiếp từ vị trí file text
-        await moveMouse('gemini-step-txt-item', 0, { x: 180, y: 180 });
-        await sleep(600);
-
-        // 1. Nhấn giữ chuột để bắt đầu kéo thả
+      // 1. Dừng 600ms tại file text rồi nhấn giữ chuột để bắt đầu kéo thả
+      timer = setTimeout(() => {
+        if (isCancelled) return;
         setIsClicking(true);
-        setIsDragging(true);
-        await sleep(200);
+        setIsDragging(true); // Nhấn giữ chuột, icon file bám chặt theo chuột
 
         // 2. Kéo file sang ô chat của Gemini
-        const dropZonePos = getCenterCoords('gemini-step-prompt-box') || { x: 620, y: 440 };
-        setCursorDuration(1200);
-        setCursorPos(dropZonePos);
+        timer = setTimeout(() => {
+          if (isCancelled) return;
+          const dropZonePos = getCenterCoords('gemini-step-prompt-box') || { x: 620, y: 410 };
+          setCursorDuration(1200);
+          setCursorPos(dropZonePos);
 
-        // Giữa hành trình: kích hoạt trạng thái hover đổi màu (không dùng nét đứt)
-        await sleep(600);
-        if (!isCancelled) setIsDragOver(true);
+          // Giữa hành trình: kích hoạt trạng thái drag over
+          timer = setTimeout(() => {
+            if (isCancelled) return;
+            setIsDragOver(true);
+          }, 600);
 
-        // Đợi chuột dừng hẳn tại ô chat
-        await sleep(650);
-        setIsClicking(false);
-        setIsDragging(false);
-        setIsDragOver(false);
-        setFileAttached(true); // Hiển thị file chip ở TRÊN thanh nhập liệu
-        await sleep(500);
+          // Khi chuột đã dừng hẳn tại ô chat Gemini
+          timer = setTimeout(() => {
+            if (isCancelled) return;
+            setIsClicking(false);
+            setIsDragging(false); // Thả chuột
+            setIsDragOver(false);
+            setFileAttached(true); // File đính kèm vào khung chat
 
-        // 3. Gõ lời nhắc "Đọc hiểu tài liệu này"
-        setPromptText("Đọc ");
-        await sleep(120);
-        setPromptText("Đọc hiểu ");
-        await sleep(120);
-        setPromptText("Đọc hiểu tài liệu ");
-        await sleep(120);
-        setPromptText("Đọc hiểu tài liệu này");
-        await sleep(500);
+            // 3. Gõ lời nhắc "Đọc hiểu tài liệu này"
+            timer = setTimeout(() => {
+              if (isCancelled) return;
+              setPromptText("Đọc ");
+              
+              timer = setTimeout(() => {
+                if (isCancelled) return;
+                setPromptText("Đọc hiểu ");
 
-        // 4. Di chuột tới nút Send tròn
-        await moveMouse('gemini-step-send-btn', 550, { x: 790, y: 440 });
-        await clickMouse();
+                timer = setTimeout(() => {
+                  if (isCancelled) return;
+                  setPromptText("Đọc hiểu tài liệu ");
 
-        setIsSubmitted(true);
-        setPromptText("");
-        setGeminiThinking(true);
-        await sleep(1500);
+                  timer = setTimeout(() => {
+                    if (isCancelled) return;
+                    setPromptText("Đọc hiểu tài liệu này");
 
-        // 5. Gemini phản hồi
-        setGeminiThinking(false);
-        setGeminiResponded(true);
+                    // 4. Di chuột tới nút Send tròn
+                    timer = setTimeout(() => {
+                      if (isCancelled) return;
+                      const sendBtnPos = getCenterCoords('gemini-step-send-btn') || { x: 790, y: 410 };
+                      setCursorDuration(550);
+                      setCursorPos(sendBtnPos);
 
-        // Giữ kết quả hiển thị 5 giây
-        await sleep(5000);
+                      // Khi chuột đến đúng nút Send
+                      timer = setTimeout(() => {
+                        if (isCancelled) return;
+                        setIsClicking(true); // Bấm gửi
 
-        // Di chuyển chuột trở lại file txt
-        await moveMouse('gemini-step-txt-item', 1000, { x: 180, y: 180 });
-        await sleep(800);
-      }
+                        timer = setTimeout(() => {
+                          if (isCancelled) return;
+                          setIsClicking(false);
+                          setIsSubmitted(true);
+                          setPromptText("");
+                          setGeminiThinking(true);
+
+                          // 5. Gemini phản hồi sau 800ms
+                          timer = setTimeout(() => {
+                            if (isCancelled) return;
+                            setGeminiThinking(false);
+                            setGeminiResponded(true);
+
+                            // Giữ kết quả hiển thị 5 giây
+                            timer = setTimeout(() => {
+                              if (isCancelled) return;
+                              // Di chuyển chuột mượt mà trở lại file txt để lặp lại không bị giật
+                              const returnPos = getCenterCoords('gemini-step-txt-item') || { x: 180, y: 180 };
+                              setCursorDuration(1000);
+                              setCursorPos(returnPos);
+
+                              timer = setTimeout(() => {
+                                if (isCancelled) return;
+                                runLoop();
+                              }, 1100);
+
+                            }, 5000);
+                          }, 800);
+                        }, 180);
+                      }, 650);
+                    }, 400);
+
+                  }, 120);
+                }, 120);
+              }, 120);
+
+            }, 450);
+          }, 1300);
+        }, 200);
+      }, 600);
     };
 
-    const initialTimer = setTimeout(() => {
-      if (!isCancelled) runLoop();
-    }, 200);
+    // Chạy loop
+    runLoop();
 
     return () => {
       isCancelled = true;
-      clearTimeout(initialTimer);
+      if (timer) clearTimeout(timer);
     };
   }, []);
 
@@ -1272,12 +1294,12 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* ==================================================================== */}
-        {/* CỘT 1: CỬA SỔ FOLDER DOWNLOADS WIN 10 (h-9 Tiêu đề đồng bộ chuẩn) */}
+        {/* CỘT 1: CỬA SỔ FOLDER DOWNLOADS WIN 10 (ĐỒNG BỘ 100% VỚI KHUNG 1) */}
         {/* ==================================================================== */}
         <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
-          {/* Win 10 Title Bar: h-9 đồng bộ bằng nhau với trình duyệt và sketchup */}
-          <div className="h-9 bg-white border-b border-gray-200 px-3 flex items-center justify-between shrink-0">
+          {/* Win 10 Title Bar */}
+          <div className="h-8 bg-white border-b border-gray-200 px-3 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <Folder size={14} className="text-amber-500 fill-amber-500" />
               <span className="text-slate-700 font-medium text-[11px]">Downloads</span>
@@ -1321,7 +1343,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
             </div>
           </div>
 
-          {/* Vùng xem File: Có sẵn cả Openskp.rar và Skill Openskp.txt */}
+          {/* Vùng xem File: Có sẵn cả Openskp.rar và Skill Openskp.txt (Đặt gần nhau chuẩn khoảng cách thật) */}
           <div className="p-4 flex-1 bg-white flex flex-col justify-start relative">
             <div className="flex flex-wrap items-start gap-2.5 pt-2">
               
@@ -1337,7 +1359,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 </span>
               </div>
 
-              {/* File 2: Skill Openskp.txt */}
+              {/* File 2: Skill Openskp.txt (Gần rar chuẩn khoảng cách folder thật) */}
               <div 
                 id="gemini-step-txt-item"
                 className={`w-24 p-1.5 border flex flex-col items-center text-center transition-all cursor-grab ${
@@ -1360,49 +1382,75 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         </div>
 
         {/* ==================================================================== */}
-        {/* CỘT 2: TRÌNH DUYỆT GOOGLE CHROME - GEMINI (ĐỒNG BỘ 100% THEO BƯỚC 2) */}
+        {/* CỘT 2: TRÌNH DUYỆT GOOGLE CHROME - GEMINI (CHUẨN THEO ẢNH MẪU) */}
         {/* ==================================================================== */}
         <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
-          {/* Chrome Tab Bar: Đồng bộ cấu trúc chuẩn theo Bước 2 */}
-          <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-2 flex items-end justify-between shrink-0 select-none pt-1">
+          {/* Chrome Tab Bar: Chuẩn xác 100% theo ảnh mẫu thật (Google Gemini active, ChatGPT, Claude) */}
+          <div className="h-9 bg-[#dee1e6] border-b border-gray-300/80 px-2 flex items-end justify-between shrink-0 select-none pt-1">
             <div className="flex items-end h-full">
-              {/* Tab 1: Google Gemini (Active) */}
-              <div className="h-[30px] bg-white rounded-t-lg px-3 flex items-center gap-2 shadow-xs border-t border-x border-gray-300/50">
+              
+              {/* Tab 1: Google Gemini (Active - nền trắng bo cong nối liền toolbar bên dưới) */}
+              <div className="h-[30px] bg-white rounded-t-lg px-3 flex items-center gap-2 shadow-xs">
                 <GeminiColorfulLogo className="w-3.5 h-3.5 shrink-0" />
                 <span className="font-sans text-[11px] text-slate-800 font-medium whitespace-nowrap">Google Gemini</span>
-                <span className="text-[10px] text-slate-400 hover:text-slate-700 ml-1 cursor-pointer">✕</span>
+                <span className="text-slate-500 hover:text-slate-700 ml-4 text-[10px] cursor-pointer leading-none">✕</span>
               </div>
-              <span className="text-slate-500 hover:text-slate-800 px-2 py-1 text-xs cursor-pointer">+</span>
+
+              {/* Tab 2: ChatGPT (Inactive) */}
+              <div className="h-[30px] px-3 flex items-center gap-2 text-slate-700 hover:bg-slate-200/50 rounded-t-lg cursor-pointer transition-colors">
+                <ChatGPTLogo className="w-3.5 h-3.5 shrink-0" />
+                <span className="font-sans text-[11px] text-slate-700 font-normal whitespace-nowrap">ChatGPT</span>
+                <span className="text-slate-500 hover:text-slate-700 ml-3 text-[10px] cursor-pointer leading-none">✕</span>
+              </div>
+
+              {/* Dấu gạch dọc ngăn cách */}
+              <div className="h-3.5 w-[1px] bg-slate-400/60 mx-1 self-center shrink-0" />
+
+              {/* Tab 3: New chat - Claude (Inactive) */}
+              <div className="h-[30px] px-3 flex items-center gap-2 text-slate-700 hover:bg-slate-200/50 rounded-t-lg cursor-pointer transition-colors">
+                <ClaudeLogo className="w-3.5 h-3.5 shrink-0" />
+                <span className="font-sans text-[11px] text-slate-700 font-normal whitespace-nowrap">New chat - Claude</span>
+                <span className="text-slate-500 hover:text-slate-700 ml-3 text-[10px] cursor-pointer leading-none">✕</span>
+              </div>
+
+              {/* Dấu gạch dọc ngăn cách sau Claude */}
+              <div className="h-3.5 w-[1px] bg-slate-400/60 mx-1 self-center shrink-0" />
+
             </div>
+            
             <div className="self-center pb-1">
               <WindowControls />
             </div>
           </div>
 
-          {/* Chrome URL Bar: Đồng bộ 100% theo Bước 2 (Không có icon ổ khóa) */}
-          <div className="h-8 bg-white border-b border-gray-200 px-3 flex items-center gap-2.5 shrink-0">
-            <div className="flex items-center gap-2 text-slate-400 text-xs">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 19l-7-7 7-7"/></svg>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          {/* Chrome Omnibox / URL Bar: Mũi tên chuẩn đậm Chrome */}
+          <div className="h-9 bg-white border-b border-gray-200 px-3 flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3 text-slate-700 text-xs">
+              {/* Mũi tên quay lại đậm */}
+              <svg className="w-4 h-4 text-slate-700 hover:text-black cursor-pointer" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+              </svg>
+              {/* Mũi tên tiến đậm */}
+              <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+              </svg>
+              {/* Icon tải lại */}
+              <svg className="w-3.5 h-3.5 text-slate-700 hover:text-black cursor-pointer" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l6.11-6.11"/>
+              </svg>
             </div>
-            <div className="flex-1 bg-[#f1f3f4] rounded-full px-3 py-1 text-[11.5px] text-slate-700 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3"/>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-                <span className="font-normal text-slate-800">gemini.google.com/app</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-slate-400">
-                <svg className="w-3.5 h-3.5 text-[#0063A3]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 text-slate-500">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
-              <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] text-slate-600 font-bold">A</div>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+
+            {/* Thanh địa chỉ Omnibox bo tròn viền nhẹ */}
+            <div className="flex-1 bg-[#f1f3f4] rounded-full px-3.5 py-1 text-xs text-slate-800 flex items-center gap-2 truncate">
+              {/* Icon tune / settings chuẩn Chrome */}
+              <svg className="w-3.5 h-3.5 text-slate-700 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <circle cx="8" cy="8" r="2.5"/><line x1="2" y1="8" x2="5.5" y2="8"/><line x1="10.5" y1="8" x2="22" y2="8"/>
+                <circle cx="16" cy="16" r="2.5"/><line x1="2" y1="16" x2="13.5" y2="16"/><line x1="18.5" y1="16" x2="22" y2="16"/>
+              </svg>
+              <span className="font-sans text-[11px] text-slate-800 font-normal select-text">
+                gemini.google.com/app?hl=vi
+              </span>
             </div>
           </div>
 
@@ -1411,6 +1459,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
             
             {/* Left Rail Gemini: Logo to hơn (w-7 h-7) */}
             <div className="w-12 bg-white/70 border-r border-slate-200/70 flex flex-col items-center py-3 gap-3.5 shrink-0 select-none">
+              {/* Logo Gemini đa sắc to rõ nét */}
               <GeminiColorfulLogo className="w-7 h-7" />
               
               {/* Công tắc chế độ */}
@@ -1427,7 +1476,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
               </div>
             </div>
 
-            {/* Chat Canvas (Nền chuyển sắc xanh da trời nhạt đúng theo ảnh chụp) */}
+            {/* Chat Canvas (Nền chuyển sắc xanh da trời nhạt đúng theo ảnh chụp 1 & 2) */}
             <div 
               className="flex-1 p-4 flex flex-col justify-between overflow-hidden relative"
               style={{
@@ -1435,7 +1484,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
               }}
             >
               
-              {/* Khung tin nhắn hội thoại */}
+              {/* Khung tin nhắn hội thoại (Chiều cao ổn định, không bị nhảy) */}
               <div className="flex-1 flex flex-col justify-center overflow-hidden">
                 {!isSubmitted ? (
                   /* Trạng thái ban đầu */
@@ -1454,14 +1503,14 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                       <div className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-[11px] shadow-2xs">
                         <DocTextIcon className="w-3.5 h-3.5 text-slate-600 shrink-0" />
                         <span className="font-medium text-slate-700">Skill Openskp.txt</span>
-                        <span className="text-[#0063A3] text-[10px] ml-1">✓</span>
+                        <span className="text-emerald-600 text-[10px] ml-1">✓</span>
                       </div>
                       <div className="bg-white text-slate-800 px-4 py-2 rounded-2xl rounded-tr-xs text-xs font-medium shadow-xs border border-slate-200/80">
                         Đọc hiểu tài liệu này
                       </div>
                     </div>
 
-                    {/* Phản hồi từ Gemini */}
+                    {/* Phản hồi từ Gemini (CHỈ ĐỂ 1 LOẠI TEXT DUY NHẤT, KHÔNG CHIA NHIỀU MỤC) */}
                     <div className="flex items-start gap-2.5">
                       <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
                         <GeminiColorfulLogo className="w-5 h-5" />
@@ -1469,7 +1518,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
                       {geminiThinking ? (
                         <div className="bg-white px-3.5 py-2.5 rounded-2xl shadow-xs border border-slate-200 text-xs text-slate-500 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#0063A3] animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
                           <span>Đang đọc hiểu tài liệu...</span>
                         </div>
                       ) : geminiResponded ? (
@@ -1483,72 +1532,72 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 )}
               </div>
 
-              {/* Vùng nhập liệu Gemini */}
-              <div className="shrink-0">
-                {/* File chip hiển thị chính xác biểu tượng BÊN TRÊN thanh nhập liệu theo yêu cầu */}
-                {fileAttached && !isSubmitted && (
-                  <div className="px-2 pb-1.5 flex items-center gap-2 animate-fade-in">
-                    <div className="bg-white border border-slate-200/90 shadow-xs rounded-lg px-2.5 py-1.5 flex items-center gap-2 text-xs">
-                      <DocTextIcon className="w-4 h-4 text-[#0063A3] shrink-0" />
-                      <span className="font-medium text-slate-700 text-[11px]">Skill Openskp.txt</span>
-                      <span className="text-slate-400 hover:text-slate-600 text-xs ml-0.5 cursor-pointer leading-none">✕</span>
-                    </div>
+              {/* Ô Chat Gemini (Theo chuẩn ảnh chụp 2: hình viên thuốc tròn, nút +, text Flash Mở rộng ⌵, mic) */}
+              <div 
+                id="gemini-step-prompt-box"
+                className={`rounded-full border transition-all px-4 py-2 bg-white flex items-center justify-between shadow-sm relative ${
+                  isDragOver 
+                    ? 'border-2 border-dashed border-[#1a73e8] bg-blue-50/70' 
+                    : 'border-slate-200/80'
+                }`}
+              >
+                {isDragOver ? (
+                  <div className="w-full py-1 text-center text-xs font-semibold text-[#1a73e8]">
+                    Thả file Skill Openskp.txt vào đây
                   </div>
-                )}
+                ) : (
+                  <>
+                    {/* Nút cộng + bên trái theo ảnh 2 */}
+                    <span className="text-xl text-slate-500 font-light pr-2.5 select-none leading-none cursor-pointer">+</span>
 
-                {/* Ô Chat Gemini (Viên thuốc tròn: Bỏ nét đứt khi thả file, chỉ đổi màu) */}
-                <div 
-                  id="gemini-step-prompt-box"
-                  className={`rounded-full border transition-colors px-4 py-2 bg-white flex items-center justify-between shadow-xs relative ${
-                    isDragOver 
-                      ? 'border-2 border-[#0063A3] bg-blue-50/70' 
-                      : 'border-slate-200/90'
-                  }`}
-                >
-                  {isDragOver ? (
-                    <div className="w-full py-0.5 text-center text-xs font-semibold text-[#0063A3]">
-                      Thả file Skill Openskp.txt vào đây
-                    </div>
-                  ) : (
-                    <>
-                      {/* Nút cộng + bên trái */}
-                      <span className="text-xl text-slate-500 font-light pr-2.5 select-none leading-none cursor-pointer">+</span>
-
-                      {/* Input gõ lời nhắc */}
-                      <input 
-                        type="text"
-                        readOnly
-                        value={promptText}
-                        placeholder={fileAttached ? "" : "Hỏi Gemini"}
-                        className="flex-1 bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-500 outline-none border-none cursor-default font-sans"
-                      />
-
-                      {/* Cụm chức năng bên phải: Flash Mở rộng ⌵ và Mic/Gửi */}
-                      <div className="flex items-center gap-3 shrink-0 select-none pl-2">
-                        <div className="flex items-center gap-1 text-xs text-slate-700 font-medium">
-                          <span>Flash</span>
-                          <span className="text-slate-400 text-[11px]">Mở rộng</span>
-                          <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-                        </div>
-
-                        {/* Nút gửi mũi tên tròn */}
-                        {promptText ? (
-                          <button 
-                            id="gemini-step-send-btn"
-                            className="w-7 h-7 rounded-full bg-[#0063A3] text-white flex items-center justify-center shadow-xs shrink-0 cursor-pointer hover:bg-blue-700 transition-colors"
-                            title="Gửi"
-                          >
-                            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" /></svg>
-                          </button>
-                        ) : (
-                          <span className="cursor-pointer text-slate-500 hover:text-slate-700">
-                            <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                          </span>
-                        )}
+                    {/* File chip đã gắn sau khi kéo thả */}
+                    {fileAttached && !isSubmitted && (
+                      <div className="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-full px-2.5 py-0.5 text-[11px] text-slate-700 shrink-0 mr-2">
+                        <DocTextIcon className="w-3 h-3 text-slate-600 shrink-0" />
+                        <span>Skill Openskp.txt</span>
+                        <span className="text-slate-400 text-[9px] ml-0.5">✕</span>
                       </div>
-                    </>
-                  )}
-                </div>
+                    )}
+
+                    {/* Input gõ lời nhắc */}
+                    <input 
+                      type="text"
+                      readOnly
+                      value={promptText}
+                      placeholder={fileAttached ? "" : "Hỏi Gemini"}
+                      className="flex-1 bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-500 outline-none border-none cursor-default font-sans"
+                    />
+
+                    {/* Cụm chức năng bên phải theo ảnh 2: Flash Mở rộng ⌵ và Mic/Gửi */}
+                    <div className="flex items-center gap-3 shrink-0 select-none pl-2">
+                      <div className="flex items-center gap-1 text-xs text-slate-700 font-medium">
+                        <span>Flash</span>
+                        <span className="text-slate-400 text-[11px]">Mở rộng</span>
+                        <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                      </div>
+
+                      {/* Nút gửi mũi tên đậm đặc trưng */}
+                      {promptText ? (
+                        <button 
+                          id="gemini-step-send-btn"
+                          className="w-7 h-7 rounded-full bg-[#1a73e8] text-white flex items-center justify-center shadow-xs shrink-0"
+                          title="Gửi"
+                        >
+                          <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" />
+                          </svg>
+                        </button>
+                      ) : (
+                        <svg className="w-4 h-4 text-slate-700 shrink-0 cursor-pointer" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                          <line x1="12" y1="19" x2="12" y2="23"/>
+                          <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
 
             </div>
@@ -1559,7 +1608,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
       </div>
 
-      {/* Con trỏ chuột ảo kéo thả file mượt mà */}
+      {/* Con trỏ chuột với text icon bám theo chuột khi kéo thả (mũi tên chuột đậm chuẩn OS) */}
       <div 
         className="hidden lg:block absolute z-50 pointer-events-none select-none"
         style={{
@@ -1570,7 +1619,6 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         }}
       >
         <div className="relative">
-          {/* Mũi tên chuột */}
           <svg 
             width="24" 
             height="24" 
@@ -1582,18 +1630,18 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
           >
             <path 
               d="M3 2L10.5 20.5L13.5 13L21 10L3 2Z" 
-              fill="#0f172a" 
+              fill="#111827" 
               stroke="#ffffff" 
-              strokeWidth="1.8" 
+              strokeWidth="2.2" 
               strokeLinejoin="round" 
               strokeLinecap="round" 
             />
           </svg>
 
-          {/* Khi đang giữ kéo chuột: Icon file bám sát ngay dưới con trỏ */}
+          {/* Text icon bám sát tuyệt đối theo chuột khi kéo thả */}
           {isDragging && (
-            <div className="absolute left-3 top-3 flex items-center gap-1.5 bg-white border border-[#0063A3] shadow-lg rounded px-2 py-1 text-[11px] font-medium text-slate-800 animate-fade-in pointer-events-none whitespace-nowrap">
-              <DocTextIcon className="w-3.5 h-3.5 text-[#0063A3]" />
+            <div className="absolute left-3 top-3 flex items-center gap-1.5 bg-white border border-slate-300 shadow-xl rounded px-2 py-1 text-[11px] font-medium text-slate-800 whitespace-nowrap animate-fade-in">
+              <DocTextIcon className="w-3.5 h-3.5 text-slate-600 shrink-0" />
               <span>Skill Openskp.txt</span>
             </div>
           )}
@@ -1603,6 +1651,17 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
     </div>
   );
 };
+
+
+
+// ==============================================================================
+// 4. MÔ PHỎNG BƯỚC 4: DỰNG MODEL (CẤU KIỆN & NỘI THẤT VỚI AI NGOÀI)
+// ==============================================================================
+
+
+
+
+
 
 export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   const containerRef = useRef(null);
@@ -1912,7 +1971,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
           {/* Title Bar SketchUp */}
-          <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
+          <div className="h-8 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2">
               <img src="/sketchup-logo.svg" alt="SketchUp" className="w-4 h-4 object-contain shrink-0" />
               <span className="font-sans text-[11px] text-slate-700 font-medium">
@@ -2714,7 +2773,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
             }`}
           >
             {/* Win 10 Title Bar */}
-            <div className="h-9 bg-white border-b border-gray-200 px-3 flex items-center justify-between shrink-0">
+            <div className="h-8 bg-white border-b border-gray-200 px-3 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <Folder size={14} className="text-amber-500 fill-amber-500" />
                 <span className="text-slate-700 font-medium text-[11px]">Downloads</span>
@@ -2813,7 +2872,7 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
             }`}
           >
             {/* Title Bar SketchUp */}
-            <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
+            <div className="h-8 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
               <div className="flex items-center gap-2">
                 <img src="/sketchup-logo.svg" alt="SketchUp" className="w-4 h-4 object-contain shrink-0" />
                 <span className="font-sans text-[11px] text-slate-700 font-medium">
@@ -3576,7 +3635,7 @@ export const Step6ModelEditWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
           {/* Title Bar SketchUp */}
-          <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
+          <div className="h-8 bg-[#dee1e6] border-b border-gray-300 px-3 flex items-center justify-between shrink-0 select-none">
             <div className="flex items-center gap-2">
               <img src="/sketchup-logo.svg" alt="SketchUp" className="w-4 h-4 object-contain shrink-0" />
               <span className="font-sans text-[11px] text-slate-700 font-medium">
