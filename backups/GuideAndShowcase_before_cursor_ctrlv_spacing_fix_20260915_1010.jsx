@@ -1665,15 +1665,13 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   // Trạng thái hội thoại Gemini (Khung Trình duyệt bên phải)
   const [cabinetAttached, setCabinetAttached] = useState(false);
   const [geminiPrompt, setGeminiPrompt] = useState("");
-  const [isGeminiFocused, setIsGeminiFocused] = useState(false);
   const [cabinetSent, setCabinetSent] = useState(false);
   const [geminiThinking, setGeminiThinking] = useState(false);
   const [geminiResponded, setGeminiResponded] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
 
   // Trạng thái hội thoại OpenSkp trong SketchUp (bên trái)
-  const [isOpenskpFocused, setIsOpenskpFocused] = useState(false);
-  const [showCtrlVPopup, setShowCtrlVPopup] = useState(false);
+  const [showOpenSkpPasteMenu, setShowOpenSkpPasteMenu] = useState(false);
   const [openskpInput, setOpenskpInput] = useState("");
   const [openskpSent, setOpenskpSent] = useState(false);
   const [isViewportPlaying, setIsViewportPlaying] = useState(false);
@@ -2129,15 +2127,15 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
           <div className="flex-1 flex overflow-hidden">
             <GeminiLeftRail width="w-10" />
 
-            {/* Chat Canvas với gradient & khoảng cách đồng bộ đều 12px (gap-3) */}
+            {/* Chat Canvas với gradient */}
             <div 
-              className="flex-1 p-3 flex flex-col justify-between overflow-hidden relative gap-3"
+              className="flex-1 p-3 flex flex-col justify-between overflow-hidden relative"
               style={{ background: 'linear-gradient(180deg, #edf4fc 0%, #e2eef9 100%)' }}
             >
-              <div ref={geminiChatRef} className="flex-1 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs px-1 pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div ref={geminiChatRef} className="flex-1 overflow-y-auto scroll-smooth space-y-4 font-sans text-xs px-2 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 
                 {/* 1. LỜI NHẮC VÀ KẾT QUẢ TIẾP NỐI TỪ BƯỚC 3 */}
-                <div className="space-y-3 opacity-90 pb-3 border-b border-slate-200/60">
+                <div className="space-y-3 opacity-90 pb-2 border-b border-slate-200/60">
                   {/* Tin nhắn từ User Bước 3 */}
                   <div className="flex flex-col items-end gap-1">
                     <div className="bg-white border border-slate-200 rounded-lg p-1.5 flex flex-col items-center justify-center shadow-2xs w-20">
@@ -2254,26 +2252,14 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   >
                     +
                   </span>
-                  <div 
+                  <input 
                     id="step4-gemini-input-box"
-                    className="flex-1 flex items-center bg-transparent text-xs text-slate-800 font-sans min-w-0 h-full cursor-text overflow-hidden"
-                  >
-                    {geminiPrompt ? (
-                      <div className="flex items-center truncate">
-                        <span>{geminiPrompt}</span>
-                        {isGeminiFocused && (
-                          <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] ml-0.5 animate-pulse shrink-0" />
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-slate-400">
-                        {isGeminiFocused && (
-                          <span className="inline-block w-[1.5px] h-3.5 bg-[#0063A3] mr-0.5 animate-pulse shrink-0" />
-                        )}
-                        <span>{cabinetAttached ? "" : "Hỏi Gemini"}</span>
-                      </div>
-                    )}
-                  </div>
+                    type="text" 
+                    readOnly 
+                    value={geminiPrompt} 
+                    placeholder={cabinetAttached ? "" : "Hỏi Gemini"} 
+                    className="flex-1 bg-transparent text-xs text-slate-800 placeholder-slate-500 outline-none border-none cursor-default font-sans min-w-0"
+                  />
                   <div className="flex items-center gap-3 shrink-0 select-none pl-2 h-full">
                     <div className="flex items-center gap-0.5 text-xs text-slate-700 font-medium">
                       <span>Flash</span>
