@@ -1500,7 +1500,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   <div className="space-y-4 animate-fade-in w-full px-3 sm:px-6 py-1">
                     
                     {/* Tin nhắn từ User: Thumbnail file giống hệt lúc đính kèm */}
-                    <div className="flex flex-col items-end gap-1.5 animate-bubble-in">
+                    <div className="flex flex-col items-end gap-1.5 animate-fade-in">
                       <div className="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-xs w-24">
                         <DocTextIcon className="w-10 h-10 object-contain drop-shadow-2xs" />
                         <span className="text-[10px] font-medium text-slate-700 mt-1 truncate max-w-full text-center leading-tight">
@@ -1689,37 +1689,15 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   };
 
   useEffect(() => {
-    if (!geminiChatRef.current) return;
-    if (!cabinetSent && !geminiThinking && !geminiResponded) {
-      geminiChatRef.current.scrollTop = 0;
-      return;
+    if (geminiChatRef.current) {
+      geminiChatRef.current.scrollTop = geminiChatRef.current.scrollHeight;
     }
-    const scrollTimer = setTimeout(() => {
-      if (geminiChatRef.current) {
-        geminiChatRef.current.scrollTo({
-          top: geminiChatRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    }, 60);
-    return () => clearTimeout(scrollTimer);
   }, [cabinetSent, geminiThinking, geminiResponded]);
 
   useEffect(() => {
-    if (!openskpChatRef.current) return;
-    if (!openskpSent) {
-      openskpChatRef.current.scrollTop = 0;
-      return;
+    if (openskpChatRef.current) {
+      openskpChatRef.current.scrollTop = openskpChatRef.current.scrollHeight;
     }
-    const scrollTimer = setTimeout(() => {
-      if (openskpChatRef.current) {
-        openskpChatRef.current.scrollTo({
-          top: openskpChatRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    }, 60);
-    return () => clearTimeout(scrollTimer);
   }, [openskpSent]);
 
   useEffect(() => {
@@ -2007,7 +1985,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
               </header>
 
               {/* Chat Area Plugin */}
-              <div ref={openskpChatRef} className="flex-1 p-4 overflow-y-auto scroll-smooth space-y-3 font-sans text-xs [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div ref={openskpChatRef} className="flex-1 p-4 overflow-y-auto space-y-3 font-sans text-xs [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 <div className="flex justify-start">
                   <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-slate-200 text-xs text-slate-700 max-w-sm leading-relaxed">
                     Xin chào! Bạn cần vẽ gì hôm nay.
@@ -2132,7 +2110,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
               className="flex-1 p-3 flex flex-col justify-between overflow-hidden relative"
               style={{ background: 'linear-gradient(180deg, #edf4fc 0%, #e2eef9 100%)' }}
             >
-              <div ref={geminiChatRef} className="flex-1 overflow-y-auto scroll-smooth space-y-4 font-sans text-xs px-2 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <div ref={geminiChatRef} className="flex-1 overflow-y-auto space-y-4 font-sans text-xs px-2 py-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 
                 {/* 1. LỜI NHẮC VÀ KẾT QUẢ TIẾP NỐI TỪ BƯỚC 3 */}
                 <div className="space-y-3 opacity-90 pb-2 border-b border-slate-200/60">
@@ -2165,7 +2143,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                   <div className="flex flex-col items-end gap-1.5 animate-fade-in">
                     {/* Thumbnail to rõ nét theo yêu cầu */}
                     <div className="bg-white border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center shadow-xs w-28">
-                      <img src="/cabinet-sample.jpg" alt="Tủ mẫu" width={96} height={112} className="w-24 h-28 object-contain rounded-lg shrink-0" loading="eager" />
+                      <img src="/cabinet-sample.jpg" alt="Tủ mẫu" className="w-24 h-28 object-contain rounded-lg" />
                       <span className="text-[9.5px] font-medium text-slate-700 mt-1 truncate max-w-full text-center">
                         cabinet-sample.jpg
                       </span>
@@ -2178,7 +2156,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
                 {/* Gemini đang suy nghĩ */}
                 {geminiThinking && (
-                  <div className="flex items-start gap-2 animate-bubble-in">
+                  <div className="flex items-start gap-2 animate-fade-in">
                     <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
                       <GeminiColorfulLogo className="w-3.5 h-3.5" />
                     </div>
@@ -2191,7 +2169,7 @@ export const Step4AiWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
 
                 {/* 3. GEMINI TRẢ LỜI: MÃ RUBY NỀN TRẮNG + ICON SAO CHÉP */}
                 {geminiResponded && (
-                  <div className="flex items-start gap-2 animate-bubble-in">
+                  <div className="flex items-start gap-2 animate-fade-in">
                     <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-2xs shrink-0 mt-0.5">
                       <GeminiColorfulLogo className="w-3.5 h-3.5" />
                     </div>
@@ -2379,37 +2357,15 @@ export const Step6FloorplanWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   };
 
   useEffect(() => {
-    if (!geminiChatRef.current) return;
-    if (!promptSent && !geminiThinking && !geminiConverted) {
-      geminiChatRef.current.scrollTop = 0;
-      return;
+    if (geminiChatRef.current) {
+      geminiChatRef.current.scrollTop = geminiChatRef.current.scrollHeight;
     }
-    const scrollTimer = setTimeout(() => {
-      if (geminiChatRef.current) {
-        geminiChatRef.current.scrollTo({
-          top: geminiChatRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    }, 60);
-    return () => clearTimeout(scrollTimer);
   }, [promptSent, geminiThinking, geminiConverted]);
 
   useEffect(() => {
-    if (!openskpChatRef.current) return;
-    if (!openskpSent) {
-      openskpChatRef.current.scrollTop = 0;
-      return;
+    if (openskpChatRef.current) {
+      openskpChatRef.current.scrollTop = openskpChatRef.current.scrollHeight;
     }
-    const scrollTimer = setTimeout(() => {
-      if (openskpChatRef.current) {
-        openskpChatRef.current.scrollTo({
-          top: openskpChatRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    }, 60);
-    return () => clearTimeout(scrollTimer);
   }, [openskpSent, showThumbnail]);
 
   useEffect(() => {
@@ -3307,37 +3263,15 @@ export const Step6ModelEditWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
   };
 
   useEffect(() => {
-    if (!geminiChatRef.current) return;
-    if (!promptSent && !geminiThinking && !geminiResponded) {
-      geminiChatRef.current.scrollTop = 0;
-      return;
+    if (geminiChatRef.current) {
+      geminiChatRef.current.scrollTop = geminiChatRef.current.scrollHeight;
     }
-    const scrollTimer = setTimeout(() => {
-      if (geminiChatRef.current) {
-        geminiChatRef.current.scrollTo({
-          top: geminiChatRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    }, 60);
-    return () => clearTimeout(scrollTimer);
   }, [promptSent, geminiThinking, geminiResponded]);
 
   useEffect(() => {
-    if (!openskpChatRef.current) return;
-    if (!openskpSent) {
-      openskpChatRef.current.scrollTop = 0;
-      return;
+    if (openskpChatRef.current) {
+      openskpChatRef.current.scrollTop = openskpChatRef.current.scrollHeight;
     }
-    const scrollTimer = setTimeout(() => {
-      if (openskpChatRef.current) {
-        openskpChatRef.current.scrollTo({
-          top: openskpChatRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-    }, 60);
-    return () => clearTimeout(scrollTimer);
   }, [openskpSent]);
 
   useEffect(() => {
