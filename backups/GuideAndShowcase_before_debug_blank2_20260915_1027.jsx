@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Box, CheckCircle2, Eye, Send, Image as ImageIcon,
   Copy, Check, Folder, Download, Search,
-  Settings, User, Minus, Square, X
+  Settings, User
 } from 'lucide-react';
 
 // ==============================================================================
