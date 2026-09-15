@@ -1360,41 +1360,21 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
         </div>
 
         {/* ==================================================================== */}
-        {/* CỘT 2: TRÌNH DUYỆT GOOGLE CHROME (GIỮ NGUYÊN ĐẦY ĐỦ CẢ TAB GEMINI, CHATGPT, CLAUDE) */}
+        {/* CỘT 2: TRÌNH DUYỆT GOOGLE CHROME - GEMINI (ĐỒNG BỘ 100% THEO BƯỚC 2) */}
         {/* ==================================================================== */}
         <div className="lg:col-span-8 bg-white rounded-2xl shadow-sm ring-1 ring-slate-900/10 overflow-hidden flex flex-col font-sans text-xs h-[540px]">
           
-          {/* Chrome Tab Bar: Giữ trọn vẹn Tab Gemini, ChatGPT, Claude & Tiêu đề h-9 chuẩn */}
+          {/* Chrome Tab Bar: Đồng bộ cấu trúc chuẩn theo Bước 2 */}
           <div className="h-9 bg-[#dee1e6] border-b border-gray-300 px-2 flex items-end justify-between shrink-0 select-none pt-1">
             <div className="flex items-end h-full">
               {/* Tab 1: Google Gemini (Active) */}
               <div className="h-[30px] bg-white rounded-t-lg px-3 flex items-center gap-2 shadow-xs border-t border-x border-gray-300/50">
                 <GeminiColorfulLogo className="w-3.5 h-3.5 shrink-0" />
                 <span className="font-sans text-[11px] text-slate-800 font-medium whitespace-nowrap">Google Gemini</span>
-                <span className="text-slate-500 hover:text-slate-700 ml-3 text-[10px] cursor-pointer leading-none">✕</span>
+                <span className="text-[10px] text-slate-400 hover:text-slate-700 ml-1 cursor-pointer">✕</span>
               </div>
-
-              {/* Tab 2: ChatGPT (Inactive) */}
-              <div className="h-[30px] px-3 flex items-center gap-2 text-slate-700 hover:bg-slate-200/50 rounded-t-lg cursor-pointer transition-colors">
-                <ChatGPTLogo className="w-3.5 h-3.5 shrink-0" />
-                <span className="font-sans text-[11px] text-slate-700 font-normal whitespace-nowrap">ChatGPT</span>
-                <span className="text-slate-500 hover:text-slate-700 ml-2 text-[10px] cursor-pointer leading-none">✕</span>
-              </div>
-
-              {/* Dấu gạch dọc ngăn cách */}
-              <div className="h-3.5 w-[1px] bg-slate-400/60 mx-1 self-center shrink-0" />
-
-              {/* Tab 3: New chat - Claude (Inactive) */}
-              <div className="h-[30px] px-3 flex items-center gap-2 text-slate-700 hover:bg-slate-200/50 rounded-t-lg cursor-pointer transition-colors">
-                <ClaudeLogo className="w-3.5 h-3.5 shrink-0" />
-                <span className="font-sans text-[11px] text-slate-700 font-normal whitespace-nowrap">New chat - Claude</span>
-                <span className="text-slate-500 hover:text-slate-700 ml-2 text-[10px] cursor-pointer leading-none">✕</span>
-              </div>
-
-              {/* Dấu gạch dọc ngăn cách sau Claude */}
-              <div className="h-3.5 w-[1px] bg-slate-400/60 mx-1 self-center shrink-0" />
+              <span className="text-slate-500 hover:text-slate-800 px-2 py-1 text-xs cursor-pointer">+</span>
             </div>
-
             <div className="self-center pb-1">
               <WindowControls />
             </div>
@@ -1503,32 +1483,30 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                 )}
               </div>
 
-              {/* Vùng nhập liệu Gemini - KHÓA CỐ ĐỊNH KÍCH THƯỚC (KHÔNG BỊ PHỒNG KHI GÕ, KHÔNG BỊ NHỎ KHI GỬI) */}
-              <div className="shrink-0 flex flex-col justify-end">
-                {/* Khe cố định hiển thị file đính kèm bên trên: Cố định độ cao h-7 để không bao giờ bị nhảy khung */}
-                <div className="h-7 mb-1.5 flex items-center">
-                  {fileAttached && !isSubmitted && (
-                    <div className="px-1 flex items-center gap-2 animate-fade-in">
-                      <div className="bg-white border border-slate-200/90 shadow-2xs rounded-lg px-2.5 py-1 flex items-center gap-2 text-xs">
-                        <DocTextIcon className="w-3.5 h-3.5 text-[#0063A3] shrink-0" />
-                        <span className="font-medium text-slate-700 text-[11px]">Skill Openskp.txt</span>
-                        <span className="text-slate-400 hover:text-slate-600 text-xs ml-0.5 cursor-pointer leading-none">✕</span>
-                      </div>
+              {/* Vùng nhập liệu Gemini */}
+              <div className="shrink-0">
+                {/* File chip hiển thị chính xác biểu tượng BÊN TRÊN thanh nhập liệu theo yêu cầu */}
+                {fileAttached && !isSubmitted && (
+                  <div className="px-2 pb-1.5 flex items-center gap-2 animate-fade-in">
+                    <div className="bg-white border border-slate-200/90 shadow-xs rounded-lg px-2.5 py-1.5 flex items-center gap-2 text-xs">
+                      <DocTextIcon className="w-4 h-4 text-[#0063A3] shrink-0" />
+                      <span className="font-medium text-slate-700 text-[11px]">Skill Openskp.txt</span>
+                      <span className="text-slate-400 hover:text-slate-600 text-xs ml-0.5 cursor-pointer leading-none">✕</span>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                {/* Ô Chat Gemini (Viên thuốc tròn - KHÓA CHẶT CHIỀU CAO h-11 CỐ ĐỊNH 100%) */}
+                {/* Ô Chat Gemini (Viên thuốc tròn: Bỏ nét đứt khi thả file, chỉ đổi màu) */}
                 <div 
                   id="gemini-step-prompt-box"
-                  className={`h-11 rounded-full border transition-colors px-4 bg-white flex items-center justify-between shadow-xs relative shrink-0 ${
+                  className={`rounded-full border transition-colors px-4 py-2 bg-white flex items-center justify-between shadow-xs relative ${
                     isDragOver 
                       ? 'border-2 border-[#0063A3] bg-blue-50/70' 
                       : 'border-slate-200/90'
                   }`}
                 >
                   {isDragOver ? (
-                    <div className="w-full text-center text-xs font-semibold text-[#0063A3]">
+                    <div className="w-full py-0.5 text-center text-xs font-semibold text-[#0063A3]">
                       Thả file Skill Openskp.txt vào đây
                     </div>
                   ) : (
@@ -1536,7 +1514,7 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                       {/* Nút cộng + bên trái */}
                       <span className="text-xl text-slate-500 font-light pr-2.5 select-none leading-none cursor-pointer">+</span>
 
-                      {/* Input gõ lời nhắc - Không bao giờ làm đổi chiều cao */}
+                      {/* Input gõ lời nhắc */}
                       <input 
                         type="text"
                         readOnly
@@ -1545,30 +1523,28 @@ export const GeminiSkillWorkflow = ({ PRIMARY_COLOR = "#0063A3" }) => {
                         className="flex-1 bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-500 outline-none border-none cursor-default font-sans"
                       />
 
-                      {/* Cụm chức năng bên phải: Flash Mở rộng ⌵ và Ô nút Gửi/Mic KHÓA CHẶT w-7 h-7 */}
-                      <div className="flex items-center gap-3 shrink-0 select-none pl-2 h-full">
+                      {/* Cụm chức năng bên phải: Flash Mở rộng ⌵ và Mic/Gửi */}
+                      <div className="flex items-center gap-3 shrink-0 select-none pl-2">
                         <div className="flex items-center gap-1 text-xs text-slate-700 font-medium">
                           <span>Flash</span>
                           <span className="text-slate-400 text-[11px]">Mở rộng</span>
                           <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
                         </div>
 
-                        {/* Ô nút Gửi / Mic: Cố định khung w-7 h-7 để kích thước thanh nhập liệu luôn 100% bằng nhau */}
-                        <div className="w-7 h-7 flex items-center justify-center shrink-0">
-                          {promptText ? (
-                            <button 
-                              id="gemini-step-send-btn"
-                              className="w-7 h-7 rounded-full bg-[#0063A3] text-white flex items-center justify-center shadow-xs cursor-pointer hover:bg-blue-700 transition-colors shrink-0"
-                              title="Gửi"
-                            >
-                              <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" /></svg>
-                            </button>
-                          ) : (
-                            <span className="w-7 h-7 flex items-center justify-center cursor-pointer text-slate-500 hover:text-slate-700 shrink-0">
-                              <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                            </span>
-                          )}
-                        </div>
+                        {/* Nút gửi mũi tên tròn */}
+                        {promptText ? (
+                          <button 
+                            id="gemini-step-send-btn"
+                            className="w-7 h-7 rounded-full bg-[#0063A3] text-white flex items-center justify-center shadow-xs shrink-0 cursor-pointer hover:bg-blue-700 transition-colors"
+                            title="Gửi"
+                          >
+                            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z" /></svg>
+                          </button>
+                        ) : (
+                          <span className="cursor-pointer text-slate-500 hover:text-slate-700">
+                            <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                          </span>
+                        )}
                       </div>
                     </>
                   )}
