@@ -1126,7 +1126,7 @@ export default function App() {
     if (!profile) return "";
     const key = profile.license_key || 'UNKNOWN';
     const shortKey = key.split('-').pop() || key; 
-    const DESCRIPTION = `OPENSKP ${shortKey}`;
+    const DESCRIPTION = `OPENSKP LITE ${shortKey}`;
 
     if (!BANK_ID || !BANK_ACCOUNT) {
       return "https://placehold.co/300x300/fdfbf7/0063A3?text=VietQR+Simulated";
