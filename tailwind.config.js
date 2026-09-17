@@ -8,15 +8,18 @@ export default {
     extend: {
       fontFamily: {
         sans: [
-          'Arial', 
-          'Helvetica', 
+          'var(--app-font)',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
           'sans-serif'
         ],
         serif: [
           'Crimson Pro',
           'Georgia',
-          'Cambria',
           'Times New Roman',
+          'Cambria',
           'Times',
           'serif',
         ],

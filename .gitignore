@@ -19,10 +19,10 @@ Thư mục chứa output khi chạy lệnh 'npm run build'
 dist
 dist-ssr
 
-Các file tạm cục bộ (local) của môi trường phát triển
-
+# Các file tạm cục bộ (local) của môi trường phát triển
 *.local
 .env.local
+backups/
 
 Editor directories and files
 

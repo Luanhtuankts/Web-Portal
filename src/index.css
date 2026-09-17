@@ -1,38 +1,45 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=Mali:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   :root {
     --primary-brand: #0063A3;
     --bg-site: #fdfbf7;
+    /* Font mặc định của ứng dụng: Manrope */
+    --app-font: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   body {
     margin: 0;
-    /* Font Mali cho toàn bộ nội dung web */
-    font-family: 'Mali', cursive;
+    font-family: var(--app-font);
     background-color: var(--bg-site);
     color: #1e293b; /* Slate-800 để chữ trông mềm mại hơn đen thuần */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Thiết lập font cho tiêu đề và logo */
-  h1, h2, h3, h4, .font-heading, .logo {
-    font-family: 'Crimson Pro', serif;
-    font-weight: 400; /* font-normal theo yêu cầu của bạn */
-    line-height: 1.2;
+  /* Ép font đồng bộ toàn bộ giao diện theo lựa chọn, trừ font có chân & mono */
+  html, body, p, div, span, button, input, select, textarea, h1, h2, h3, h4, h5, h6, label, a {
+    font-family: var(--app-font);
+  }
+
+  /* RÀNG BUỘC BẢO VỆ: Font có chân Crimson Pro */
+  .font-serif, .hero-serif, [class*="font-serif"] {
+    font-family: 'Crimson Pro', Georgia, serif !important;
+  }
+
+  /* RÀNG BUỘC BẢO VỆ: Font mono cho mã code, API key, HWID */
+  .font-mono, [class*="font-mono"] {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
   }
 
   /* Utility cho số liệu: rõ ràng và thẳng hàng */
-  h5, .number {
-    font-family:  system-ui, sans-serif, 'Inter'; 
-    font-variant-numeric: tabular-nums; /* Giúp các chữ số thẳng hàng trong bảng */
+  .number {
+    font-variant-numeric: tabular-nums;
     font-weight: 400;
     line-height: 1.5;
   }
@@ -52,9 +59,12 @@
     animation: fadeIn 0.5s ease-out forwards;
   }
 
-  /* Animation bong bóng chat mượt mà, triệt tiêu nháy giật */
+  /* Animation bong bóng chat xuất hiện với hiệu ứng scale mượt mà */
   .animate-bubble-in {
-    animation: bubbleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: bubbleIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
   }
 }
 
@@ -64,8 +74,14 @@
 }
 
 @keyframes bubbleIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  0% { 
+    opacity: 0; 
+    transform: scale(0.85) translateY(6px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+  }
 }
 
 /* Tùy chỉnh màu khi bôi đen văn bản cho đúng màu thương hiệu */

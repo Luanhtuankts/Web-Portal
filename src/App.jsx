@@ -13,7 +13,7 @@ import { ShowcaseSection, InteractiveGuideSection } from './GuideAndShowcase';
 // ==============================================================================
 // 1. CẤU HÌNH BẬT/TẮT CHẾ ĐỘ XEM THỬ (MOCK MODE FOR CANVAS PREVIEW)
 // ==============================================================================
-const IS_PREVIEW_MOCK_MODE = true;
+const IS_PREVIEW_MOCK_MODE = false;
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
@@ -59,7 +59,7 @@ const TRANSLATIONS = {
     copyKeyBtn: "Copy Key Ngay",
     heroTitle: "Xin chào, Kiến trúc sư!",
     heroSubtitle: "\"Bạn là nhà thiết kế - hãy để AI dựng hình cho bạn.\"",
-    downloadMain: "Tải OpenSkp",
+    downloadMain: "Dùng thử",
     guide: "Hướng dẫn",
     backHome: "Quay lại Trang chủ",
     footerRights: "© 2026 OpenSkp. Bảo lưu mọi quyền.",
@@ -77,7 +77,7 @@ const TRANSLATIONS = {
     loginToView: "Vui lòng đăng nhập...",
     
     paymentSubtitle: "Cầu nối điều phối trong SketchUp kết nối AI ngoài",
-    licenseDesc: "OpenSkp đóng vai trò là cầu nối điều phối thông minh trực tiếp trong SketchUp, kết nối và đồng bộ linh hoạt với các mô hình AI bên ngoài. Hệ thống hỗ trợ dựng không gian 3D tự động từ ảnh mặt bằng 2D và điều phối tạo dựng các cấu kiện mô hình 3D hoàn chỉnh.",
+    licenseDesc: "OpenSkp đóng vai trò là cầu nối thông minh giữa SketchUp và các mô hình AI bên ngoài. Hệ thống hỗ trợ dựng không gian 3D tự động từ ảnh mặt bằng 2D và điều phối tạo dựng các cấu kiện mô hình 3D hoàn chỉnh.",
     paymentNotice: "Lưu ý: Hệ thống thanh toán có thể thay đổi, chỉ áp dụng cơ chế sử dụng vĩnh viễn với các đăng ký trong giai đoạn đầu phát triển Plugin.",
     pkgLifetimeTitle: "Phiên bản Trọn đời",
     pkgLifetimeSubtitle: "Mua đứt 1 lần, sử dụng vĩnh viễn",
@@ -94,7 +94,7 @@ const TRANSLATIONS = {
     copyKeyBtn: "Copy Key Now",
     heroTitle: "Hello, Architect!",
     heroSubtitle: "\"You are the designer - let AI do the modeling for you.\"",
-    downloadMain: "Download OpenSkp",
+    downloadMain: "Free Trial",
     guide: "Guide",
     backHome: "Back to Home",
     footerRights: "© 2026 OpenSkp. All rights reserved.",
@@ -112,7 +112,7 @@ const TRANSLATIONS = {
     loginToView: "Please login...",
 
     paymentSubtitle: "Intelligent coordination bridge in SketchUp connecting external AI",
-    licenseDesc: "OpenSkp serves as an intelligent coordination bridge directly inside SketchUp, seamlessly connecting with external AI models. It automates 3D spatial generation from 2D floor plans and coordinates full 3D model component creation.",
+    licenseDesc: "OpenSkp serves as an intelligent bridge between SketchUp and external AI models. It automates 3D spatial generation from 2D floor plans and coordinates full 3D model component creation.",
     paymentNotice: "Note: The payment system is subject to change; lifetime usage is only applicable to registrations during the initial development phase of the Plugin.",
     pkgLifetimeTitle: "Lifetime License",
     pkgLifetimeSubtitle: "Pay once, use forever",
@@ -137,7 +137,7 @@ const ACCOUNT_NAME = import.meta.env.VITE_BANK_ACCOUNT_NAME || "";
 const OPENSKP_PRICE_VND = 200000;
 const OPENSKP_PRICE_USD = 10;
 
-const PayPalButtonContainer = ({ price, value, onSuccess, onError }) => {
+const PayPalButtonContainer = ({ price, value, onSuccess, onError, language = 'VN' }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ const PayPalButtonContainer = ({ price, value, onSuccess, onError }) => {
       if (containerRef.current) {
         containerRef.current.innerHTML = `
           <div class="bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-bold py-3 px-4 rounded-xl shadow cursor-pointer transition flex items-center justify-center gap-2 text-sm">
-             <span>Pay with <b>PayPal</b> (Chế độ Xem thử)</span>
+             <span>Pay with <b>PayPal</b> (${language === 'VN' ? 'Chế độ Xem thử' : 'Preview Mode'})</span>
           </div>
         `;
         const btn = containerRef.current.firstElementChild;
@@ -196,22 +196,183 @@ const LogoSVG = () => (
 );
 
 const BackgroundDecorations = () => (
-  <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none h-full w-full">
-       <img
-          src="/Sketch2.png"
-          className="absolute top-[55%] -right-[5%] w-[45%] opacity-[0.15] rotate-[0deg] mix-blend-multiply"
-          alt="Decoration"
-       />
+  <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none w-full h-full">
+       {/* 1. KHU VỰC HERO ĐẦU TRANG (GIỮ NGUYÊN VỊ TRÍ GỐC, KHÔNG BỊ CẮT LẸM CHÂN) */}
        <img
           src="/Sketch1.png"
-          className="absolute top-[25%] -left-[0%] w-[50%] opacity-[0.15] rotate-[-12deg] mix-blend-multiply"
+          className="absolute top-[150px] sm:top-[160px] -left-[3%] w-[45%] sm:w-[48%] max-w-[620px] opacity-[0.16] rotate-[-12deg] mix-blend-multiply"
           alt="Decoration"
           onError={(e) => e.target.style.display = 'none'}
+       />
+       <img
+          src="/Sketch2.png"
+          className="absolute top-[410px] sm:top-[430px] -right-[5%] w-[42%] sm:w-[45%] max-w-[560px] opacity-[0.16] rotate-[0deg] mix-blend-multiply"
+          alt="Decoration"
+       />
+
+       {/* 2. RẢI RANDOM DỌC 2 BÊN BIÊN XUỐNG DƯỚI CHO NỀN ĐỠ TRỐNG */}
+       {/* Biên trái - ngang tầm Showcase 1 */}
+       <img
+          src="/Sketch2.png"
+          className="absolute top-[1250px] -left-[6%] sm:-left-[4%] w-[32%] sm:w-[34%] max-w-[440px] opacity-[0.12] rotate-[-10deg] mix-blend-multiply"
+          alt="Decoration"
+       />
+       {/* Biên phải - cuối Showcase 1 / đầu Showcase 2 */}
+       <img
+          src="/Sketch1.png"
+          className="absolute top-[1800px] -right-[6%] sm:-right-[4%] w-[34%] sm:w-[36%] max-w-[460px] opacity-[0.12] rotate-[10deg] mix-blend-multiply"
+          alt="Decoration"
+       />
+       {/* Biên trái - ngang tầm Showcase 2 */}
+       <img
+          src="/Sketch1.png"
+          className="absolute top-[2400px] -left-[5%] sm:-left-[3%] w-[33%] sm:w-[35%] max-w-[450px] opacity-[0.11] rotate-[-14deg] mix-blend-multiply"
+          alt="Decoration"
+       />
+       {/* Biên phải - cuối Showcase 2 / đầu Showcase 3 */}
+       <img
+          src="/Sketch2.png"
+          className="absolute top-[2950px] -right-[6%] sm:-right-[4%] w-[30%] sm:w-[33%] max-w-[430px] opacity-[0.11] rotate-[7deg] mix-blend-multiply"
+          alt="Decoration"
+       />
+       {/* Biên trái - ngang tầm Showcase 3 */}
+       <img
+          src="/Sketch2.png"
+          className="absolute top-[3500px] -left-[6%] sm:-left-[4%] w-[32%] sm:w-[34%] max-w-[440px] opacity-[0.11] rotate-[-7deg] mix-blend-multiply"
+          alt="Decoration"
+       />
+       {/* Biên phải - gần chân trang Footer */}
+       <img
+          src="/Sketch1.png"
+          className="absolute top-[4050px] -right-[5%] sm:-right-[3%] w-[33%] sm:w-[35%] max-w-[450px] opacity-[0.11] rotate-[12deg] mix-blend-multiply"
+          alt="Decoration"
        />
   </div>
 );
 
-// HIỂN THỊ NÚT TẢI OPENSKP VÀ NÚT HƯỚNG DẪN TRỰC QUAN
+// ==============================================================================
+// CẤU HÌNH VÀ BỘ CHỌN MẪU FONT TRỰC TIẾP (LIVE FONT SWITCHER)
+// ==============================================================================
+export const FONT_OPTIONS = [
+  {
+    id: 'manrope',
+    name: 'Manrope (Đang dùng)',
+    tag: 'Đanh gọn, hình khối cân đối chuẩn Kiến trúc & 3D',
+    fontFamily: "'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  },
+  {
+    id: 'space-grotesk',
+    name: 'Space Grotesk',
+    tag: 'Hình học Tech / Brutalist chuẩn Đồ họa kiến trúc',
+    fontFamily: "'Space Grotesk', sans-serif"
+  },
+  {
+    id: 'outfit',
+    name: 'Outfit',
+    tag: 'Hình học hiện đại, thoáng đãng, chuẩn sản phẩm công nghệ',
+    fontFamily: "'Outfit', sans-serif"
+  },
+  {
+    id: 'lexend',
+    name: 'Lexend',
+    tag: 'Tối ưu thị giác, nét thẳng tắp chuẩn công nghệ cao',
+    fontFamily: "'Lexend', sans-serif"
+  },
+  {
+    id: 'work-sans',
+    name: 'Work Sans',
+    tag: 'Tỷ lệ vàng kiến trúc, chuẩn bản vẽ kỹ thuật & thiết kế',
+    fontFamily: "'Work Sans', sans-serif"
+  },
+  {
+    id: 'inter',
+    name: 'Inter',
+    tag: 'Chuẩn UI quốc tế (tương tự Apple SF trên dicular.com)',
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  },
+  {
+    id: 'jakarta',
+    name: 'Plus Jakarta Sans',
+    tag: 'Hiện đại, bo cong mềm mại (chuẩn SaaS cao cấp)',
+    fontFamily: "'Plus Jakarta Sans', sans-serif"
+  },
+  {
+    id: 'vietnam',
+    name: 'Be Vietnam Pro',
+    tag: 'Thiết kế tối ưu chuyên biệt cho Tiếng Việt',
+    fontFamily: "'Be Vietnam Pro', sans-serif"
+  }
+];
+
+export const FontSwitcher = ({ currentFont, onChangeFont, PRIMARY_COLOR }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-2">
+      {isOpen && (
+        <div className="bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-2xl border border-slate-200 w-80 sm:w-92 animate-in slide-in-from-bottom-3 duration-200">
+          <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+              <Sparkles size={14} style={{ color: PRIMARY_COLOR }} />
+              <span>Chọn mẫu font Kiến trúc & Công nghệ (8 mẫu):</span>
+            </div>
+            <button 
+              onClick={() => setIsOpen(false)}
+              className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition text-xs cursor-pointer"
+              title="Thu nhỏ"
+            >
+              <X size={14} />
+            </button>
+          </div>
+          <div className="space-y-1.5 max-h-[380px] overflow-y-auto pr-1">
+            {FONT_OPTIONS.map((f) => {
+              const isSelected = currentFont === f.id;
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => onChangeFont(f.id)}
+                  className={`w-full text-left px-3 py-2 rounded-xl transition flex items-center justify-between border cursor-pointer ${
+                    isSelected 
+                      ? 'border-[#0063A3] bg-[#0063A3]/5 text-[#0063A3] shadow-xs' 
+                      : 'border-slate-100 bg-white hover:bg-slate-50 text-slate-700'
+                  }`}
+                  style={{ fontFamily: f.fontFamily }}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-[13.5px] font-semibold flex items-center gap-1.5">
+                      {f.name}
+                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#0063A3]"></span>}
+                    </span>
+                    <span className="text-[10.5px] text-slate-500 font-normal">{f.tag}</span>
+                  </div>
+                  {isSelected ? (
+                    <CheckCircle2 size={16} className="text-[#0063A3] shrink-0" />
+                  ) : (
+                    <span className="text-[11px] text-slate-400 font-medium hover:text-[#0063A3]">Chọn</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500 leading-tight">
+            🔒 <em>"Xin chào, Kiến trúc sư!"</em> luôn được giữ nguyên 100% font có chân Crimson Pro.
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-md shadow-lg border border-slate-200 text-slate-700 hover:text-[#0063A3] hover:border-[#0063A3] flex items-center gap-2 text-xs font-semibold transition cursor-pointer select-none group"
+      >
+        <span className="w-2 h-2 rounded-full bg-[#0063A3] animate-pulse"></span>
+        <Sparkles size={14} className="text-[#0063A3] group-hover:rotate-12 transition-transform" />
+        <span>Mẫu Font: {FONT_OPTIONS.find(f => f.id === currentFont)?.name || 'Inter'}</span>
+      </button>
+    </div>
+  );
+};
+
+// HIỂN THỊ NÚT TẢI OPENSKP VÀ NÚT HƯỚNG DẪN TRỰC QUAN (ĐỒNG BỘ CỠ CHỮ CHUẨN)
 const HeroSection = ({ t, handleDownloadMain, currentView, setCurrentView }) => (
   <div className="flex flex-col items-center text-center mb-12 mt-6 animate-fade-in px-4 relative z-20">
       <div className="relative z-0 -mb-0.5 pointer-events-none select-none">
@@ -226,20 +387,26 @@ const HeroSection = ({ t, handleDownloadMain, currentView, setCurrentView }) => 
           />
       </div>
       <div className="relative z-10 pt-4 text-slate-800">
-          <h1 className="text-3xl font-serif sm:text-5xl mb-4 max-w-3xl leading-tight" style={{ color: PRIMARY_COLOR }}>
+          <h1 
+            className="text-3xl font-serif sm:text-5xl mb-4 max-w-3xl leading-tight" 
+            style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}
+          >
               {t.heroTitle} <br/>
           </h1>
-          <h1 className="text-lg sm:text-2xl mt-2 block" style={{ color: PRIMARY_COLOR }}>
+          <h1 
+            className="text-lg sm:text-2xl mt-2 block font-serif italic" 
+            style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}
+          >
               {t.heroSubtitle}
           </h1>
       </div>
       <div className="flex flex-col sm:flex-row gap-4 mt-8 mb-1 relative z-20">
           <button 
               onClick={handleDownloadMain}
-              className="px-8 py-3.5 rounded-xl text-white text-lg shadow-xl hover:translate-y-[-2px] hover:opacity-90 transition flex items-center justify-center gap-2 font-bold"
+              className="px-9 py-3.5 rounded-xl text-white text-[17px] sm:text-[18px] font-semibold shadow-lg hover:translate-y-[-2px] hover:opacity-90 active:translate-y-[0px] active:scale-[0.98] transition flex items-center justify-center gap-2.5 cursor-pointer select-none"
               style={{ backgroundColor: PRIMARY_COLOR }}
           >
-              <Download size={20} /> {t.downloadMain}
+              <Download size={21} /> <span>{t.downloadMain}</span>
           </button>
           <button 
               onClick={() => {
@@ -253,16 +420,16 @@ const HeroSection = ({ t, handleDownloadMain, currentView, setCurrentView }) => 
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
               }}
-              className="px-8 py-3.5 rounded-xl text-lg shadow-xl hover:translate-y-[-2px] bg-white border-2 hover:bg-slate-50 transition flex items-center justify-center gap-2 font-bold"
+              className="px-9 py-3.5 rounded-xl text-[17px] sm:text-[18px] font-semibold shadow-lg hover:translate-y-[-2px] active:translate-y-[0px] active:scale-[0.98] bg-white border hover:bg-slate-50 transition flex items-center justify-center gap-2.5 cursor-pointer select-none"
               style={{ borderColor: PRIMARY_COLOR, color: PRIMARY_COLOR }}
           >
               {currentView === 'guide' ? (
                 <>
-                  <Home size={20} /> {t.backHome}
+                  <Home size={21} /> <span>{t.backHome}</span>
                 </>
               ) : (
                 <>
-                  <BookOpen size={20} /> {t.guide}
+                  <BookOpen size={21} /> <span>{t.guide}</span>
                 </>
               )}
           </button>
@@ -270,9 +437,10 @@ const HeroSection = ({ t, handleDownloadMain, currentView, setCurrentView }) => 
   </div>
 );
 
-// GIAO DIỆN BẢNG GIÁ (ĐƯA VỀ CÙNG 1 Ô: TIÊU ĐỀ - NỘI DUNG - QR - TỔNG THANH TOÁN - 200.000Đ - VND USD - LƯU Ý)
+// GIAO DIỆN BẢNG GIÁ (ĐƯA VỀ CÙNG 1 Ô: TIÊU ĐỀ - NỘI DUNG - QR - TỔNG THANH TOÁN - 200.000Đ - VND USD - LƯU Ý - ĐỒNG BỘ CỠ CHỮ)
 const PaymentModal = ({ 
   t, 
+  language = 'VN',
   paymentMethod, 
   handleSwitchMethod, 
   setShowPayment, 
@@ -285,27 +453,30 @@ const PaymentModal = ({
 }) => {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden relative max-h-[92vh] flex flex-col">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full relative overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-100 flex flex-col max-h-[92vh]">
             
             {/* Nút đóng X góc trên */}
             <button 
-              onClick={() => setShowPayment(false)} 
-              className="absolute top-4 right-4 p-1.5 hover:bg-slate-100 rounded-full transition text-slate-400 hover:text-slate-600 z-10"
-              title="Đóng"
+              onClick={() => setShowPayment(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-1.5 rounded-full transition z-20 cursor-pointer"
+              title={language === 'VN' ? 'Đóng' : 'Close'}
             >
-                <X className="w-5 h-5"/>
+                <X size={18} />
             </button>
 
             <div className="p-6 sm:p-7 flex flex-col items-center text-center overflow-y-auto custom-scrollbar">
                 
                 {/* 1. TIÊU ĐỀ */}
-                <h3 className="text-2xl font-bold font-sans text-slate-800 tracking-tight mb-1">
+                <h3 
+                  className="text-4xl font-serif font-normal tracking-tight mb-1"
+                  style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR }}
+                >
                     OpenSkp
                 </h3>
-                <p className="text-xs font-semibold text-slate-600 mb-3">{t.paymentSubtitle}</p>
+                <p className="text-sm font-medium text-slate-600 mb-3">{t.paymentSubtitle}</p>
 
                 {/* 2. NỘI DUNG */}
-                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed text-justify mb-5 px-1">
+                <p className="text-[14.5px] sm:text-[15px] text-slate-600 leading-relaxed text-justify mb-5 px-1">
                     {t.licenseDesc}
                 </p>
 
@@ -340,17 +511,18 @@ const PaymentModal = ({
                                     <PayPalButtonContainer 
                                         price={OPENSKP_PRICE_USD}
                                         value={"OpenSkp Lifetime License"}
+                                        language={language}
                                         onSuccess={(orderId) => {
                                             setPaypalSuccess(orderId);
-                                            showToast("Thanh toán PayPal thành công!", "success");
+                                            showToast(language === 'VN' ? "Thanh toán PayPal thành công!" : "PayPal payment successful!", "success");
                                         }}
                                         onError={() => {
-                                            showToast("Giao dịch thất bại / Payment Failed", "error");
+                                            showToast(language === 'VN' ? "Giao dịch thất bại / Payment Failed" : "Payment Failed", "error");
                                         }}
                                     />
                                 ) : (
                                     <div className="w-full h-12 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-                                        <Loader2 className="animate-spin mr-2 w-4 h-4" /> Đang kết nối PayPal...
+                                        <Loader2 className="animate-spin mr-2 w-4 h-4" /> {language === 'VN' ? 'Đang kết nối PayPal...' : 'Connecting to PayPal...'}
                                     </div>
                                 )}
                                 <div className="bg-blue-50 p-2 rounded-lg text-[10px] text-blue-800 mt-2 border border-blue-100 text-center">
@@ -360,7 +532,7 @@ const PaymentModal = ({
                         )}
 
                         {/* 4. TỔNG THANH TOÁN */}
-                        <div className="text-xs text-slate-500 font-medium mt-1">
+                        <div className="text-sm text-slate-500 font-medium mt-1">
                             {t.paymentTotal}
                         </div>
 
@@ -370,23 +542,23 @@ const PaymentModal = ({
                         </div>
 
                         {/* 6. VND USD */}
-                        <div className="w-48 flex bg-slate-100 p-1 rounded-xl mb-4 font-sans shrink-0">
+                        <div className="w-48 flex bg-slate-100 p-1 rounded-xl mb-4 shrink-0">
                             <button 
                                 onClick={() => handleSwitchMethod('VND')} 
-                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${paymentMethod === 'VND' ? 'bg-white shadow text-slate-800' : 'text-slate-500'}`}
+                                className={`flex-1 py-1.5 rounded-lg text-sm font-semibold transition cursor-pointer ${paymentMethod === 'VND' ? 'bg-white shadow text-slate-800' : 'text-slate-500'}`}
                             >
                                 {t.paymentVND}
                             </button>
                             <button 
                                 onClick={() => handleSwitchMethod('USD')} 
-                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition ${paymentMethod === 'USD' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
+                                className={`flex-1 py-1.5 rounded-lg text-sm font-semibold transition cursor-pointer ${paymentMethod === 'USD' ? 'bg-white shadow text-blue-600' : 'text-slate-500'}`}
                             >
                                 {t.paymentUSD}
                             </button>
                         </div>
 
                         {/* 7. LƯU Ý ... */}
-                        <div className="text-xs text-red-500 font-medium text-justify px-2 leading-relaxed border-t border-slate-100 pt-3">
+                        <div className="text-[12.5px] text-red-500 font-medium text-justify px-2 leading-relaxed border-t border-slate-100 pt-3">
                             {t.paymentNotice}
                         </div>
                     </>
@@ -398,43 +570,40 @@ const PaymentModal = ({
   );
 };
 
-const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoogle, language, setLanguage, keyCopySuccess, copyToClipboard, handleResetHWID, loading, onOpenGuide }) => {
+const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoogle, language, setLanguage, keyCopySuccess, copyToClipboard, handleResetHWID, loading, onOpenGuide, handleDownloadMain }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navTextStyle = {
       color: PRIMARY_COLOR,
-      fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-      fontSize: '16px',
-      marginTop: '6px',
-      fontWeight: 400
+      fontSize: '15px',
+      fontWeight: 500
   };
 
   const renderUserDashboard = () => (
-      <div className="flex items-center bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 animate-fade-in text-slate-800">
+      <div className="flex items-center bg-white p-1.5 rounded-xl shadow-sm border border-slate-200 animate-fade-in text-slate-800 font-sans">
           
-          {/* CỘT: Trạng thái Bản quyền */}
+          {/* CỘT: Trạng thái Bản quyền - TIÊU ĐỀ XANH ĐẬM, VIẾT HOA, GIỮ XANH LÁ */}
           <div className="flex flex-col justify-center items-start px-2.5 whitespace-nowrap">
-              <div className="text-[9px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-1">
-                {language === 'VN' ? 'Trạng thái' : 'Status'}
+              <div className="text-[10px] uppercase text-[#0063A3] font-bold tracking-wider leading-none mb-1 font-sans">
+                {language === 'VN' ? 'TRẠNG THÁI' : 'STATUS'}
               </div>
-              <div className={`text-[10px] font-bold uppercase leading-none ${(profile?.is_active || profile?.lite) ? 'text-emerald-600' : 'text-slate-400'}`}>
-                   {(profile?.is_active || profile?.lite) ? t.statusActivated : t.statusInactive}
+              <div className={`text-[10px] font-bold uppercase leading-none font-sans ${(profile?.is_active || profile?.lite) ? 'text-emerald-600' : 'text-slate-400'}`}>
+                   {(profile?.is_active || profile?.lite) ? (t.statusActivated || 'ĐÃ KÍCH HOẠT').toUpperCase() : (t.statusInactive || 'CHƯA KÍCH HOẠT').toUpperCase()}
               </div>
           </div>
 
           {/* VÁCH NGĂN DỌC */}
           <div className="w-px h-8 bg-slate-200 mx-1"></div>
 
-          {/* CỘT: License Key */}
-          <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-lg border border-slate-200 ml-1">
+          {/* CỘT: License Key - TIÊU ĐỀ XANH ĐẬM, KEY ĐEN MẢNH, VIẾT HOA TẤT */}
+          <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg border border-slate-200 ml-1">
               <div className="flex flex-col items-start">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase leading-none">{t.licenseKey}</span>
-                  <input 
-                    type="text" 
-                    readOnly 
-                    value={profile?.license_key || 'Đang tạo mã...'} 
-                    className="text-xs font-mono font-bold text-slate-700 leading-tight bg-transparent outline-none border-none w-28 cursor-default"
-                  />
+                  <span className="text-[10px] font-bold text-[#0063A3] uppercase tracking-wider leading-none mb-1 font-sans">
+                    {t.licenseKey ? t.licenseKey.toUpperCase() : 'LICENSE KEY'}
+                  </span>
+                  <span className="text-xs font-normal text-slate-900 font-sans leading-tight select-all uppercase whitespace-nowrap cursor-default">
+                    {(profile?.license_key || (language === 'VN' ? 'ĐANG TẠO MÃ...' : 'GENERATING...')).toUpperCase()}
+                  </span>
               </div>
               <button 
                   onClick={(e) => {
@@ -443,7 +612,7 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
                           copyToClipboard(profile.license_key, true);
                       }
                   }} 
-                  className="text-slate-400 hover:text-blue-600 transition p-0.5 hover:bg-white rounded-md shrink-0"
+                  className="text-slate-400 hover:text-blue-600 transition p-0.5 hover:bg-white rounded-md shrink-0 cursor-pointer"
                   title={t.copyKey}
               >
                   {keyCopySuccess ? <CheckCircle2 size={14} className="text-green-600"/> : <Copy size={14} />}
@@ -458,11 +627,30 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
             <div className="flex items-center gap-6 lg:gap-8">
                 <div className="flex items-center gap-2 cursor-pointer group shrink-0" onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setIsMobileMenuOpen(false); }}>
                     <div className="group-hover:scale-110 transition-transform duration-300"><LogoSVG /></div>
-                    <span className="font-serif font-normal text-2xl tracking-tight mt-1" style={{ color: PRIMARY_COLOR }}>OpenSkp</span>
+                    <span className="font-serif font-normal text-3xl tracking-tight mt-1" style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}>OpenSkp</span>
                 </div>
-                <div className="hidden md:flex items-center gap-5 pt-1">
-                    <button onClick={handleTopup} className="text-sm hover:opacity-80 transition hover:scale-105" style={navTextStyle}>{t.pricingPricing}</button>
-                    <button onClick={onOpenGuide} className="text-sm hover:opacity-80 transition hover:scale-105 font-medium" style={navTextStyle}>{t.guide}</button>
+                <div className="hidden md:flex items-center gap-6 pt-1">
+                    <button 
+                      onClick={handleTopup} 
+                      className="font-serif text-[17px] hover:opacity-80 transition hover:scale-105 cursor-pointer select-none" 
+                      style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}
+                    >
+                      {t.pricingPricing}
+                    </button>
+                    <button 
+                      onClick={onOpenGuide} 
+                      className="font-serif text-[17px] hover:opacity-80 transition hover:scale-105 cursor-pointer select-none" 
+                      style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}
+                    >
+                      {t.guide}
+                    </button>
+                    <button 
+                      onClick={handleDownloadMain} 
+                      className="font-serif text-[17px] hover:opacity-80 transition hover:scale-105 cursor-pointer select-none" 
+                      style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}
+                    >
+                      Download
+                    </button>
                 </div>
             </div>
 
@@ -474,14 +662,14 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
                             <User size={20} />
                         </div>
                         <div className="absolute right-0 top-full pt-3 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right">
-                            <div className="bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 p-4 flex flex-col gap-3 text-slate-800">
+                            <div className="bg-white rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-slate-100 p-4 flex flex-col gap-3 text-slate-800 font-sans">
                                 <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
                                     <div className="w-8 h-8 rounded-full bg-slate-50 flex-shrink-0 flex items-center justify-center text-primary-brand border border-slate-100" style={{ color: PRIMARY_COLOR }}>
                                         <User size={16} />
                                     </div>
                                     <div className="flex-1 min-w-0 flex flex-col justify-center">
                                         <span className="text-sm font-medium text-slate-700 truncate block" title={session.user.email}>
-                                            {session.user.email}
+                                             {session.user.email}
                                         </span>
                                     </div>
                                     <button onClick={handleLogout} className="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition flex-shrink-0" title={language === 'VN' ? 'Đăng xuất' : 'Log out'}>
@@ -489,16 +677,20 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
                                     </button>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-500 mb-2">Thiết bị đang kết nối (HWID):</p>
+                                    <p className="text-[10px] font-bold text-[#0063A3] uppercase tracking-wider mb-2 font-sans">
+                                      {language === 'VN' ? 'THIẾT BỊ ĐANG KẾT NỐI (HWID)' : 'CONNECTED DEVICE (HWID)'}
+                                    </p>
                                     {profile?.hardware_id ? (
-                                        <div>
-                                            <p className="text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded mb-2 text-xs break-all">✓ {profile.hardware_id}</p>
-                                            <button onClick={handleResetHWID} disabled={loading} className="w-full text-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold rounded-lg disabled:opacity-50 transition">
-                                                {loading ? "Đang xử lý..." : "Hủy liên kết máy này"}
+                                        <div className="space-y-2">
+                                            <p className="text-emerald-600 font-normal bg-emerald-50 border border-emerald-200/60 px-2.5 py-1.5 rounded-lg text-xs font-sans break-all">✓ {profile.hardware_id}</p>
+                                            <button onClick={handleResetHWID} disabled={loading} className="w-full text-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold rounded-lg disabled:opacity-50 transition border border-red-100 cursor-pointer uppercase">
+                                                {loading ? "ĐANG XỬ LÝ..." : (language === 'VN' ? "HỦY LIÊN KẾT MÁY NÀY" : "UNLINK THIS DEVICE")}
                                             </button>
                                         </div>
                                     ) : (
-                                        <p className="text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1.5 rounded">Chưa khóa thiết bị nào.</p>
+                                        <p className="text-xs font-normal text-slate-500 bg-slate-50 border border-slate-200/60 px-2.5 py-1.5 rounded-lg font-sans">
+                                          {language === 'VN' ? 'CHƯA KHÓA THIẾT BỊ NÀO.' : 'NO DEVICE LOCKED.'}
+                                        </p>
                                     )}
                                 </div>
                             </div>
@@ -523,32 +715,39 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
             <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-100 shadow-xl animate-in slide-in-from-top-1 duration-200 z-50">
                 <div className="flex flex-col py-4 gap-4 items-center">
                     <div className="w-full flex flex-col items-center gap-2 border-b border-gray-50 pb-4">
-                      <button onClick={() => { handleTopup(); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base" style={navTextStyle}>{t.pricingPricing}</button>
-                      <button onClick={() => { setIsMobileMenuOpen(false); if (onOpenGuide) onOpenGuide(); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-base font-medium" style={navTextStyle}>{t.guide}</button>
+                      <button onClick={() => { handleTopup(); setIsMobileMenuOpen(false); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-lg font-serif" style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}>{t.pricingPricing}</button>
+                      <button onClick={() => { setIsMobileMenuOpen(false); if (onOpenGuide) onOpenGuide(); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-lg font-serif" style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}>{t.guide}</button>
+                      <button onClick={() => { setIsMobileMenuOpen(false); if (handleDownloadMain) handleDownloadMain(); }} className="py-2 px-6 hover:bg-slate-50 transition w-full text-center text-lg font-serif" style={{ color: PRIMARY_COLOR, fontFamily: "'Crimson Pro', Georgia, serif" }}>
+                        Download
+                      </button>
                     </div>
                     <div className="flex flex-col items-center gap-3 w-full px-4">
                         {session ? (
                             <>
                                 <div className="scale-105 origin-center">{renderUserDashboard()}</div>
                                 <div className="flex items-center justify-center gap-4 w-full mt-2">
-                                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full truncate max-w-[200px]">
+                                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full truncate max-w-[200px] font-sans">
                                       <User size={14}/> <span className="truncate">{session.user.email}</span>
                                     </div>
-                                    <button onClick={handleLogout} className="flex items-center gap-1 text-red-500 bg-red-50 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-100 transition shrink-0">
+                                    <button onClick={handleLogout} className="flex items-center gap-1 text-red-500 bg-red-50 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-red-100 transition shrink-0 font-sans">
                                         <LogOut size={14} /> {t.logout}
                                     </button>
                                 </div>
-                                <div className="w-full max-w-xs mt-2 p-3 bg-white border border-slate-100 shadow-sm rounded-xl text-left text-slate-800">
-                                    <p className="text-xs font-semibold text-slate-500 mb-2">Trạng thái khóa máy (HWID):</p>
+                                <div className="w-full max-w-xs mt-2 p-3 bg-white border border-slate-100 shadow-sm rounded-xl text-left text-slate-800 font-sans">
+                                    <p className="text-[10px] font-bold text-[#0063A3] uppercase tracking-wider mb-2 font-sans">
+                                      {language === 'VN' ? 'THIẾT BỊ ĐANG KẾT NỐI (HWID)' : 'CONNECTED DEVICE (HWID)'}
+                                    </p>
                                     {profile?.hardware_id ? (
-                                        <div>
-                                            <p className="text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded mb-2 text-xs break-all">✓ {profile.hardware_id}</p>
-                                            <button onClick={handleResetHWID} disabled={loading} className="w-full text-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold rounded-lg disabled:opacity-50 transition">
-                                                {loading ? "Đang xử lý..." : "Hủy liên kết máy này"}
+                                        <div className="space-y-2">
+                                            <p className="text-emerald-600 font-normal bg-emerald-50 border border-emerald-200/60 px-2.5 py-1.5 rounded-lg text-xs font-sans break-all">✓ {profile.hardware_id}</p>
+                                            <button onClick={handleResetHWID} disabled={loading} className="w-full text-center px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 text-xs font-semibold rounded-lg disabled:opacity-50 transition border border-red-100 cursor-pointer uppercase">
+                                                {loading ? "ĐANG XỬ LÝ..." : (language === 'VN' ? "HỦY LIÊN KẾT MÁY NÀY" : "UNLINK THIS DEVICE")}
                                             </button>
                                         </div>
                                     ) : (
-                                        <p className="text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1.5 rounded">Chưa khóa thiết bị nào.</p>
+                                        <p className="text-xs font-normal text-slate-500 bg-slate-50 border border-slate-200/60 px-2.5 py-1.5 rounded-lg font-sans">
+                                          {language === 'VN' ? 'CHƯA KHÓA THIẾT BỊ NÀO.' : 'NO DEVICE LOCKED.'}
+                                        </p>
                                     )}
                                 </div>
                             </>
@@ -592,6 +791,35 @@ export default function App() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const [confirmModal, setConfirmModal] = useState({ show: false, message: '', onConfirm: null });
 
+  // Quản lý mẫu font chữ toàn website (Mặc định: Manrope)
+  const [currentFont, setCurrentFont] = useState('manrope');
+
+  const applyFont = (fontFamilyStr) => {
+    document.documentElement.style.setProperty('--app-font', fontFamilyStr);
+    document.body.style.fontFamily = fontFamilyStr;
+  };
+
+  const handleFontChange = (fontId) => {
+    const selected = FONT_OPTIONS.find(f => f.id === fontId);
+    if (selected) {
+      setCurrentFont(fontId);
+      applyFont(selected.fontFamily);
+      try {
+        localStorage.setItem('openskp_font', fontId);
+      } catch (e) {}
+    }
+  };
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('openskp_font', 'manrope');
+      setCurrentFont('manrope');
+      applyFont(FONT_OPTIONS[0].fontFamily);
+    } catch (e) {
+      applyFont(FONT_OPTIONS[0].fontFamily);
+    }
+  }, []);
+
   const latestProfileRef = useRef(profile);
   useEffect(() => {
     latestProfileRef.current = profile;
@@ -608,8 +836,7 @@ export default function App() {
 
   useEffect(() => {
     if (IS_PREVIEW_MOCK_MODE) {
-      setSession(MOCK_SESSION_DATA);
-      setProfile(MOCK_PROFILE_DATA);
+      // Ban đầu chưa đăng nhập để trải nghiệm đúng luồng "yêu cầu đăng nhập mới cho download"
       setSupabaseReady(true);
       return;
     }
@@ -775,7 +1002,9 @@ export default function App() {
     if (!profile?.license_key) return;
     setConfirmModal({
       show: true,
-      message: "Xác nhận hủy liên kết với máy tính hiện tại? Bạn sẽ phải nhập lại License Key trên máy mới.",
+      message: language === 'VN' 
+        ? "Xác nhận hủy liên kết với máy tính hiện tại? Bạn sẽ phải nhập lại License Key trên máy mới." 
+        : "Confirm unlinking current computer? You will need to re-enter your License Key on a new device.",
       onConfirm: executeResetHWID
     });
   };
@@ -828,15 +1057,64 @@ export default function App() {
   };
 
   const handleDownloadMain = () => { 
+    if (!session) {
+      setConfirmModal({
+        show: true,
+        type: 'login',
+        title: language === 'VN' ? 'Yêu cầu đăng nhập' : 'Login Required',
+        message: language === 'VN' 
+          ? 'Vui lòng đăng nhập tài khoản Google để nhận mã bản quyền (License Key) và tải bản dùng thử OpenSkp.'
+          : 'Please log in with Google to receive your License Key and download OpenSkp Free Trial.',
+        confirmText: language === 'VN' ? 'Đăng nhập ngay' : 'Log in Now',
+        cancelText: language === 'VN' ? 'Để sau' : 'Later',
+        onConfirm: () => {
+          handleLoginGoogle();
+        }
+      });
+      showToast(
+        language === 'VN' 
+          ? 'Vui lòng đăng nhập để tải bản dùng thử OpenSkp!' 
+          : 'Please log in to download OpenSkp Free trial!', 
+        'info'
+      );
+      return;
+    }
+
     if (DRIVE_DOWNLOAD_LINK) {
       window.open(DRIVE_DOWNLOAD_LINK, '_blank'); 
     } else {
-      showToast("Đường dẫn tải plugin OpenSkp hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_DOWNLOAD_LINK)", "error");
+      showToast(
+        language === 'VN'
+          ? "Đường dẫn tải plugin OpenSkp hiện chưa khả dụng (Vui lòng thiết lập VITE_DRIVE_DOWNLOAD_LINK)"
+          : "OpenSkp plugin download link is currently unavailable (Please set VITE_DRIVE_DOWNLOAD_LINK)", 
+        "error"
+      );
     }
   };
 
   const handleTopup = () => {
-    if (!session) return showToast("Vui lòng đăng nhập để xem bảng giá và thanh toán", "error");
+    if (!session) {
+      setConfirmModal({
+        show: true,
+        type: 'login',
+        title: language === 'VN' ? 'Yêu cầu đăng nhập' : 'Login Required',
+        message: language === 'VN' 
+          ? 'Vui lòng đăng nhập tài khoản để xem bảng giá và đăng ký bản quyền OpenSkp.'
+          : 'Please log in to view pricing and purchase an OpenSkp license.',
+        confirmText: language === 'VN' ? 'Đăng nhập ngay' : 'Log in Now',
+        cancelText: language === 'VN' ? 'Để sau' : 'Later',
+        onConfirm: () => {
+          handleLoginGoogle();
+        }
+      });
+      showToast(
+        language === 'VN' 
+          ? "Vui lòng đăng nhập để xem bảng giá và thanh toán" 
+          : "Please log in to view pricing and checkout", 
+        "info"
+      );
+      return;
+    }
     setShowPayment(true);
     setPaymentMethod('VND');
     setPaypalSuccess(null);
@@ -892,6 +1170,7 @@ export default function App() {
     <div 
       className="min-h-screen text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col relative"
       style={{ 
+          fontFamily: 'var(--app-font)',
           backgroundColor: BG_COLOR,
           backgroundImage: 'linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)',
           backgroundSize: '20px 20px'
@@ -920,30 +1199,35 @@ export default function App() {
 
       {confirmModal.show && (
         <div className="fixed inset-0 z-[105] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border border-slate-100 text-slate-800">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border border-slate-100 text-slate-800 font-sans" style={{ fontFamily: 'var(--app-font)' }}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center border border-yellow-200">
-                <AlertTriangle size={20} />
+              <div className={`w-10 h-10 ${confirmModal.type === 'login' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-yellow-50 text-yellow-600 border-yellow-200'} rounded-full flex items-center justify-center border shrink-0`}>
+                {confirmModal.type === 'login' ? <User size={20} /> : <AlertTriangle size={20} />}
               </div>
-              <h4 className="text-lg font-bold font-serif" style={{ color: PRIMARY_COLOR }}>Xác nhận thao tác</h4>
+              <h4 className="text-lg font-bold font-sans text-slate-800" style={{ color: PRIMARY_COLOR, fontFamily: 'var(--app-font)' }}>
+                {confirmModal.title || (language === 'VN' ? 'Xác nhận thao tác' : 'Confirm Action')}
+              </h4>
             </div>
-            <p className="text-sm text-slate-600 mb-6 leading-relaxed">{confirmModal.message}</p>
+            <p className="text-sm text-slate-600 mb-6 leading-relaxed text-justify font-sans" style={{ fontFamily: 'var(--app-font)' }}>{confirmModal.message}</p>
             <div className="flex gap-3 justify-end">
               <button 
-                onClick={() => setConfirmModal({ show: false, onConfirm: null, message: '' })}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition"
+                onClick={() => setConfirmModal({ show: false, onConfirm: null, message: '', title: '', type: '' })}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold transition cursor-pointer font-sans"
+                style={{ fontFamily: 'var(--app-font)' }}
               >
-                Hủy bỏ
+                {confirmModal.cancelText || (language === 'VN' ? 'Hủy bỏ' : 'Cancel')}
               </button>
               <button 
                 onClick={() => {
-                  if (confirmModal.onConfirm) confirmModal.onConfirm();
-                  setConfirmModal({ show: false, onConfirm: null, message: '' });
+                  const cb = confirmModal.onConfirm;
+                  setConfirmModal({ show: false, onConfirm: null, message: '', title: '', type: '' });
+                  if (cb) cb();
                 }}
-                className="px-4 py-2 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition shadow-sm"
-                style={{ backgroundColor: PRIMARY_COLOR }}
+                className="px-5 py-2 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition shadow-sm cursor-pointer flex items-center gap-2 font-sans"
+                style={{ backgroundColor: PRIMARY_COLOR, fontFamily: 'var(--app-font)' }}
               >
-                Đồng ý
+                {confirmModal.type === 'login' && <User size={15} />}
+                <span>{confirmModal.confirmText || (language === 'VN' ? 'Đồng ý' : 'Confirm')}</span>
               </button>
             </div>
           </div>
@@ -953,6 +1237,7 @@ export default function App() {
       {showPayment && (
           <PaymentModal 
             t={t} 
+            language={language}
             paymentMethod={paymentMethod} 
             handleSwitchMethod={handleSwitchMethod} 
             setShowPayment={setShowPayment} 
@@ -978,6 +1263,7 @@ export default function App() {
           copyToClipboard={copyToClipboard}
           handleResetHWID={handleResetHWID}
           loading={loading}
+          handleDownloadMain={handleDownloadMain}
           onOpenGuide={() => {
             setCurrentView('guide');
             setTimeout(() => {
@@ -997,6 +1283,7 @@ export default function App() {
           {currentView === 'home' ? (
             <ShowcaseSection 
               t={t} 
+              language={language}
               PRIMARY_COLOR={PRIMARY_COLOR} 
               onOpenGuide={() => {
                 setCurrentView('guide');
@@ -1008,6 +1295,7 @@ export default function App() {
           ) : (
             <InteractiveGuideSection 
               t={t} 
+              language={language}
               PRIMARY_COLOR={PRIMARY_COLOR} 
               profile={profile} 
               session={session} 
@@ -1034,6 +1322,8 @@ export default function App() {
           </div>
       </footer>
       
+      {/* NÚT LIÊN HỆ ZALO & FACEBOOK */}
+
       <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
           {FACEBOOK_LINK && (
             <a href={FACEBOOK_LINK} target="_blank" rel="noreferrer" className="w-12 h-12 text-white rounded-full flex items-center justify-center shadow-lg transition transform hover:scale-110" style={{ backgroundColor: PRIMARY_COLOR }}>
