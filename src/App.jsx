@@ -584,8 +584,8 @@ const Navbar = ({ t, handleTopup, session, profile, handleLogout, handleLoginGoo
               <div className="text-[10px] uppercase text-[#0063A3] font-bold tracking-wider leading-none mb-1 font-sans">
                 {language === 'VN' ? 'TRẠNG THÁI' : 'STATUS'}
               </div>
-              <div className={`text-[10px] font-bold uppercase leading-none font-sans ${(profile?.is_active || profile?.lite) ? 'text-emerald-600' : 'text-slate-400'}`}>
-                   {(profile?.is_active || profile?.lite) ? (t.statusActivated || 'ĐÃ KÍCH HOẠT').toUpperCase() : (t.statusInactive || 'CHƯA KÍCH HOẠT').toUpperCase()}
+              <div className={`text-[10px] font-bold uppercase leading-none font-sans ${profile?.lite ? 'text-emerald-600' : 'text-slate-400'}`}>
+                   {profile?.lite ? (t.statusActivated || 'ĐÃ KÍCH HOẠT').toUpperCase() : (t.statusInactive || 'CHƯA KÍCH HOẠT').toUpperCase()}
               </div>
           </div>
 
@@ -922,7 +922,7 @@ export default function App() {
               const oldLite = latestProfileRef.current?.lite || false;
               const newLite = verifiedData.lite || false;
 
-              if ((newLite && !oldLite) || (verifiedData?.is_active && !latestProfileRef.current?.is_active)) {
+              if (newLite && !oldLite) {
                 if (showPayment) setShowPayment(false);
                 showToast(`🎉 Kích hoạt thành công! Bản quyền OpenSkp của bạn đã sẵn sàng sử dụng.`, "success");
               }
