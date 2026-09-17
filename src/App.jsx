@@ -76,7 +76,6 @@ const TRANSLATIONS = {
     paymentCardDesc: "Thẻ Tín dụng / Ghi nợ quốc tế",
     loginToView: "Vui lòng đăng nhập...",
     
-    paymentSubtitle: "Cầu nối điều phối trong SketchUp kết nối AI ngoài",
     licenseDesc: "OpenSkp đóng vai trò là cầu nối thông minh giữa SketchUp và các mô hình AI bên ngoài. Hệ thống hỗ trợ dựng không gian 3D tự động từ ảnh mặt bằng 2D và điều phối tạo dựng các cấu kiện mô hình 3D hoàn chỉnh.",
     paymentNotice: "Lưu ý: Hệ thống thanh toán có thể thay đổi, chỉ áp dụng cơ chế sử dụng vĩnh viễn với các đăng ký trong giai đoạn đầu phát triển Plugin.",
     pkgLifetimeTitle: "Phiên bản Trọn đời",
@@ -111,7 +110,6 @@ const TRANSLATIONS = {
     paymentCardDesc: "International Debit or Credit Card",
     loginToView: "Please login...",
 
-    paymentSubtitle: "Intelligent coordination bridge in SketchUp connecting external AI",
     licenseDesc: "OpenSkp serves as an intelligent bridge between SketchUp and external AI models. It automates 3D spatial generation from 2D floor plans and coordinates full 3D model component creation.",
     paymentNotice: "Note: The payment system is subject to change; lifetime usage is only applicable to registrations during the initial development phase of the Plugin.",
     pkgLifetimeTitle: "Lifetime License",
@@ -468,12 +466,11 @@ const PaymentModal = ({
                 
                 {/* 1. TIÊU ĐỀ */}
                 <h3 
-                  className="text-4xl font-serif font-normal tracking-tight mb-1"
+                  className="text-4xl font-serif font-normal tracking-tight mb-4"
                   style={{ fontFamily: "'Crimson Pro', Georgia, serif", color: PRIMARY_COLOR }}
                 >
                     OpenSkp
                 </h3>
-                <p className="text-sm font-medium text-slate-600 mb-3">{t.paymentSubtitle}</p>
 
                 {/* 2. NỘI DUNG */}
                 <p className="text-[14.5px] sm:text-[15px] text-slate-600 leading-relaxed text-justify mb-5 px-1">
