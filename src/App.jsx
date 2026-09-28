@@ -132,8 +132,8 @@ const BANK_ID = import.meta.env.VITE_BANK_ID || "";
 const BANK_ACCOUNT = import.meta.env.VITE_BANK_ACCOUNT || ""; 
 const ACCOUNT_NAME = import.meta.env.VITE_BANK_ACCOUNT_NAME || ""; 
 
-const OPENSKP_PRICE_VND = 200000;
-const OPENSKP_PRICE_USD = 10;
+const OPENSKP_PRICE_VND = 300000;
+const OPENSKP_PRICE_USD = 15;
 
 const PayPalButtonContainer = ({ price, value, onSuccess, onError, language = 'VN' }) => {
   const containerRef = useRef(null);
@@ -493,14 +493,14 @@ const PaymentModal = ({
                     <>
                         {paymentMethod === 'VND' ? (
                             <div className="bg-white p-2.5 border border-slate-200 rounded-xl shadow-xs inline-block mb-3">
-                                {profile ? (
-                                    <img src={getVietQRUrl()} alt="VietQR" className="w-44 h-44 object-contain animate-fade-in mx-auto" />
-                                ) : (
-                                    <div className="w-44 h-44 flex items-center justify-center text-xs text-gray-400 bg-gray-50 rounded">
-                                        <Loader2 className="animate-spin mr-2" /> {t.loginToView}
-                                    </div>
-                                )}
+                                <img src={getVietQRUrl()} alt="VietQR" className="w-44 h-44 object-contain animate-fade-in mx-auto" />
                                 <h5 className="text-[10px] text-slate-400 mt-1.5">{t.paymentScan}</h5>
+                                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5 text-xs text-slate-600">
+                                    <span className="text-[11px] text-slate-400 font-medium">{language === 'VN' ? 'Cú pháp CK:' : 'Transfer memo:'}</span>
+                                    <span className="font-mono font-bold text-[#0063A3] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 text-[11px] select-all">
+                                        {`OPENSKP LITE ${(profile?.license_key || 'DEMO').replace(/^OPENSKP[-_]?/i, '')}`}
+                                    </span>
+                                </div>
                             </div>
                         ) : (
                             <div className="w-full max-w-xs px-2 my-3 relative z-0">
@@ -1090,28 +1090,6 @@ export default function App() {
   };
 
   const handleTopup = () => {
-    if (!session) {
-      setConfirmModal({
-        show: true,
-        type: 'login',
-        title: language === 'VN' ? 'Yêu cầu đăng nhập' : 'Login Required',
-        message: language === 'VN' 
-          ? 'Vui lòng đăng nhập tài khoản để xem bảng giá và đăng ký bản quyền OpenSkp.'
-          : 'Please log in to view pricing and purchase an OpenSkp license.',
-        confirmText: language === 'VN' ? 'Đăng nhập ngay' : 'Log in Now',
-        cancelText: language === 'VN' ? 'Để sau' : 'Later',
-        onConfirm: () => {
-          handleLoginGoogle();
-        }
-      });
-      showToast(
-        language === 'VN' 
-          ? "Vui lòng đăng nhập để xem bảng giá và thanh toán" 
-          : "Please log in to view pricing and checkout", 
-        "info"
-      );
-      return;
-    }
     setShowPayment(true);
     setPaymentMethod('VND');
     setPaypalSuccess(null);
@@ -1123,10 +1101,9 @@ export default function App() {
   };
 
   const getVietQRUrl = () => {
-    if (!profile) return "";
-    const key = profile.license_key || 'UNKNOWN';
-    const shortKey = key.split('-').pop() || key; 
-    const DESCRIPTION = `OPENSKP LITE ${shortKey}`;
+    const rawKey = profile?.license_key || 'DEMO';
+    const suffix = rawKey.replace(/^OPENSKP[-_]?/i, '');
+    const DESCRIPTION = `OPENSKP LITE ${suffix}`;
 
     if (!BANK_ID || !BANK_ACCOUNT) {
       return "https://placehold.co/300x300/fdfbf7/0063A3?text=VietQR+Simulated";
